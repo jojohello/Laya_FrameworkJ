@@ -1,0 +1,24 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome against localhost",
+            "url": "${workspaceRoot}/../../Public/webgame/index.html",
+            "webRoot": "${workspaceFolder}",
+            "runtimeArgs": [
+				"--allow-file-access-from-files",
+				"--allow-file-access-frome-files",
+				"--disable-web-security"
+			],
+            "sourceMaps": true,
+            //假如谷歌调试报userDataDir不可用，请把谷歌安装路径取得管理员权限,或者更换${tmpdir}为其他可以读写的文件夹，也可以删除。
+			"userDataDir": "${workspaceRoot}/.laya/chrome"
+        }
+    ]
+}

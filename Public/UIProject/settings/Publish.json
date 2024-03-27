@@ -1,0 +1,21 @@
+{
+	"atlasSetting":{
+		"paging":true,
+		"sizeOption":"pot",
+		"trimImage":true
+	},
+	"binaryFormat":true,
+	"codeGeneration":{
+		"classNamePrefix":"",
+		"codePath":"..\\..\\Client\\LayaClient\\bin\\res\\UI",
+		"codeType":"",
+		"getMemberByName":false,
+		"ignoreNoname":true,
+		"memberNamePrefix":"m_",
+		"packageName":""
+	},
+	"compressDesc":false,
+	"fileExtension":"fui",
+	"packageCount":2,
+	"path":"D:\\MyLaya\\Client\\LayaClient_framework\\bin\\res\\UI"
+}

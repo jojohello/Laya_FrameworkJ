@@ -1,0 +1,5 @@
+Title,ID,Delay1,Born1,Delay2,Born2,Delay3,Born3,Delay4,Born4,Delay5,Born5,Delay6,Born6,Delay7,Born7,Delay8,Born8
+Type,int,float,str,float,str,float,str,float,str,float,str,float,str,float,str,float,str
+Description,配置ID,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数,产生怪物的时间，单位秒,本波产生的怪物，格式为id：个数|id：个数
+UsedSize,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c
+,1,2,3:2|4:1,20,3:1|4:2,30,3:3|4:4,,,,,,,,,,

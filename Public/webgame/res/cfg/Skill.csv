@@ -1,0 +1,7 @@
+Title,ID,BaseID,Level,Des,CD,TargetType,TargetCamp,Action
+Type,int,int,int,str,float,str,str,str
+Description,配置ID,代表技能id,技能等级,技能描述,技能cd,技能目标类型：None（不需要释放目标）Self（自己） Role（其他目标） Pos（地上一个坐标点）,技能目标阵型 TeamMate（己方）Enemy（敌方）,技能效果脚本 
+UsedSize,c,c,c,c,c,c,c,c
+,1,1,1,,1,Role,Enemy,0;Bullet;2;1
+,2,1,2,,0.7,Role,Enemy,0;Bullet;2;1.2
+,3,1,3,,0.5,Role,Enemy,0;Bullet;2:1.3

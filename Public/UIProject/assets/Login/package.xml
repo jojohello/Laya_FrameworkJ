@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="h7tzcbvm">
+  <resources>
+    <component id="hti60" name="LoginView.xml" path="/" exported="true"/>
+    <image id="du0r1" name="VIP_png.png" path="/images/"/>
+    <component id="du0r3" name="enterBtn.xml" path="/components/"/>
+  </resources>
+  <publish name="" path="..\..\Client\LayaClient_framework\bin\startRes" packageCount="2"/>
+</packageDescription>

@@ -1,0 +1,8 @@
+Title,ID,name,Des
+Type,int,str,str
+Description,配置ID,属性命名,属性描述，备忘用
+UsedSize,c,cs,c
+,1,HP,当前血量
+,2,maxHP,最大血量
+,3,speed,移动速度
+,4,maxHPRate,最大血量百分比

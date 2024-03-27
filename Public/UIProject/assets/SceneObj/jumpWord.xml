@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="3,3" pivot="0.5,0" anchor="true">
+  <displayList>
+    <text id="n0_ensk" name="words" xy="0,0" pivot="0.5,0.5" anchor="true" size="45,27" blend="none" filter="color" filterData="0.00,0.00,0.00,0.00" fontSize="20" color="#ff0000" align="center" vAlign="middle" text="-100&#xA;"/>
+  </displayList>
+  <transition name="popAnim" autoPlay="true">
+    <item time="0" type="Alpha" target="n0_ensk" value="1"/>
+    <item time="0" type="Scale" target="n0_ensk" tween="true" startValue="0.3,0.3" endValue="1.5,1.5" duration="3"/>
+    <item time="0" type="XY" target="n0_ensk" tween="true" startValue="0,0" endValue="0,0" duration="6"/>
+    <item time="3" type="Scale" target="n0_ensk" tween="true" startValue="1.5,1.5" endValue="1,1" duration="2"/>
+    <item time="6" type="XY" target="n0_ensk" tween="true" startValue="0,0" endValue="0,-67" duration="22"/>
+    <item time="27" type="Alpha" target="n0_ensk" tween="true" startValue="1" endValue="0" duration="4"/>
+  </transition>
+</component>

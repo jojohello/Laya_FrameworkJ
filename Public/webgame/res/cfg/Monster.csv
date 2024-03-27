@@ -1,0 +1,8 @@
+Title,ID,name,icon,model,monsterType,skillList,hp,mp,speed
+Type,int,str,str,str,int,str,int,int,float
+Description,配置ID,怪物名字,怪物头像,模型路径,怪物类型，1为防守塔，2为怪物小兵,技能表，可配置多个，用;隔开,血量,蓝量,移动速度
+UsedSize,c,c,c,c,c,c,c,,
+,1,炮塔1,,res/role/huopao.png,1,1,10,0,0
+,2,炮塔2,,res/role/huopao_1.png,1,1,10,0,0
+,3,小兵1,,res/role/soldier1/139x.atlas,2,,100,100,20
+,4,小兵2,,res/role/soldier1/139x.atlas,2,,100,100,20

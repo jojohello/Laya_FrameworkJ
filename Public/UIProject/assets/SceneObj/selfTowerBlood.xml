@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="100,60" pivot="0.5,1" anchor="true" opaque="false">
+  <displayList>
+    <image id="n0_qnwp" name="n0" src="qnwp2" fileName="images/blood_bg.png" pkg="yrixngkt" xy="0,42" size="100,12"/>
+    <image id="n4_qnwp" name="blood" src="qnwp0" fileName="images/blood_blue.png" pkg="yrixngkt" xy="2,45" size="96,6" fillMethod="hz"/>
+    <text id="n2_qnwp" name="n2" xy="6,14" size="59,22" fontSize="18" color="#ffffff" strokeColor="#000000" text="囤兵："/>
+    <text id="n3_qnwp" name="soldierCount" xy="54,14" size="32,22" fontSize="18" color="#ffffff" strokeColor="#000000" text="100"/>
+  </displayList>
+</component>

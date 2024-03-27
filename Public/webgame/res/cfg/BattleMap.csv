@@ -1,0 +1,6 @@
+Title,ID,name,respath,monsterProducerId,tower1,tower2,tower3,tower4
+Type,int,str,str,int,int,int,int,int
+Description,配置ID,地图名字,资源路径,使用怪物产生器的ID,第一塔位的原始炮塔ID,第一塔位的原始炮塔ID,第一塔位的原始炮塔ID,第一塔位的原始炮塔ID
+UsedSize,c,c,c,c,c,c,c,c
+,1,战斗地图1,res/tilemap/fightmap.json,1,1,2,2,0
+,2,战斗测试地图2,res/tilemap/fightmap.json,1,1,2,2,0

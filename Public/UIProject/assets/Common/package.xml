@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="yrixngkt">
+  <resources>
+    <image id="qnwp0" name="blood_blue.png" path="/images/" exported="true"/>
+    <image id="qnwp1" name="blood_red.png" path="/images/" exported="true"/>
+    <image id="qnwp2" name="blood_bg.png" path="/images/" exported="true"/>
+    <image id="qnwp3" name="VIP_png.png" path="/images/" exported="true"/>
+    <component id="qnwp4" name="Button1.xml" path="/components/" exported="true"/>
+  </resources>
+  <publish name=""/>
+</packageDescription>

@@ -1,0 +1,6 @@
+Title,ID,Des,ResPath,MoveType,IsTimeLimit,Speed,LimitTime,MoveParams,CheckCollis,PenetrateCount,HitAction
+Type,int,str,str,str,bool,float,float,str,bool,int,str
+Description,配置ID,描述，一般没有用，主要用来方便自己查阅,资源路径,运动方式 Line（普通直线运动）  Trace（跟踪固定目标） ,是否在固定时间到达目标,子弹速度，当,运动限制时间，当该参数大于0时，表示子弹在固定时间到达目标,运动参数，特殊运动所使用的参数，用:号分割,是否实时监测碰撞,穿透数量，只有实时监测碰撞的，才需要填，一般填0或者1就可以,
+UsedSize,c,c,c,c,c,c,c,c,CheckCollis,c,c
+,1,测试用子弹,,Trace,TRUE,100,0.3,,FALSE,0,TrueDamage;60
+,2,直线子弹,,Line,TRUE,400,0.6,,TRUE,1,TrueDamage;60

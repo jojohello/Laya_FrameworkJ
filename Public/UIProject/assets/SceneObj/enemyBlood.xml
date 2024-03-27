@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="100,21" pivot="0.5,1" anchor="true" opaque="false">
+  <displayList>
+    <image id="n0_qnwp" name="n0" src="qnwp2" fileName="images/blood_bg.png" pkg="yrixngkt" xy="0,5" size="100,12"/>
+    <image id="n1_qnwp" name="blood" src="qnwp1" fileName="images/blood_red.png" pkg="yrixngkt" xy="2,8" size="96,6" fillMethod="hz"/>
+  </displayList>
+</component>

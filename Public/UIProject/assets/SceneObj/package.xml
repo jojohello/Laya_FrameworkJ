@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="y981tm2v">
+  <resources>
+    <component id="qnwp0" name="enemyBlood.xml" path="/" exported="true"/>
+    <component id="qnwp2" name="selfBlood.xml" path="/" exported="true"/>
+    <component id="qnwp3" name="towerButton.xml" path="/" exported="true"/>
+    <component id="qnwp4" name="enemyTowerBlood.xml" path="/" exported="true"/>
+    <component id="qnwp6" name="selfTowerBlood.xml" path="/" exported="true"/>
+    <component id="ensk7" name="jumpWord.xml" path="/" exported="true"/>
+  </resources>
+  <publish name="SceneObj"/>
+</packageDescription>

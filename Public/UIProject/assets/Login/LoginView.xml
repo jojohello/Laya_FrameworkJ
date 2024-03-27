@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="750,1334">
+  <displayList>
+    <graph id="n0_hti6" name="bg" xy="0,0" size="750,1334" type="rect"/>
+    <component id="n3_du0r" name="n3" src="du0r3" fileName="components/enterBtn.xml" xy="286,435"/>
+  </displayList>
+</component>

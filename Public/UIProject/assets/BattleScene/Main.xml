@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="750,1334" opaque="false">
+  <displayList>
+    <text id="n0_lxvx" name="n0" xy="30,28" size="130,28" fontSize="24" color="#ffffff" bold="true" strokeColor="#000000" text="当前金币："/>
+    <text id="n1_lxvx" name="coin" xy="163,28" size="18,28" fontSize="24" color="#ffffff" bold="true" strokeColor="#000000" text="0"/>
+  </displayList>
+</component>

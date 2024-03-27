@@ -1,0 +1,343 @@
+{
+    "x": 0,
+    "type": "View",
+    "selectedBox": 2,
+    "searchKey": "View",
+    "props": {
+        "sceneWidth": 10,
+        "sceneHeight": 10,
+        "sceneColor": "#000000"
+    },
+    "nodeParent": -1,
+    "maxID": 8,
+    "label": "View",
+    "isOpen": null,
+    "isDirectory": true,
+    "isAniNode": true,
+    "hasChild": true,
+    "compId": 2,
+    "child": [
+        {
+            "type": "GraphicNode",
+            "searchKey": "GraphicNode",
+            "props": {},
+            "nodeParent": 2,
+            "label": "GraphicNode",
+            "isDirectory": false,
+            "isAniNode": true,
+            "hasChild": false,
+            "compId": 7,
+            "child": []
+        }
+    ],
+    "animations": [
+        {
+            "nodes": [
+                {
+                    "target": 7,
+                    "keyframes": {
+                        "skin": [
+                            {
+                                "value": "models/jiqiren/jiqiren_0_0.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 0
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_0_1.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 1
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_0_2.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 2
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_0_3.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 3
+                            }
+                        ],
+                        "scaleX": [
+                            {
+                                "value": 1,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "scaleX",
+                                "index": 0
+                            }
+                        ],
+                        "pivotY": [
+                            {
+                                "value": 50,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotY",
+                                "index": 0
+                            }
+                        ],
+                        "pivotX": [
+                            {
+                                "value": 32,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotX",
+                                "index": 0
+                            }
+                        ]
+                    }
+                }
+            ],
+            "name": "ani0",
+            "id": 1,
+            "frameRate": 10,
+            "action": 0
+        },
+        {
+            "nodes": [
+                {
+                    "target": 7,
+                    "keyframes": {
+                        "skin": [
+                            {
+                                "value": "models/jiqiren/jiqiren_1_0.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 0
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_1_1.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 1
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_1_2.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 2
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_1_3.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 3
+                            }
+                        ],
+                        "scaleX": [
+                            {
+                                "value": 1,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "scaleX",
+                                "index": 0
+                            }
+                        ],
+                        "pivotY": [
+                            {
+                                "value": 50,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotY",
+                                "index": 0
+                            }
+                        ],
+                        "pivotX": [
+                            {
+                                "value": 32,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotX",
+                                "index": 0
+                            }
+                        ]
+                    }
+                }
+            ],
+            "name": "ani1",
+            "id": 2,
+            "frameRate": 10,
+            "action": 0
+        },
+        {
+            "nodes": [
+                {
+                    "target": 7,
+                    "keyframes": {
+                        "skin": [
+                            {
+                                "value": "models/jiqiren/jiqiren_2_0.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 0
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_2_1.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 1
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_2_2.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 2
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_2_3.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 3
+                            }
+                        ],
+                        "scaleX": [
+                            {
+                                "value": 1,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "scaleX",
+                                "index": 0
+                            }
+                        ],
+                        "pivotY": [
+                            {
+                                "value": 50,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotY",
+                                "index": 0
+                            }
+                        ],
+                        "pivotX": [
+                            {
+                                "value": 32,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotX",
+                                "index": 0
+                            }
+                        ]
+                    }
+                }
+            ],
+            "name": "ani2",
+            "id": 3,
+            "frameRate": 10,
+            "action": 0
+        },
+        {
+            "nodes": [
+                {
+                    "target": 7,
+                    "keyframes": {
+                        "skin": [
+                            {
+                                "value": "models/jiqiren/jiqiren_3_0.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 0
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_3_1.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 1
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_3_2.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 2
+                            },
+                            {
+                                "value": "models/jiqiren/jiqiren_3_3.png",
+                                "tweenMethod": "linearNone",
+                                "tween": false,
+                                "target": 7,
+                                "key": "skin",
+                                "index": 3
+                            }
+                        ],
+                        "scaleX": [
+                            {
+                                "value": 1,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "scaleX",
+                                "index": 0
+                            }
+                        ],
+                        "pivotY": [
+                            {
+                                "value": 50,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotY",
+                                "index": 0
+                            }
+                        ],
+                        "pivotX": [
+                            {
+                                "value": 32,
+                                "tweenMethod": "linearNone",
+                                "tween": true,
+                                "target": 7,
+                                "key": "pivotX",
+                                "index": 0
+                            }
+                        ]
+                    }
+                }
+            ],
+            "name": "ani3",
+            "id": 4,
+            "frameRate": 10,
+            "action": 0
+        }
+    ]
+}
