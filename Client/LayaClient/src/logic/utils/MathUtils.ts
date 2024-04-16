@@ -43,20 +43,22 @@
      
     private static sinCache:Map<number, number> = new Map<number, number>();
     public static sin(a):number{
-	    if (this.sinCache.has(a) == false) {
-            this.sinCache.set(a, Math.sin(Math.sin(a)));
+        let d = Math.floor(a + 0.5);
+	    if (this.sinCache.has(d) == false) {
+            this.sinCache.set(d, Math.sin(d * Math.PI / 180));
         }
 
-	    return this.sinCache.get[a]
+	    return this.sinCache.get(d)
     }
 
     private static cosCache:Map<number, number> = new Map<number, number>();
     public static cos(a):number{
+        let d = Math.floor(a + 0.5);
         if (this.cosCache.has(a) == false) {
-            this.cosCache.set(a, Math.cos(Math.cos(a)));
+            this.cosCache.set(a, Math.cos(d * Math.PI / 180));
         }
 
-        return this.cosCache.get[a]
+        return this.cosCache.get(d)
     }
 
     /** 获取随机数 */
