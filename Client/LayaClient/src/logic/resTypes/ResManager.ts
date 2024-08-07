@@ -157,13 +157,16 @@ export default class ResManager{
 
         proxy.onLoadComplete(url);
 
-        for(let res of this._loadingResDict.get(url)){
-            res.buildRes();
-            res.initTransform();
-            Laya.timer.frameOnce(1, this, function(){ res.afterBuildRes(); });// 延迟一帧，避免一些问题
-        }
+        let resList = this._loadingResDict.get(url);
+        if(resList != null){
+            for(let res of resList){
+                res.buildRes();
+                res.initTransform();
+                Laya.timer.frameOnce(1, this, function(){ res.afterBuildRes(); });// 延迟一帧，避免一些问题
+            }
 
-        this._loadingResDict.delete(url);
+            this._loadingResDict.delete(url);
+        }
     }
 
     // Jojohello to do Laya.Loader.load里面,不存在onError回调,后面看怎么实现一个
