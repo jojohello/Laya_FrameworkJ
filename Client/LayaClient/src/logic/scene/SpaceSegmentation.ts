@@ -4,10 +4,12 @@
 
 import { SceneObjType } from "../sceneObjs/SceneObjType";
 
-export default class SceneCollision {
+export default class SpaceSegmentation {
     public _scale: number = 0.0125;  // 相当于每个格子为80*80像素宽度，要根据游戏适当调整
     private _width: number;
     private _height: number;
+    private _startX: number = 0;
+    private _startY: number = 0;
     private _maxX: number;
     private _maxY: number;
     private _hashMap: Map<number, number[]> = null;
@@ -29,6 +31,14 @@ export default class SceneCollision {
         }else{
             this._hashMap = new Map<number, number[]>();
         }
+    }
+
+    /** 改变左上角起始偏移值，改变后要马上重新做一次值重置 */
+    public setStartPos(x: number, y: number, objDict: Map<number, any>) {
+        this._startX = x;
+        this._startY = y;
+
+        this.setCollisionMap(objDict);
     }
 
     public hash(x: number, y: number): number {
@@ -54,6 +64,7 @@ export default class SceneCollision {
     }
 
     // jojohello to do 要筛选，部分物体不需要加入到碰撞表中
+     /** 建立场景物体空间切割的树，在1000个格子500个物体的情况下，建立此数据大概需要4ms，消耗比较大，要谨慎控制 */
     public setCollisionMap(objDict: Map<number, any>) {
         if (!this._hashMap) {
             this._hashMap = new Map<number, number[]>();
@@ -94,24 +105,14 @@ export default class SceneCollision {
     }
 
     private setCollision(x: number, y: number, range: number, id: number) {
-        const hashX = this.toHashIndex(x);
-        if (hashX > this._maxX) {
-            return;
-        }
-
-        const hashY = this.toHashIndex(y);
-        if (hashY > this._maxY) {
-            return;
-        }
-
         let lx, rx, ty, by;
-        lx = this.toHashIndex(x - range);
-        rx = this.toHashIndex(x + range);
-        ty = this.toHashIndex(y - range);
-        by = this.toHashIndex(y + range);
-        lx = lx < 1 ? 1 : lx;
+        lx = this.xToHashIndex(x - range);
+        rx = this.xToHashIndex(x + range);
+        ty = this.yToHashIndex(y - range);
+        by = this.yToHashIndex(y + range);
+        lx = lx < 0 ? 0 : lx;
         rx = rx > this._maxX ? this._maxX : rx;
-        ty = ty < 1 ? 1 : ty;
+        ty = ty < 0 ? 0 : ty;
         by = by > this._maxY ? this._maxY : by;
 
         for (let ix = lx; ix <= rx; ix++) {
@@ -127,17 +128,17 @@ export default class SceneCollision {
         }
     }
 
-    public toHashIndex(f: number): number {
-        return Math.ceil(f * this._scale);
+    public xToHashIndex(f:number):number{
+        return Math.floor((f - this._startX) * this._scale);
     }
 
-    public toHashRangeIndex(range: number): number {
-        return Math.floor(range * this._scale);
+    public yToHashIndex(f: number): number { 
+        return Math.floor((f - this._startY) * this._scale);
     }
 
-    public toPos(index:number){
-        let x = index % this._maxX;
-        let y = Math.floor(index / this._maxX);
+    public toWorldPos(index:number){
+        let x = index % this._maxX / this._scale + this._startX;
+        let y = Math.floor(index / this._maxX) / this._scale + this._startY;
     }
 
     public getObjInRange(x: number, y: number, range: number): Set<number> {
@@ -145,43 +146,14 @@ export default class SceneCollision {
             return null;
         }
 
-        const hashX = this.toHashIndex(x);
-        if (hashX < 0 || hashX > this._maxX) {
-            //LogManager.Error("SceneCollision:ExcuteInRange input x error x = " + x + " index = " + hashX);
-            return null;
-        }
-
-        const hashY = this.toHashIndex(y);
-        if (hashY < 0 || hashY > this._maxY) {
-            //LogManager.Error("SceneCollision:ExcuteInRange input y error y = " + y + " index = " + hashY);
-            return null;
-        }
-
         let retSet = new Set<number>();
         let hashId = 0;
 
         let lx, rx, ty, by;
-        lx = this.toHashIndex(x - range);
-        rx = this.toHashIndex(x + range)
-        ty = this.toHashIndex(y - range);
-        by = this.toHashIndex(y + range);
-        lx = lx < 1 ? 1 : lx;
-        rx = rx > this._maxX ? this._maxX : rx;
-        ty = ty < 1 ? 1 : ty;
-        by = by > this._maxY ? this._maxY : by;
-
-        for (let ix = lx; ix <= rx; ix++) {
-            for (let iy = ty; iy <= by; iy++) {
-                hashId = iy * this._maxX + ix;
-
-                const itemList = this._hashMap.get(hashId);
-                if (itemList && itemList.length > 0) {
-                    for (let i = 0; i < itemList.length; i++) {
-                        retSet.add(itemList[i]);
-                    }
-                }
-            }
-        }
+        lx = this.xToHashIndex(x - range);
+        rx = this.xToHashIndex(x + range)
+        ty = this.yToHashIndex(y - range);
+        by = this.yToHashIndex(y + range);
 
         // if(retSet.size > 0)
         // {
@@ -199,7 +171,7 @@ export default class SceneCollision {
         //     this._debugSprite.graphics.drawCircle(x, y, range, "#008800");
         // }
 
-        return retSet;
+        return this.getObjs(lx, rx, ty, by);
     }
 
     public getObjInRect(x1:number, y1:number, x2:number, y2:number, range: number): Set<number> {
@@ -208,18 +180,21 @@ export default class SceneCollision {
         }
 
         let lx, rx, ty, by;
-        lx = this.toHashIndex(Math.min(x1, x2) - range);
-        rx = this.toHashIndex(Math.max(x1, x2) + range)
-        ty = this.toHashIndex(Math.min(y1, y2) - range);
-        by = this.toHashIndex(Math.max(y1, y2) + range);
+        lx = this.xToHashIndex(Math.min(x1, x2) - range);
+        rx = this.xToHashIndex(Math.max(x1, x2) + range)
+        ty = this.yToHashIndex(Math.min(y1, y2) - range);
+        by = this.yToHashIndex(Math.max(y1, y2) + range);
+        return this.getObjs(lx, rx, ty, by);
+    }
 
-        lx = lx < 1 ? 1 : lx;
+    private getObjs(lx, rx, ty, by): Set<number> {
+        lx = lx < 0 ? 0 : lx;
         rx = rx > this._maxX ? this._maxX : rx;
-        ty = ty < 1 ? 1 : ty;
+        ty = ty < 0 ? 0 : ty;
         by = by > this._maxY ? this._maxY : by;
 
         let retSet = new Set<number>();
-        let hashId = 0;
+        let hashId = lx;
 
         for (let ix = lx; ix <= rx; ix++) {
             for (let iy = ty; iy <= by; iy++) {

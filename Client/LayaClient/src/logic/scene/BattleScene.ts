@@ -10,7 +10,7 @@ import MathUtils from "../utils/MathUtils";
 import Point = Laya.Point;
 import { Tower } from "../sceneObjs/Tower";
 import ActionUtils from "../action/ActionUtils";
-import SceneCollision from "./SceneCollision";
+import SpaceSegmentation from "./SpaceSegmentation";
 import { Bullet } from "../sceneObjs/Bullet";
 import { BaseCondition } from "../condition/BaseCondition";
 
@@ -85,7 +85,7 @@ export class BattleScene extends BaseScene{
 
         this._pathFinder = new PotentialPath(tMap);
 
-        this._collision = new SceneCollision()
+        this._collision = new SpaceSegmentation()
         this._collision.setMapSize(this.mapInst.getWidth(), this.mapInst.getHeight());
     }
 

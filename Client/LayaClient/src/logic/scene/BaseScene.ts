@@ -3,7 +3,7 @@ import SceneTime from "./SceneTime";
 import { BaseSceneObj } from "../sceneObjs/BaseSceneObj";
 import IDFactory from "../utils/IDFactory";
 import MyCacher from "../utils/MyCacher";
-import SceneCollision from "./SceneCollision";
+import SpaceSegmentation from "./SpaceSegmentation";
 
 export interface ObjType{
     monster: 1,
@@ -28,7 +28,7 @@ export class BaseScene{
     protected fiexdTime:number = 0.1;
     protected lastUpdateTime:number = 0;
 
-    protected _collision:SceneCollision = null;
+    protected _collision:SpaceSegmentation = null;
     
     protected objMap:Map<number, BaseSceneObj> = new Map<number, BaseSceneObj>();
     protected delIdList:number[] = []; 
@@ -77,7 +77,7 @@ export class BaseScene{
         this.fiexdTime = value;
     }
 
-    public get collision():SceneCollision{
+    public get collision():SpaceSegmentation{
         return this._collision;
     }
 
