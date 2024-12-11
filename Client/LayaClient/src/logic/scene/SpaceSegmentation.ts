@@ -145,10 +145,7 @@ export default class SpaceSegmentation {
         if (!this._hashMap) {
             return null;
         }
-
-        let retSet = new Set<number>();
-        let hashId = 0;
-
+        
         let lx, rx, ty, by;
         lx = this.xToHashIndex(x - range);
         rx = this.xToHashIndex(x + range)
