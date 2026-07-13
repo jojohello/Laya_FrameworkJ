@@ -63,10 +63,8 @@ export class LogicMain {
         (Laya.Browser.window as any).sceneMgr = SceneMgr.instance;
 
         // 6. 启动 ManagerHub 的 update 循环
-        Laya.timer.frameLoop(1, this, () => {
-            const dt = Laya.timer.delta / 1000;  // 转换为秒
-            ManagerHub.instance.update(dt);
-        });
+        Laya.timer.clear(this, this.updateManagers);
+        Laya.timer.frameLoop(1, this, this.updateManagers);
     }
 
     /**
@@ -124,9 +122,14 @@ export class LogicMain {
      */
     release() {
         // 停止 update 循环
-        Laya.timer.clear(this, arguments.callee);
+        Laya.timer.clear(this, this.updateManagers);
 
         // 释放所有 Manager
         ManagerHub.instance.release();
+    }
+
+    private updateManagers(): void {
+        const dt = Laya.timer.delta / 1000;
+        ManagerHub.instance.update(dt);
     }
 }
