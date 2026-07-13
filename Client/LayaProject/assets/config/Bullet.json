@@ -1,0 +1,24 @@
+[
+  {
+    "ID": 1001,
+    "MoveType": "Line",
+    "Speed": 600,
+    "Range": 12,
+    "PenetrateCount": 0,
+    "FlyTime": -1,
+    "CheckCollision": true,
+    "Resource": "",
+    "OnHitAction": "Damage;1001"
+  },
+  {
+    "ID": 1002,
+    "MoveType": "Line",
+    "Speed": 600,
+    "Range": 12,
+    "PenetrateCount": 0,
+    "FlyTime": -1,
+    "CheckCollision": true,
+    "Resource": "",
+    "OnHitAction": "Damage;1002"
+  }
+]

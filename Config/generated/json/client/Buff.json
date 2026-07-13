@@ -1,0 +1,15 @@
+[
+  {
+    "ID": 3001,
+    "Duration": 3000,
+    "TickInterval": 1000,
+    "MaxStack": 3,
+    "StackType": "Refresh",
+    "AttrAdd": "attack:10",
+    "AttrPercent": "",
+    "OnAddAction": "",
+    "OnTickAction": "Damage;1001",
+    "OnRemoveAction": "",
+    "Desc": "Step5 burn buff test"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug Gateway Server",
+      "request": "launch",
+      "mainClass": "com.laya.game.gateway.GatewayServerApplication",
+      "projectName": "gateway-server",
+      "cwd": "${workspaceFolder}/../output/servers/gateway-server",
+      "console": "integratedTerminal",
+      "args": "",
+      "vmArgs": ""
+    },
+    {
+      "type": "java",
+      "name": "Debug Gateway Server (with active profile)",
+      "request": "launch",
+      "mainClass": "com.laya.game.gateway.GatewayServerApplication",
+      "projectName": "gateway-server",
+      "cwd": "${workspaceFolder}/../output/servers/gateway-server",
+      "console": "integratedTerminal",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
+}

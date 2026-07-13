@@ -1,0 +1,47 @@
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+*~
+
+# 临时文件和缓存
+temp/
+local/
+library/
+
+# 编译输出文件
+bin/
+release/
+dist/
+
+# 依赖包
+node_modules/
+packages/
+
+# IDE和编辑器配置
+.vscode/
+.idea/
+*.suo
+*.sln
+*.csproj
+*.user
+
+# 日志和调试文件
+*.log
+logs/
+*.pdb
+
+# 备份文件
+*.bak
+*.backup
+
+# Laya引擎特定文件
+# 从根目录 .gitignore 迁移过来的规则
+/LayaClient/.laya/chrome
+.laya/chrome
+
+# 注意：通常.meta文件是需要版本管理的，因为它们包含资源的导入设置
+# 但如果团队决定忽略，可以取消下面的注释
+# *.meta

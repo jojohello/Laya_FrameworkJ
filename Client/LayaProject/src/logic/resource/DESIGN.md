@@ -1,0 +1,33 @@
+# Resource 模块设计
+
+本文件作用于 `src/logic/resource/`，继承外层 DESIGN。
+
+## 职责边界
+
+- `ResourceMgr` 是模块唯一服务入口，负责引用计数、包装实例池、加载队列和延迟卸载。
+- `ResBase` 表示一次可复用的运行时实例；它不是底层 Laya 资源本身。
+- `ResBaseProxy` 隔离不同资源类型的底层加载和清理方式。
+- `ResourceInfo` 保存 URL 级引用和加载状态；业务模块不得直接修改。
+
+## 双层生命周期
+
+资源分为两层，回收时不能混为一谈：
+
+1. `ResBase` 实例层：`recoverRes()` 调用 `onRecycle()` 后进入对象池；超过池上限时调用 `onDispose()`。
+2. Laya 底层资源层：URL 引用为 0、实例池清空且超过缓存期后，才由对应 Proxy 或 `Laya.loader.clearRes()` 卸载。
+
+`load()/recoverRes()` 与 `loadContent()/releaseRef()` 必须分别成对。引用降到 0 才开始缓存计时，不能出现负引用；新增调用路径时应验证异常和提前返回也会释放。
+
+## 并发与扩展
+
+- 同一 URL 首次加载时标记为 `LOADING`，后续包装实例加入等待队列，避免重复触发底层加载。
+- 加载失败必须恢复为 `UNLOAD` 并清理等待队列，不能留下永久等待状态。
+- 特殊类型通过 Proxy 扩展，不在 `ResourceMgr` 中堆叠类型判断。
+- `onRecycle()` 只清理运行状态、事件和父节点，保留可复用对象；`onDispose()` 才彻底销毁。
+
+## 高频错误防范
+
+- 不要缓存已回收的 `ResBase` 引用并继续使用。
+- 不要只调用 `Laya.loader.clearRes()` 而遗漏池中实例，也不要只清实例而永久保留底层资源。
+- 运行时 URL 不带 `assets/` 前缀。
+- 修改清理逻辑时验证：并发加载、池复用、超上限销毁、缓存到期卸载、Manager reset/release。

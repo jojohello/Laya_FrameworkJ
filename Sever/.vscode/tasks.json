@@ -1,0 +1,88 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Central Data Server",
+            "type": "shell",
+            "command": "mvn",
+            "args": [
+                "spring-boot:run",
+                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK",
+                "-Dspring-boot.run.arguments=--logging.charset.console=GBK --logging.charset.file=UTF-8"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/central-data-server"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Start Gateway Server",
+            "type": "shell",
+            "command": "mvn",
+            "args": [
+                "spring-boot:run",
+                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK",
+                "-Dspring-boot.run.arguments=--logging.charset.console=GBK --logging.charset.file=UTF-8"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/gateway-server"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Start Login Server",
+            "type": "shell",
+            "command": "mvn",
+            "args": [
+                "spring-boot:run",
+                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK",
+                "-Dspring-boot.run.arguments=--logging.charset.console=GBK --logging.charset.file=UTF-8"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/login-server"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean and Compile Central Data Server",
+            "type": "shell",
+            "command": "mvn",
+            "args": [
+                "clean",
+                "compile"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/central-data-server"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

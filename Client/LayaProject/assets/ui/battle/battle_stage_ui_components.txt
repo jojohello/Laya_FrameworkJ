@@ -1,0 +1,6 @@
+components=5
+bbox=76,236,319,538 count=58678 center=197.6,405.6
+bbox=412,268,679,523 count=40529 center=545.1,408.6
+bbox=737,321,1217,523 count=92339 center=977.1,422.2
+bbox=28,762,488,957 count=85264 center=258.2,859.6
+bbox=525,719,1002,990 count=92753 center=763.9,861.4

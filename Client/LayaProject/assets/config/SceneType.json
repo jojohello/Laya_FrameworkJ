@@ -1,0 +1,9 @@
+[
+  {
+    "ID": 1,
+    "sceneClass": "MainScene",
+    "mapType": "image",
+    "map": "map/map001/map001.png",
+    "uiName": "MainUI"
+  }
+]

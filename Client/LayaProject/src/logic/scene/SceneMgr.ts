@@ -1,0 +1,279 @@
+/**
+ * 场景管理器
+ * 负责场景切换、Scene 驱动 UI 加载
+ * 
+ * 设计原则：
+ * - 实现 IManager 接口，纳入 ManagerHub 管理
+ * - Scene 驱动 UI：切换场景时自动打开对应 UI
+ * - 配置表驱动：通过 ConfigMgr 读取 SceneType 配置表
+ */
+import { IManager } from "../core/IManager";
+import { BaseScene } from "./BaseScene";
+import { UIManager } from "../ui/UIManager";
+import { ConfigMgr } from "../config/ConfigMgr";
+import { SceneConfig } from "./SceneConfig";
+import { SceneType } from "./SceneType";
+
+/**
+ * 场景实例信息
+ */
+interface SceneInstance {
+    name: string;           // 场景名称（用于日志）
+    sceneType: SceneType;   // 场景类型 ID
+    scene: BaseScene;       // 场景实例
+    config: any;            // 场景配置
+}
+
+/**
+ * 场景管理器
+ */
+export class SceneMgr implements IManager {
+    private static _instance: SceneMgr;
+
+    static get instance(): SceneMgr {
+        if (!this._instance) this._instance = new SceneMgr();
+        return this._instance;
+    }
+
+    private constructor() {}
+
+    /** 当前场景实例 */
+    private _curScene: SceneInstance | null = null;
+
+    /** 场景缓存（已关闭但未销毁） */
+    private _cachedScenes: Map<SceneType, SceneInstance> = new Map();
+
+    // ========== IManager 接口实现 ==========
+
+    async init(): Promise<void> {
+        // 创建场景层级容器（如果需要）
+    }
+
+    update(dt: number): void {
+        // 更新当前场景
+        if (this._curScene && this._curScene.scene) {
+            this._curScene.scene.update(dt);
+        }
+    }
+
+    reset(): void {
+        // 关闭当前场景，但不销毁
+        if (this._curScene) {
+            this._curScene.scene.onExit();
+            this._cachedScenes.set(this._curScene.sceneType, this._curScene);
+            this._curScene = null;
+        }
+    }
+
+    release(): void {
+        // 销毁所有缓存的场景
+        this._cachedScenes.forEach(instance => {
+            instance.scene.onDestroy();
+        });
+        this._cachedScenes.clear();
+
+        // 销毁当前场景
+        if (this._curScene) {
+            this._curScene.scene.onDestroy();
+            this._curScene = null;
+        }
+    }
+
+    // ========== 核心 API ==========
+
+    /**
+     * 获取当前场景
+     */
+    get curScene(): BaseScene | null {
+        return this._curScene ? this._curScene.scene : null;
+    }
+
+    /**
+     * 获取当前场景名称
+     */
+    get curSceneName(): string | null {
+        return this._curScene ? this._curScene.name : null;
+    }
+
+    /**
+     * 切换场景
+     * @param sceneType 场景类型（SceneType enum，对应配置表 ID）
+     * @param param 传递给场景的参数
+     */
+    async switchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
+        const sceneName = SceneType[sceneType];
+
+        // 1. 从 ConfigMgr 获取 SceneType 配置
+        const config = this.getSceneConfig(sceneType);
+        if (!config) {
+            console.error(`[SceneMgr] 场景配置不存在: ID=${sceneType}`);
+            return null;
+        }
+
+        // 2. 检查是否是当前场景
+        if (this._curScene && this._curScene.sceneType === sceneType) {
+            return this._curScene.scene;
+        }
+
+        // 3. 退出当前场景
+        if (this._curScene) {
+            await this.exitCurScene(config.cache);
+        }
+
+        // 4. 尝试从缓存恢复
+        let cachedInstance = this._cachedScenes.get(sceneType);
+        if (cachedInstance) {
+            this._cachedScenes.delete(sceneType);
+            this._curScene = cachedInstance;
+            this._curScene.scene.setSceneConfig(config);
+            this._curScene.scene.onEnter(param);
+            
+            // 打开关联 UI
+            await this.openSceneUI(config);
+            
+            return this._curScene.scene;
+        }
+
+        // 5. 创建新场景
+        try {
+            const scene = await this.createScene(sceneName, config);
+            if (!scene) {
+                console.error(`[SceneMgr] 创建场景失败: ${sceneName}`);
+                return null;
+            }
+
+            this._curScene = {
+                name: sceneName,
+                sceneType: sceneType,
+                scene: scene,
+                config: config
+            };
+
+            // 6. 进入场景
+            scene.setSceneConfig(config);
+            scene.onEnter(param);
+
+            // 7. 打开关联 UI
+            await this.openSceneUI(config);
+
+            return scene;
+        } catch (error) {
+            console.error(`[SceneMgr] 切换场景异常: ${sceneName}`, error);
+            return null;
+        }
+    }
+
+    /**
+     * 退出当前场景
+     * @param cache 是否缓存场景
+     */
+    private async exitCurScene(cache: boolean = false): Promise<void> {
+        if (!this._curScene) return;
+
+        // 关闭关联 UI
+        const uiName = this._curScene.config.uiName;
+        if (uiName) {
+            UIManager.instance.close(uiName);
+        }
+
+        // 调用场景退出方法
+        this._curScene.scene.onExit();
+
+        // 根据配置决定是否缓存
+        if (cache && this._curScene.config.cache) {
+            this._cachedScenes.set(this._curScene.sceneType, this._curScene);
+        } else {
+            // 销毁场景
+            this._curScene.scene.onDestroy();
+        }
+
+        this._curScene = null;
+    }
+
+    /**
+     * 创建场景实例
+     */
+    private async createScene(name: string, config: any): Promise<BaseScene | null> {
+        // 根据配置中的场景类名创建实例
+        const sceneClass = config.sceneClass;
+        if (!sceneClass) {
+            console.error(`[SceneMgr] 场景配置缺少 sceneClass: ${name}`);
+            return null;
+        }
+
+        // 动态获取场景类（需要通过 Laya.ClassUtils 或直接引用）
+        // 简化实现：假设场景类已注册到全局
+        const SceneConstructor = (window as any)[sceneClass] || Laya.ClassUtils.getClass(sceneClass);
+        if (!SceneConstructor) {
+            console.error(`[SceneMgr] 场景类未注册: ${sceneClass}`);
+            return null;
+        }
+
+        try {
+            const scene = new SceneConstructor();
+            return scene as BaseScene;
+        } catch (error) {
+            console.error(`[SceneMgr] 创建场景实例失败: ${sceneClass}`, error);
+            return null;
+        }
+    }
+
+    /**
+     * 打开场景关联的 UI
+     */
+    private async openSceneUI(config: any): Promise<void> {
+        const uiName = config.uiName;
+        if (!uiName) {
+            return;
+        }
+
+        await UIManager.instance.open(uiName, { fromScene: this._curScene?.name });
+    }
+
+    /**
+     * 检查场景是否已打开
+     */
+    isSceneOpened(sceneType: SceneType): boolean {
+        return this._curScene?.sceneType === sceneType;
+    }
+
+    /**
+     * 获取缓存的场景数量
+     */
+    get cachedSceneCount(): number {
+        return this._cachedScenes.size;
+    }
+
+    // ========== 配置读取辅助方法 ==========
+
+    /**
+     * 从 ConfigMgr 读取场景配置
+     * @param sceneType 场景类型（SceneType enum，对应配置表 ID）
+     * @returns 场景配置对象，如果未找到返回 null
+     */
+    private getSceneConfig(sceneType: SceneType): SceneConfig | null {
+        const config = ConfigMgr.instance.getConfig<any>("SceneType", sceneType);
+        if (!config) {
+            console.warn(`[SceneMgr] 未找到场景配置: ID=${sceneType}`);
+            return null;
+        }
+
+        // 转换为 SceneConfig 格式
+        // cache 默认为 true（除非配置表中明确设置为 0）
+        const sceneConfig = {
+            sceneClass: config.sceneClass,
+            map: config.map || "",
+            mapType: config.mapType || "",
+            mapWidth: config.mapWidth,
+            mapHeight: config.mapHeight,
+            tileWidth: config.tileWidth,
+            tileHeight: config.tileHeight,
+            enableLinear: config.enableLinear,
+            limitRange: config.limitRange,
+            uiName: config.uiName,
+            cache: config.cache === undefined ? true : config.cache === 1,
+            desc: config.desc || ""
+        };
+        return sceneConfig;
+    }
+}

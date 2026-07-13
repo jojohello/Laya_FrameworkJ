@@ -1,0 +1,17 @@
+{
+  "uuid": "1f4b2188-00b3-4f1c-af3b-ad8e7564353f",
+  "importer": {
+    "textureType": 2,
+    "sRGB": true,
+    "premultiplyAlpha": true,
+    "platformDefault": {
+      "format": 10
+    },
+    "platformAndroid": {
+      "format": "ASTC_6X6"
+    },
+    "platformIOS": {
+      "format": "ASTC_6X6"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+Title,ID,BaseDamage,AttackRate,FormulaID,DamageType,ElementType
+Type,int,int,int,int,str,str
+Description,Damage ID,Base damage,Attack percent rate,Formula ID,Damage type,Element type
+UsedSize,cs,cs,cs,cs,cs,cs
+,1001,30,100,0,Normal,None
+,1002,60,120,0,Normal,Fire

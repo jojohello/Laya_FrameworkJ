@@ -1,0 +1,38 @@
+[
+  {
+    "ID": 1001,
+    "name": "测试怪物A",
+    "level": 5,
+    "hp": 1000,
+    "attack": 150,
+    "defense": 80,
+    "speed": 3.5,
+    "skillIds": "1001;1002;1003",
+    "dropItems": "2001:1;2002:3;2003:1",
+    "description": "这是一个用于测试的5级怪物"
+  },
+  {
+    "ID": 1002,
+    "name": "测试怪物B",
+    "level": 10,
+    "hp": 2500,
+    "attack": 300,
+    "defense": 150,
+    "speed": 4.2,
+    "skillIds": "1004;1005",
+    "dropItems": "2004:2;2005:5",
+    "description": "这是一个用于测试的10级怪物"
+  },
+  {
+    "ID": 1003,
+    "name": "测试BOSS",
+    "level": 20,
+    "hp": 10000,
+    "attack": 800,
+    "defense": 400,
+    "speed": 2,
+    "skillIds": "1006;1007;1008;1009",
+    "dropItems": "2006:1;2007:10;2008:5",
+    "description": "这是一个用于测试的20级BOSS"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "ID": 1001,
+    "Name": "Gold",
+    "Type": "Currency",
+    "Quality": 1,
+    "MaxStack": 999999,
+    "UseAction": "",
+    "Desc": "Basic currency"
+  },
+  {
+    "ID": 1002,
+    "Name": "Wood",
+    "Type": "Material",
+    "Quality": 1,
+    "MaxStack": 999,
+    "UseAction": "",
+    "Desc": "Craft material"
+  },
+  {
+    "ID": 1003,
+    "Name": "Small Potion",
+    "Type": "Consumable",
+    "Quality": 1,
+    "MaxStack": 99,
+    "UseAction": "",
+    "Desc": "Recover test item"
+  },
+  {
+    "ID": 2001,
+    "Name": "Iron Sword",
+    "Type": "Equipment",
+    "Quality": 2,
+    "MaxStack": 1,
+    "UseAction": "",
+    "Desc": "Starter weapon"
+  }
+]

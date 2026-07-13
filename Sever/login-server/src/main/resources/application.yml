@@ -1,0 +1,167 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: login-server
+  
+  # Database configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/laya_game?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: laya_user
+    password: laya123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+  
+  # Redis configuration
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+        max-wait: 3000ms
+
+# JWT configuration
+jwt:
+  secret: laya-game-jwt-secret-key-2024-very-long-and-secure
+  expiration: 3600  # 1 hour
+  issuer: laya-game-server
+
+# Login configuration
+login:
+  # Maximum concurrent users
+  max-concurrent-users: 10000
+  # Session timeout (seconds)
+  session-timeout: 3600
+  # Third-party login configuration
+  third-party:
+    enabled: true
+    # WeChat login configuration
+    wechat:
+      enabled: true
+      app-id: your-wechat-app-id
+      app-secret: your-wechat-app-secret
+    # QQ login configuration
+    qq:
+      enabled: true
+      app-id: your-qq-app-id
+      app-secret: your-qq-app-secret
+    # Alipay login configuration
+    alipay:
+      enabled: true
+      app-id: your-alipay-app-id
+      private-key: your-alipay-private-key
+      public-key: your-alipay-public-key
+
+# Central data server configuration
+# 注意: Central Server实际运行在8083端口
+central:
+  server:
+    url: http://localhost:8083
+    websocket-url: ws://localhost:8083/ws/native
+    timeout: 5000
+    connection-timeout: 10000
+    retry-count: 3
+    # 系统服务认证密钥（必须与Central Server保持一致，生产环境通过环境变量SERVICE_AUTH_SECRET设置）
+    service-auth-secret: ${SERVICE_AUTH_SECRET:CHANGE_ME_IN_PRODUCTION}
+    # WebSocket configuration
+    websocket:
+      enabled: true
+      reconnect-interval: 5000  # 5 seconds
+      max-reconnect-attempts: -1  # unlimited
+      heartbeat-interval: 30000  # 30 seconds
+      connection-timeout: 10000  # 10 seconds
+
+# Management endpoints configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging configuration
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+  level:
+    org.springframework.web: INFO
+    org.apache.catalina: INFO
+    com.jojohello_laya: DEBUG
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    # 日志文件路径（支持外部化到 output/logs/）
+    name: ${LOG_DIR:../../logs}/login-server.log
+    max-size: 100MB
+    max-history: 30
+
+---
+# Development environment configuration
+spring:
+  config:
+    activate:
+      on-profile: dev
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+
+logging:
+  level:
+    com.laya.game: DEBUG
+    org.springframework.web: DEBUG
+
+---
+# Production environment configuration
+spring:
+  config:
+    activate:
+      on-profile: prod
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:laya_game}
+    username: ${DB_USERNAME:laya_user}
+    password: ${DB_PASSWORD:laya123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging:
+  level:
+    com.laya.game: INFO
+    org.springframework.web: WARN

@@ -1,0 +1,20 @@
+{
+  "name": "laya-protocol-generator",
+  "version": "1.0.0",
+  "description": "Laya Game Protocol Code Generator",
+  "main": "generate.js",
+  "scripts": {
+    "generate": "node generate.js",
+    "help": "node generate.js --help"
+  },
+  "keywords": [
+    "protocol",
+    "code-generator",
+    "game"
+  ],
+  "author": "Laya Game Server Team",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

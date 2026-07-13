@@ -1,0 +1,79 @@
+[
+  {
+    "ID": 1001,
+    "name": "Monster",
+    "objType": 2,
+    "hp": 100,
+    "speed": 50,
+    "attack": 10,
+    "defense": 5,
+    "resPath": "sceneObj/monster-01",
+    "description": "Basic monster"
+  },
+  {
+    "ID": 1002,
+    "name": "EliteMonster",
+    "objType": 2,
+    "hp": 500,
+    "speed": 40,
+    "attack": 50,
+    "defense": 20,
+    "resPath": "sceneObj/monster-02",
+    "description": "Elite monster"
+  },
+  {
+    "ID": 1003,
+    "name": "Boss",
+    "objType": 2,
+    "hp": 5000,
+    "speed": 30,
+    "attack": 200,
+    "defense": 100,
+    "resPath": "sceneObj/boss-01",
+    "description": "Stage boss"
+  },
+  {
+    "ID": 2001,
+    "name": "DefenseTower",
+    "objType": 1,
+    "hp": 1000,
+    "speed": 0,
+    "attack": 30,
+    "defense": 50,
+    "resPath": "sceneObj/tower-01",
+    "description": "Basic defense tower"
+  },
+  {
+    "ID": 3001,
+    "name": "NormalBullet",
+    "objType": 3,
+    "hp": 1,
+    "speed": 300,
+    "attack": 20,
+    "defense": 0,
+    "resPath": "sceneObj/bullet-01",
+    "description": "Basic bullet"
+  },
+  {
+    "ID": 3002,
+    "name": "FireArrow",
+    "objType": 3,
+    "hp": 1,
+    "speed": 200,
+    "attack": 100,
+    "defense": 0,
+    "resPath": "sceneObj/bullet-02",
+    "description": "Area damage bullet"
+  },
+  {
+    "ID": 4001,
+    "name": "Player",
+    "objType": 6,
+    "hp": 1000,
+    "speed": 100,
+    "attack": 50,
+    "defense": 30,
+    "resPath": "sceneObj/player",
+    "description": "Main character"
+  }
+]

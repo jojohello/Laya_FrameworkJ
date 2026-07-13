@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug Login Server",
+      "request": "launch",
+      "mainClass": "com.jojohello_laya.login.LoginServerApplication",
+      "projectName": "login-server",
+      "cwd": "${workspaceFolder}/../output/servers/login-server",
+      "console": "integratedTerminal",
+      "args": "",
+      "vmArgs": ""
+    },
+    {
+      "type": "java",
+      "name": "Debug Login Server (with active profile)",
+      "request": "launch",
+      "mainClass": "com.jojohello_laya.login.LoginServerApplication",
+      "projectName": "login-server",
+      "cwd": "${workspaceFolder}/../output/servers/login-server",
+      "console": "integratedTerminal",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
+}

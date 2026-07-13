@@ -1,0 +1,87 @@
+# Gateway Server Configuration
+server:
+  port: 8082
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: gateway-server
+
+  # 缓存配置（使用内存缓存）
+  cache:
+    type: simple
+
+# 心跳机制配置 (2025-11-10 新增)
+laya:
+  heartbeat-interval: 5000          # 5秒心跳间隔 (毫秒)
+  heartbeat-timeout: 15000          # 15秒超时（3次心跳未收到）(毫秒)
+  check-interval: 5000              # 每5秒检查超时 (毫秒)
+
+  gateway:
+    # Gateway唯一标识
+    id: ${GATEWAY_ID:gateway-1}
+
+    # WebSocket配置
+    websocket:
+      endpoint: "/ws"
+      allowed-origins: "*"
+      heartbeat-interval: 30000
+      max-connections: 10000
+      connection-timeout: 30000
+
+    # 等待连接链表配置
+    waiting-connection:
+      enabled: true
+      timeout: 30
+      cleanup-interval: 10
+
+    # 服务器IP和端口配置（用于心跳上报）
+    server-ip: ${GATEWAY_IP:localhost}
+    server-port: ${server.port:8082}
+
+    # 心跳配置
+    heartbeat:
+      to-central-interval: 5000  # 向Central发送心跳间隔（毫秒）- 2025-11-10更新
+
+    # 中心数据服务器配置
+    central-server:
+      host: localhost
+      port: 8083
+      base-url: "http://localhost:8083/api/v1"
+
+    # Game Server连接配置
+    game-server:
+      refresh-interval: 10000  # 刷新Game Server列表间隔（毫秒）
+
+    # 负载均衡配置
+    load-balancing:
+      algorithm: round-robin
+      max-connections-per-server: 1000
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+  level:
+    com.laya.game.gateway: INFO
+    org.springframework.web.socket: INFO
+    org.springframework.web.client: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    # 日志文件路径（支持外部化到 output/logs/）
+    name: ${LOG_DIR:../../logs}/gateway-server.log
+    max-size: 100MB
+    max-history: 30

@@ -1,0 +1,30 @@
+[
+  {
+    "ID": 100101,
+    "SkillID": 1001,
+    "Level": 1,
+    "Name": "TestFireball",
+    "MaxLevel": 2,
+    "SkillType": "Active",
+    "TargetType": "Position",
+    "CD": 1000,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Bullet;1001",
+    "Desc": "Step4 projectile skill test"
+  },
+  {
+    "ID": 100102,
+    "SkillID": 1001,
+    "Level": 2,
+    "Name": "TestFireball",
+    "MaxLevel": 2,
+    "SkillType": "Active",
+    "TargetType": "Position",
+    "CD": 800,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Bullet;1002",
+    "Desc": "Step4 projectile skill test"
+  }
+]

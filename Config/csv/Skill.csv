@@ -1,0 +1,6 @@
+Title,ID,SkillID,Level,Name,MaxLevel,SkillType,TargetType,CD,CostType,CostValue,Action,Desc
+Type,int,int,int,str,int,str,str,int,str,int,str,str
+Description,Composite row ID server needed,Skill ID server needed,Skill level server needed,Client display name,Max skill level server needed,Skill type server needed,Target type server needed,Cooldown ms server needed,Cost type server needed,Cost value server needed,Action script server needed,Client description
+UsedSize,cs,cs,cs,c,cs,cs,cs,cs,cs,cs,cs,c
+,100101,1001,1,TestFireball,2,Active,Position,1000,None,0,0;Bullet;1001,Step4 projectile skill test
+,100102,1001,2,TestFireball,2,Active,Position,800,None,0,0;Bullet;1002,Step4 projectile skill test

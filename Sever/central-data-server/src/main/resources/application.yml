@@ -1,0 +1,310 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    connection-timeout: 20000
+    accept-count: 100
+
+spring:
+  application:
+    name: central-data-server
+  main:
+    allow-bean-definition-overriding: true
+  
+  # 暂时注释数据库配置，先让服务器启动
+  # datasource:
+  #   url: jdbc:mysql://localhost:3306/laya_game?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  #   username: ${DB_USERNAME:laya_user}
+  #   password: ${DB_PASSWORD:laya123456}
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # jpa:
+  #   hibernate:
+  #     ddl-auto: create-drop
+  #   show-sql: false
+  
+  # Redis配置 (用于缓存和会话管理)
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+        max-wait: 3000ms
+  
+  # 缓存配置 (暂时使用内存缓存，避免Redis序列化LocalDateTime问题)
+  cache:
+    type: simple
+    # TODO: 后续配置Redis缓存序列化器后改回redis
+    # type: redis
+    # redis:
+    #   time-to-live: 600000  # 10分钟
+    #   cache-null-values: false
+    #   key-prefix: "central:cache:"
+  
+  # Jackson配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+      write-date-keys-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+      adjust-dates-to-context-time-zone: false
+  
+  # 任务调度配置
+  task:
+    scheduling:
+      pool:
+        size: 10
+      thread-name-prefix: central-task-
+    execution:
+      pool:
+        core-size: 10
+        max-size: 50
+        queue-capacity: 1000
+        keep-alive: 60s
+      thread-name-prefix: central-exec-
+
+# Swagger/OpenAPI配置
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  info:
+    title: "Laya中心数据服务器API"
+    description: "中心数据服务器REST API文档"
+    version: "1.0.0"
+    contact:
+      name: "Laya Game Server Framework"
+      email: "support@laya.com"
+
+# 自定义配置
+laya:
+  # 心跳机制配置 (2025-11-10 新增)
+  heartbeat-interval: 5000          # 5秒心跳间隔 (毫秒)
+  heartbeat-timeout: 15000          # 15秒超时（3次心跳未收到）(毫秒)
+  check-interval: 5000              # 每5秒检查超时 (毫秒)
+
+  central:
+    # JWT配置
+    jwt:
+      secret: ${JWT_SECRET:laya_central_server_jwt_secret_key_2024}
+      expiration: 86400000  # 24小时 (毫秒)
+      refresh-expiration: 604800000  # 7天 (毫秒)
+      issuer: "laya-central-server"
+    
+    # 会话配置
+    session:
+      timeout: 1800000  # 30分钟 (毫秒)
+      max-sessions-per-user: 3  # 每个用户最大会话数
+      cleanup-interval: 300000  # 清理间隔 5分钟 (毫秒)
+      inactive-threshold: 3600000  # 不活跃阈值 1小时 (毫秒)
+
+    # 系统服务认证配置
+    service-auth:
+      # 系统服务认证密钥（生产环境必须通过环境变量SERVICE_AUTH_SECRET设置）
+      shared-secret: ${SERVICE_AUTH_SECRET:CHANGE_ME_IN_PRODUCTION}
+      # 允许的服务列表
+      allowed-services:
+        - LOGIN_SERVER
+        - GATEWAY_SERVER
+    
+    # 网关分配配置
+    gateway:
+      allocation-timeout: 30000  # 分配超时 30秒 (毫秒)
+      max-allocations-per-gateway: 10000  # 每个网关最大分配数 (与Gateway Server保持一致)
+      cleanup-interval: 60000  # 清理间隔 1分钟 (毫秒)
+      load-balance-strategy: "LEAST_CONNECTIONS"  # 负载均衡策略
+      heartbeat-timeout: 30  # 心跳超时时间（秒），超过此时间未收到心跳标记为离线
+      available-gateways:
+        - ip: "localhost"
+          port: 8082
+          weight: 1
+    
+    # 安全配置
+    security:
+      password:
+        min-length: 6
+        max-length: 32
+        require-special-char: false
+        require-number: true
+        require-uppercase: false
+      rate-limit:
+        enabled: true
+        requests-per-minute: 60
+        burst-capacity: 100
+      cors:
+        allowed-origins: "*"
+        allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+        allowed-headers: "*"
+        allow-credentials: true
+        max-age: 3600
+    
+    # 数据库清理配置
+    cleanup:
+      guest-account-retention-days: 7  # 游客账号保留天数
+      session-history-retention-days: 30  # 会话历史保留天数
+      allocation-history-retention-days: 7  # 分配历史保留天数
+      cleanup-schedule: "0 0 2 * * ?"  # 每天凌晨2点执行清理
+    
+    # WebSocket配置
+    websocket:
+      enabled: true
+      endpoint: "/ws"
+      allowed-origins: "*"
+      heartbeat-interval: 30000  # 心跳间隔 30秒 (毫秒)
+      max-connections: 10000  # 最大连接数
+    
+    # 监控配置
+    monitoring:
+      enabled: true
+      metrics-interval: 60000  # 指标收集间隔 1分钟 (毫秒)
+      alert:
+        cpu-threshold: 80  # CPU使用率告警阈值
+        memory-threshold: 85  # 内存使用率告警阈值
+        connection-threshold: 8000  # 连接数告警阈值
+
+# 日志配置
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+  level:
+    root: INFO
+    com.laya.game.central: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    # 日志文件路径（支持外部化到 output/logs/）
+    name: ${LOG_DIR:../../logs}/central-data-server.log
+    max-size: 100MB
+    max-history: 30
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/laya_central_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+logging:
+  level:
+    com.laya.game.central: DEBUG
+    org.springframework.web: DEBUG
+
+laya:
+  central:
+    security:
+      rate-limit:
+        enabled: false
+
+---
+# 测试环境配置
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  h2:
+    console:
+      enabled: true
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.laya.game.central: INFO
+    org.hibernate.SQL: WARN
+
+server:
+  tomcat:
+    max-threads: 500
+    accept-count: 200
+
+laya:
+  central:
+    gateway:
+      max-allocations-per-gateway: 10000  # 与默认配置保持一致
+      available-gateways:
+        - ip: "localhost"
+          port: 8082
+          weight: 1
+    websocket:
+      max-connections: 50000
+    monitoring:
+      alert:
+        cpu-threshold: 70
+        memory-threshold: 80
+        connection-threshold: 40000

@@ -1,0 +1,26 @@
+[
+  {
+    "ID": 100101,
+    "SkillID": 1001,
+    "Level": 1,
+    "MaxLevel": 2,
+    "SkillType": "Active",
+    "TargetType": "Position",
+    "CD": 1000,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Bullet;1001"
+  },
+  {
+    "ID": 100102,
+    "SkillID": 1001,
+    "Level": 2,
+    "MaxLevel": 2,
+    "SkillType": "Active",
+    "TargetType": "Position",
+    "CD": 800,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Bullet;1002"
+  }
+]

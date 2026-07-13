@@ -1,0 +1,56 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}",
+            "vmArgs": "-Dfile.encoding=UTF-8"
+        },
+        {
+            "type": "java",
+            "name": "Game Server",
+            "request": "launch",
+            "mainClass": "com.laya.game.game.GameServerApplication",
+            "projectName": "game-server",
+            "cwd": "${workspaceFolder}/output/servers/game-server",
+            "console": "integratedTerminal",
+            "args": "--logging.charset.console=GBK --logging.charset.file=UTF-8",
+            "vmArgs": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK"
+        },
+        {
+            "type": "java",
+            "name": "Central Data Server",
+            "request": "launch",
+            "mainClass": "com.laya.game.central.CentralDataServerApplication",
+            "projectName": "central-data-server",
+            "cwd": "${workspaceFolder}/output/servers/central-data-server",
+            "console": "integratedTerminal",
+            "args": "--logging.charset.console=GBK --logging.charset.file=UTF-8",
+            "vmArgs": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK"
+        },
+        {
+            "type": "java",
+            "name": "Login Server",
+            "request": "launch",
+            "mainClass": "com.jojohello_laya.login.LoginServerApplication",
+            "projectName": "login-server",
+            "cwd": "${workspaceFolder}/output/servers/login-server",
+            "console": "integratedTerminal",
+            "args": "--logging.charset.console=GBK --logging.charset.file=UTF-8",
+            "vmArgs": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK"
+        },
+        {
+            "type": "java",
+            "name": "Gateway Server",
+            "request": "launch",
+            "mainClass": "com.laya.game.gateway.GatewayServerApplication",
+            "projectName": "gateway-server",
+            "cwd": "${workspaceFolder}/output/servers/gateway-server",
+            "console": "integratedTerminal",
+            "args": "--logging.charset.console=GBK --logging.charset.file=UTF-8",
+            "vmArgs": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK"
+        }
+    ]
+}

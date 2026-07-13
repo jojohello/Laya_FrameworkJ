@@ -1,0 +1,73 @@
+# ========================================
+# Laya Game Server - 公共配置文件
+# ========================================
+#
+# 说明：此配置文件被所有服务器共享
+# 修改此文件后，需要重启相应的服务器才能生效
+#
+# ========================================
+
+# ==================== Redis 配置 ====================
+spring:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+        max-wait: 3000ms
+
+# ==================== MySQL 配置 ====================
+# 如果不使用MySQL，可以注释掉以下配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/laya_game?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:laya_user}
+    password: ${DB_PASSWORD:laya123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+# ==================== Jackson JSON 配置 ====================
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# ==================== 日志配置 ====================
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+  level:
+    root: INFO
+    com.laya.game: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# ==================== 环境变量说明 ====================
+#
+# 可以通过以下环境变量覆盖配置：
+#
+# Redis:
+#   REDIS_HOST=localhost
+#   REDIS_PORT=6379
+#   REDIS_PASSWORD=your_password
+#
+# MySQL:
+#   DB_USERNAME=laya_user
+#   DB_PASSWORD=laya123456
+#
+# ========================================

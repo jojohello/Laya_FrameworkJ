@@ -1,0 +1,4 @@
+interface:
+  display_name: "Laya Work Plan Navigator"
+  short_description: "Maintain scoped project docs and current plans"
+  default_prompt: "Use the scoped documentation protocol to evaluate the current priority and update only the appropriate README, DESIGN, or Plan file."

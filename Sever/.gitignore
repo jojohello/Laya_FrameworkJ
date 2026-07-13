@@ -1,0 +1,123 @@
+# ========================================
+# Laya Game Server Framework
+# Git Ignore Configuration
+# ========================================
+
+# ==================== Maven ====================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ==================== Java ====================
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# ==================== IDE ====================
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+
+# VS Code
+# .vscode/  # 不忽略 .vscode，因为我们需要版本控制 launch.json
+.factorypath
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ==================== Logs ====================
+logs/
+*.log
+*.log.*
+
+# ==================== Output目录管理 ====================
+# 构建产物不入Git，只保留配置和脚本
+
+# JAR包不入Git
+output/servers/**/*.jar
+
+# 日志不入Git
+output/logs/
+
+# 运行时数据不入Git
+output/data/
+
+# 但保留配置文件（策划需要版本控制）
+!output/config/
+!output/config/**
+
+# 保留启动脚本（便于协作）
+!output/bin/
+!output/bin/**
+
+# 保留说明文档
+!output/README.md
+!output/config/README.md
+
+# 保留目录结构（空目录）
+!output/servers/
+!output/servers/*/
+!output/logs/.gitkeep
+!output/data/.gitkeep
+
+# ==================== 临时文件 ====================
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.cache
+
+# ==================== 敏感信息 ====================
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 密钥文件
+*.pem
+*.key
+*.p12
+*.jks
+credentials.json
+secrets/
+
+# ==================== 测试覆盖率 ====================
+coverage/
+*.lcov
+.nyc_output/
+
+# ==================== 数据库文件 ====================
+*.db
+*.sqlite
+*.sqlite3
+
+# ==================== 项目特定 ====================
+# 如果有其他需要忽略的文件，在此添加
+null

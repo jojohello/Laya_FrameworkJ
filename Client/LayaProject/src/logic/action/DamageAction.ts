@@ -1,0 +1,47 @@
+import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
+import { SkillMgr } from "../skill/SkillMgr";
+import { DamageExecutor } from "../damage/DamageExecutor";
+import { ActionContext } from "./ActionRuntime";
+import { BaseAction } from "./BaseAction";
+
+export class DamageAction extends BaseAction {
+    execute(context: ActionContext): void {
+        const damageId = this.info.getNumberParam(0);
+        if (!damageId || !context.targetId) return;
+
+        const damageInfo = SkillMgr.instance.getDamage(damageId);
+        if (!damageInfo) return;
+        const target = context.scene.getObject(context.targetId);
+        if (!target || target.isRelease || target.isDead) return;
+
+        const data = damageInfo.data;
+        DamageExecutor.apply({
+            caster: context.caster,
+            target,
+            damage: this.calculateDamage(
+                context.caster,
+                target,
+                data.BaseDamage,
+                data.AttackRate,
+                context.effectScale || 1
+            ),
+            sourceType: "damage",
+            sourceId: damageId,
+            curTime: context.curTime,
+        });
+    }
+
+    private calculateDamage(
+        caster: BaseSceneObj,
+        _target: BaseSceneObj,
+        baseDamage: number,
+        attackRate: number,
+        effectScale: number
+    ): number {
+        const creature = caster as any;
+        const attrs = creature.attrs;
+        const attack = attrs && typeof attrs.get === "function" ? Number(attrs.get("attack", 0)) : 0;
+        const damage = (Number(baseDamage) || 0) + attack * (Number(attackRate) || 0);
+        return Math.max(0, Math.ceil(damage * effectScale));
+    }
+}

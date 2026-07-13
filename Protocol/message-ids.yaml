@@ -1,0 +1,58 @@
+# Laya Game 消息ID定义
+#
+# 维护说明：
+# 1. 添加新消息：直接在对应分类下添加一行
+# 2. 格式：MESSAGE_NAME: ID值
+# 3. ID编号规则：
+#    - 101-199: Start包硬编码消息（不可修改，修改需同步更新代码）
+#    - 1xxx: 认证类
+#    - 2xxx: 心跳类
+#    - 3xxx: 游戏逻辑类
+#    - 5xxx: 背包类
+#    - 9xxx: 系统类
+#
+# ⚠️ 重要提示：
+# 以下消息ID已在 Start 包中硬编码，修改后需要同步更新：
+#   - LOGIN (101)           → src/start/login/LoginProtocol.ts
+#   - LOGIN_SUCCESS (102)   → src/start/login/LoginProtocol.ts
+#   - LOGIN_FAILED (103)    → src/start/login/LoginProtocol.ts
+#
+# 硬编码原因：
+#   Start 包在游戏启动时最先加载，需要处理登录流程。
+#   由于 Logic 包（包含完整 MessageIds）在登录成功后才加载，
+#   因此登录相关的消息ID必须在 Start 包中硬编码。
+
+version: 1.0.0
+
+# ========== Start包硬编码消息 (101-199) ==========
+# ⚠️ 此分类中的消息ID已在 Start 包硬编码，不能随意修改！
+# 进入游戏逻辑服
+LOGIN: 101              # ← 硬编码在 LoginProtocol.ts
+LOGIN_SUCCESS: 102      # ← 硬编码在 LoginProtocol.ts
+LOGIN_FAILED: 103       # ← 硬编码在 LoginProtocol.ts
+
+# ========== 认证类 (1xxx) ==========
+# Gateway 三要素认证
+AUTH: 1001
+AUTH_SUCCESS: 1002
+AUTH_FAILED: 1003
+
+# ========== 心跳类 (2xxx) ==========
+# 保持连接活跃（客户端20秒发送一次）
+HEARTBEAT: 2001
+HEARTBEAT_RESPONSE: 2002
+
+# ========== 游戏逻辑类 (3xxx) ==========
+# 获取玩家信息
+GET_PLAYER_INFO: 3010
+PLAYER_INFO: 3011
+
+# ========== 系统类 (9xxx) ==========
+# 通用错误消息
+ERROR: 9001
+
+# 系统通知
+NOTIFICATION: 9002
+
+# 踢出玩家
+KICK: 9004

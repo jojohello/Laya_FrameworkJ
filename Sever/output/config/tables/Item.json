@@ -1,0 +1,30 @@
+[
+  {
+    "ID": 1001,
+    "Type": "Currency",
+    "Quality": 1,
+    "MaxStack": 999999,
+    "UseAction": ""
+  },
+  {
+    "ID": 1002,
+    "Type": "Material",
+    "Quality": 1,
+    "MaxStack": 999,
+    "UseAction": ""
+  },
+  {
+    "ID": 1003,
+    "Type": "Consumable",
+    "Quality": 1,
+    "MaxStack": 99,
+    "UseAction": ""
+  },
+  {
+    "ID": 2001,
+    "Type": "Equipment",
+    "Quality": 2,
+    "MaxStack": 1,
+    "UseAction": ""
+  }
+]

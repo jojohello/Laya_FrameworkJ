@@ -1,0 +1,28 @@
+{
+  "includeSubFolders": true,
+  "perFolder": true,
+  "maxWidth": 2048,
+  "maxHeight": 2048,
+  "eachMaxWidth": 512,
+  "eachMaxHeight": 512,
+  "scale": 1,
+  "pot": false,
+  "trimImage": true,
+  "filterMode": 1,
+  "platformDefault": {
+    "format": 0,
+    "quality": 1
+  },
+  "platformPC": {
+    "format": "R8G8B8A8",
+    "quality": 1
+  },
+  "platformAndroid": {
+    "format": "ASTC_6X6",
+    "quality": 1
+  },
+  "platformIOS": {
+    "format": "ASTC_6X6",
+    "quality": 1
+  }
+}

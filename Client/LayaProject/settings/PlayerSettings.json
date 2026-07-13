@@ -1,0 +1,29 @@
+{
+  "resolution": {
+    "designWidth": 750,
+    "designHeight": 1334,
+    "scaleMode": "fixedwidth",
+    "alignV": "middle",
+    "alignH": "center",
+    "screenMode": "vertical"
+  },
+  "2D": {
+    "FPS": 30,
+    "isAntialias": false,
+    "defaultFont": "res://562d5d5c-585b-4379-9a0f-65091e0d0d4e"
+  },
+  "modules": {
+    "laya.tiledmap": true,
+    "laya.spine": true,
+    "laya.ui": true
+  },
+  "addons": {
+    "laya.ui": "ui2"
+  },
+  "spineVersion": "4.1",
+  "splash": {
+    "backgroundColor": "rgba(44, 44, 44, 1)",
+    "image": "assets/bigImg/loading_bg.png",
+    "fit": "center"
+  }
+}

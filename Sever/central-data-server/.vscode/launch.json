@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug Central Data Server",
+      "request": "launch",
+      "mainClass": "com.laya.game.central.CentralDataServerApplication",
+      "projectName": "central-data-server",
+      "cwd": "${workspaceFolder}/../output/servers/central-data-server",
+      "console": "integratedTerminal",
+      "args": "",
+      "vmArgs": ""
+    },
+    {
+      "type": "java",
+      "name": "Debug Central Data Server (with active profile)",
+      "request": "launch",
+      "mainClass": "com.laya.game.central.CentralDataServerApplication",
+      "projectName": "central-data-server",
+      "cwd": "${workspaceFolder}/../output/servers/central-data-server",
+      "console": "integratedTerminal",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
+}

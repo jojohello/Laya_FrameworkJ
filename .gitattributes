@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.meta -text -eol
+Doc/** -text -eol
+introduction/** -text -eol
+produce/** -text -eol

@@ -1,0 +1,18 @@
+[
+  {
+    "ID": 1001,
+    "BaseDamage": 30,
+    "AttackRate": 100,
+    "FormulaID": 0,
+    "DamageType": "Normal",
+    "ElementType": "None"
+  },
+  {
+    "ID": 1002,
+    "BaseDamage": 60,
+    "AttackRate": 120,
+    "FormulaID": 0,
+    "DamageType": "Normal",
+    "ElementType": "Fire"
+  }
+]

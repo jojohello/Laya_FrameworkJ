@@ -1,0 +1,58 @@
+[
+  {
+    "ID": 1001,
+    "objType": 2,
+    "hp": 100,
+    "speed": 50,
+    "attack": 10,
+    "defense": 5
+  },
+  {
+    "ID": 1002,
+    "objType": 2,
+    "hp": 500,
+    "speed": 40,
+    "attack": 50,
+    "defense": 20
+  },
+  {
+    "ID": 1003,
+    "objType": 2,
+    "hp": 5000,
+    "speed": 30,
+    "attack": 200,
+    "defense": 100
+  },
+  {
+    "ID": 2001,
+    "objType": 1,
+    "hp": 1000,
+    "speed": 0,
+    "attack": 30,
+    "defense": 50
+  },
+  {
+    "ID": 3001,
+    "objType": 3,
+    "hp": 1,
+    "speed": 300,
+    "attack": 20,
+    "defense": 0
+  },
+  {
+    "ID": 3002,
+    "objType": 3,
+    "hp": 1,
+    "speed": 200,
+    "attack": 100,
+    "defense": 0
+  },
+  {
+    "ID": 4001,
+    "objType": 6,
+    "hp": 1000,
+    "speed": 100,
+    "attack": 50,
+    "defense": 30
+  }
+]

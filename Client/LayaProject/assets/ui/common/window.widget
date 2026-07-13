@@ -1,0 +1,124 @@
+{
+  "_$ver": 1,
+  "_$id": "zu1axmer",
+  "_$type": "Widget",
+  "name": "Root",
+  "width": 600,
+  "height": 476,
+  "_$child": [
+    {
+      "_$id": "8ldjhk16",
+      "_$type": "Image",
+      "name": "img",
+      "y": 58,
+      "width": 599,
+      "height": 429,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "zu1axmer"
+          },
+          "data": [
+            1,
+            0,
+            21,
+            0,
+            24,
+            0
+          ]
+        }
+      ],
+      "src": "res://f4603d4f-ae2b-4e5d-8690-d0c0a1811e48",
+      "autoSize": false
+    },
+    {
+      "_$id": "u1ogyut7",
+      "_$type": "Image",
+      "name": "img_1",
+      "x": 300,
+      "y": 5,
+      "width": 319,
+      "height": 105,
+      "anchorX": 0.5,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "zu1axmer"
+          },
+          "data": [
+            6,
+            0,
+            10,
+            0
+          ]
+        }
+      ],
+      "src": "res://cf489899-66ec-4629-ac3b-1b35ba20e78f",
+      "autoSize": false
+    },
+    {
+      "_$id": "806irc1h",
+      "_$type": "Label",
+      "name": "label",
+      "x": 300,
+      "y": 19,
+      "width": 300,
+      "height": 50,
+      "anchorX": 0.5,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "zu1axmer"
+          },
+          "data": [
+            6,
+            0,
+            10,
+            0
+          ]
+        }
+      ],
+      "title": "窗口标题",
+      "titleColor": 16238253,
+      "titleFontSize": 32,
+      "titleWidget": {
+        "_$ref": "zi5kwz1d"
+      },
+      "_$child": [
+        {
+          "_$id": "zi5kwz1d",
+          "_$type": "TextField",
+          "name": "title",
+          "width": 300,
+          "height": 50,
+          "relations": [
+            {
+              "_$type": "Relation",
+              "target": {
+                "_$ref": "806irc1h"
+              },
+              "data": [
+                1,
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "text": "窗口标题",
+          "style": {
+            "fontSize": 32,
+            "color": 16238253,
+            "bold": true,
+            "align": 1,
+            "stroke": 1,
+            "strokeColor": 8674636
+          }
+        }
+      ]
+    }
+  ]
+}

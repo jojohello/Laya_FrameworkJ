@@ -1,0 +1,249 @@
+# Game Server Configuration
+server:
+  port: 8084
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+  tomcat:
+    max-threads: 300
+    min-spare-threads: 20
+    connection-timeout: 20000
+    accept-count: 100
+
+spring:
+  application:
+    name: game-server
+  main:
+    allow-bean-definition-overriding: true
+
+  # Redis配置 (主要数据存储)
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 1  # 使用database 1，避免与Central Server冲突
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 20
+        min-idle: 10
+        max-wait: 3000ms
+
+  # MySQL配置 (持久化存储，可选)
+  datasource:
+    url: jdbc:mysql://localhost:3306/laya_game?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:laya_user}
+    password: ${DB_PASSWORD:laya123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Jackson配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+      adjust-dates-to-context-time-zone: false
+
+  # 任务调度配置
+  task:
+    scheduling:
+      pool:
+        size: 10
+      thread-name-prefix: game-task-
+    execution:
+      pool:
+        core-size: 20
+        max-size: 100
+        queue-capacity: 2000
+        keep-alive: 60s
+      thread-name-prefix: game-exec-
+
+# 自定义配置
+laya:
+  game:
+    # 服务器标识
+    server-id: ${GAME_SERVER_ID:game-server-1}
+    server-ip: ${GAME_SERVER_IP:localhost}
+    server-port: ${server.port:8084}
+
+    # Gateway WebSocket连接配置
+    gateway:
+      websocket:
+        url: ws://${GATEWAY_HOST:localhost}:${GATEWAY_PORT:8082}/ws/game-server
+        auto-reconnect: true
+        reconnect-interval: 5000  # 重连间隔 5秒 (毫秒)
+        max-reconnect-attempts: 10  # 最大重连次数
+        connection-timeout: 10000  # 连接超时 10秒 (毫秒)
+        heartbeat-interval: 30000  # 心跳间隔 30秒 (毫秒)
+      http:
+        base-url: http://${GATEWAY_HOST:localhost}:${GATEWAY_PORT:8082}/api/v1
+        connect-timeout: 5000
+        read-timeout: 10000
+
+    # Central Server配置
+    central:
+      base-url: http://${CENTRAL_HOST:localhost}:${CENTRAL_PORT:8083}/api/v1
+      connect-timeout: 5000
+      read-timeout: 10000
+      # 心跳配置
+      heartbeat:
+        enabled: true
+        interval: 10000  # 心跳间隔 10秒 (毫秒)
+        timeout: 30000  # 心跳超时 30秒 (毫秒)
+
+    # 配置表系统
+    config:
+      # 配置表路径（支持外部化）
+      # 优先级：命令行参数 > 环境变量 > 相对路径 > classpath
+      tables-path: ${CONFIG_TABLES_PATH:file:../../config/tables}
+      # 热更新配置
+      hot-reload:
+        enabled: ${CONFIG_HOT_RELOAD:true}
+        watch-interval: 5000  # 文件监听间隔 5秒 (毫秒)
+        auto-reload-on-change: true
+      # 配置版本
+      version: 1.0.0
+
+    # 房间系统配置
+    room:
+      max-rooms: 10000  # 最大房间数
+      max-players-per-room: 10  # 每个房间最大玩家数
+      room-idle-timeout: 300000  # 房间空闲超时 5分钟 (毫秒)
+      auto-destroy-empty-room: true  # 自动销毁空房间
+
+    # 玩家系统配置
+    player:
+      max-online-players: 100000  # 最大在线玩家数
+      session-timeout: 1800000  # 会话超时 30分钟 (毫秒)
+      auto-save-interval: 60000  # 自动保存间隔 1分钟 (毫秒)
+
+    # 背包系统配置
+    bag:
+      default-capacity: 50  # 默认背包容量
+      max-capacity: 200  # 最大背包容量
+      max-stack-size: 999  # 最大堆叠数量
+
+    # 数据存储配置
+    storage:
+      strategy: redis-first  # 存储策略: redis-first, mysql-first, redis-only
+      # Redis存储配置
+      redis:
+        key-prefix: "game:"
+        player-data-ttl: 86400  # 玩家数据TTL 24小时 (秒)
+        room-data-ttl: 3600  # 房间数据TTL 1小时 (秒)
+        config-data-ttl: 3600  # 配置数据TTL 1小时 (秒)
+      # MySQL存储配置
+      mysql:
+        enabled: true
+        batch-size: 100  # 批量写入大小
+        async-write: true  # 异步写入
+
+    # 性能配置
+    performance:
+      # 消息处理
+      message:
+        queue-capacity: 10000  # 消息队列容量
+        thread-pool-size: 50  # 消息处理线程池大小
+      # 缓存配置
+      cache:
+        player-cache-size: 10000  # 玩家缓存大小
+        room-cache-size: 5000  # 房间缓存大小
+        config-cache-size: 1000  # 配置缓存大小
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.laya.game.game: INFO
+    org.springframework.web: INFO
+    org.springframework.web.socket: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    # 日志文件路径（支持外部化到 output/logs/）
+    name: ${LOG_DIR:../logs}/game-server.log
+    max-size: 100MB
+    max-history: 30
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    com.laya.game.game: DEBUG
+    org.springframework.web: DEBUG
+
+laya:
+  game:
+    config:
+      hot-reload:
+        enabled: true
+    storage:
+      mysql:
+        async-write: false  # 开发环境同步写入，便于调试
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    com.laya.game.game: INFO
+
+server:
+  tomcat:
+    max-threads: 500
+    accept-count: 200
+
+laya:
+  game:
+    room:
+      max-rooms: 50000
+    player:
+      max-online-players: 500000
+    config:
+      hot-reload:
+        enabled: false  # 生产环境禁用热更新

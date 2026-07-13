@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: laya-central-mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laya_central_dev
+      MYSQL_USER: laya_dev
+      MYSQL_PASSWORD: laya_dev_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/scripts/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - laya-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: laya-central-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - laya-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  adminer:
+    image: adminer:latest
+    container_name: laya-central-adminer-dev
+    ports:
+      - "8081:8080"
+    networks:
+      - laya-network
+    restart: unless-stopped
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  laya-network:
+    driver: bridge

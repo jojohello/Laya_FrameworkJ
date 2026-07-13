@@ -1,0 +1,8 @@
+Title,ID,Name,Type,Quality,MaxStack,UseAction,Desc
+Type,int,str,str,int,int,str,str
+Description,Item ID,Client display name,Item type,Quality,Max stack,Action script when used,Client description
+UsedSize,cs,c,cs,cs,cs,cs,c
+,1001,Gold,Currency,1,999999,,Basic currency
+,1002,Wood,Material,1,999,,Craft material
+,1003,Small Potion,Consumable,1,99,,Recover test item
+,2001,Iron Sword,Equipment,2,1,,Starter weapon

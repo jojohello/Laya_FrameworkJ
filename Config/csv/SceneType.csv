@@ -1,0 +1,5 @@
+Title,ID,dec,sceneClass,mapType,map,uiName
+Type,int,str,str,str,str,str
+Description,场景ID,注释,场景类名,地图类型(image/tilemap),地图资源路径,UI名称
+UsedSize,c,,c,c,c,c
+,1,MainScene,MainScene,image,map/map001/map001.png,MainUI

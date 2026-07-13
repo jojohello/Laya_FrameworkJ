@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.meta]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+
+[Doc/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+
+[introduction/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+
+[produce/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset

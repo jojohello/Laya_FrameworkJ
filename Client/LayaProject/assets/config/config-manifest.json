@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "tables": [
+    {
+      "name": "Buff",
+      "file": "Buff.json",
+      "path": "config/Buff.json",
+      "rows": 1
+    },
+    {
+      "name": "Bullet",
+      "file": "Bullet.json",
+      "path": "config/Bullet.json",
+      "rows": 2
+    },
+    {
+      "name": "Damage",
+      "file": "Damage.json",
+      "path": "config/Damage.json",
+      "rows": 2
+    },
+    {
+      "name": "Item",
+      "file": "Item.json",
+      "path": "config/Item.json",
+      "rows": 4
+    },
+    {
+      "name": "SceneObjConfig",
+      "file": "SceneObjConfig.json",
+      "path": "config/SceneObjConfig.json",
+      "rows": 7
+    },
+    {
+      "name": "SceneType",
+      "file": "SceneType.json",
+      "path": "config/SceneType.json",
+      "rows": 1
+    },
+    {
+      "name": "Skill",
+      "file": "Skill.json",
+      "path": "config/Skill.json",
+      "rows": 2
+    }
+  ]
+}

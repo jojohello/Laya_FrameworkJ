@@ -1,0 +1,83 @@
+package com.jojohello_laya.login.service.impl;
+
+import com.jojohello_laya.login.model.ThirdPartyAuthRequest;
+import com.jojohello_laya.login.model.ThirdPartyAuthResult;
+import com.jojohello_laya.login.service.ThirdPartyAuthService;
+import org.springframework.stereotype.Service;
+import java.util.UUID;
+
+/**
+ * 游客登录服务实现
+ * 
+ * @author laya-game
+ */
+@Service
+public class GuestAuthServiceImpl implements ThirdPartyAuthService {
+    @java.lang.SuppressWarnings("all")
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GuestAuthServiceImpl.class);
+
+    @Override
+    public ThirdPartyType getType() {
+        return ThirdPartyType.GUEST;
+    }
+
+    @Override
+    public ThirdPartyAuthResult authenticate(ThirdPartyAuthRequest request) {
+        log.info("游客登录开始，clientIp: {}, deviceInfo: {}", request.getClientIp(), request.getDeviceInfo());
+        try {
+            // 检查是否是开发模式
+            boolean isDeveloperMode = request.getAuthCode().startsWith("dev_");
+            String guestUserId;
+            String nickname;
+            if (isDeveloperMode) {
+                // 开发模式：验证时间戳，但用户标识不包含时间戳
+                String fullDeveloperName = request.getAuthCode().substring(4); // 去掉"dev_"前缀
+                String[] parts = fullDeveloperName.split("_");
+                if (parts.length >= 2) {
+                    String developerName = parts[0];
+                    String timestamp = parts[1];
+                    // 验证时间戳（可以添加时间有效性检查）
+                    try {
+                        long timestampValue = Long.parseLong(timestamp);
+                        long currentTime = System.currentTimeMillis();
+                        // 时间戳应该在合理范围内（比如24小时内）
+                        if (Math.abs(currentTime - timestampValue) > 24 * 60 * 60 * 1000) {
+                            log.warn("时间戳过期或无效: {}", timestamp);
+                            return ThirdPartyAuthResult.failure("INVALID_TIMESTAMP", "时间戳无效");
+                        }
+                    } catch (NumberFormatException e) {
+                        log.warn("时间戳格式无效: {}", timestamp);
+                        return ThirdPartyAuthResult.failure("INVALID_TIMESTAMP", "时间戳格式无效");
+                    }
+                    // 用户标识只使用开发者名称和设备信息，不包含时间戳
+                    String deviceInfo = request.getDeviceInfo();
+                    String deviceHash = deviceInfo != null ? String.valueOf(deviceInfo.hashCode()) : "unknown";
+                    guestUserId = "dev_" + developerName + "_" + deviceHash;
+                    nickname = "开发者_" + developerName;
+                    log.info("开发模式登录: developer={}, userId={}, timestamp={}", developerName, guestUserId, timestamp);
+                } else {
+                    log.warn("开发模式格式无效: {}", request.getAuthCode());
+                    return ThirdPartyAuthResult.failure("INVALID_FORMAT", "开发模式格式无效");
+                }
+            } else {
+                // 普通游客模式：使用设备信息生成固定ID
+                String deviceInfo = request.getDeviceInfo();
+                String deviceHash = deviceInfo != null ? String.valueOf(deviceInfo.hashCode()) : "unknown";
+                guestUserId = "guest_" + deviceHash;
+                nickname = "游客_" + deviceHash.substring(0, Math.min(6, deviceHash.length()));
+                log.info("游客登录成功，userId: {}, nickname: {}", guestUserId, nickname);
+            }
+            // 为游客登录生成sessionKey
+            String sessionKey = "guest_session_" + System.currentTimeMillis() + "_" + guestUserId;
+            return ThirdPartyAuthResult.success(guestUserId, nickname, sessionKey);
+        } catch (Exception e) {
+            log.error("游客登录异常", e);
+            return ThirdPartyAuthResult.failure("SYSTEM_ERROR", "系统异常");
+        }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; // 游客登录始终启用
+    }
+}

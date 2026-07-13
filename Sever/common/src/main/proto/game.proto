@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package com.laya.game.proto;
+
+option java_multiple_files = true;
+option java_package = "com.laya.game.proto";
+option java_outer_classname = "GameProto";
+
+// 消息类型枚举
+enum MessageType {
+  UNKNOWN = 0;
+  
+  // 登录相关
+  LOGIN_REQUEST = 1001;
+  LOGIN_RESPONSE = 1002;
+  LOGOUT_REQUEST = 1003;
+  LOGOUT_RESPONSE = 1004;
+  
+  // 心跳
+  HEARTBEAT_REQUEST = 2001;
+  HEARTBEAT_RESPONSE = 2002;
+  
+  // 游戏相关
+  JOIN_ROOM_REQUEST = 3001;
+  JOIN_ROOM_RESPONSE = 3002;
+  LEAVE_ROOM_REQUEST = 3003;
+  LEAVE_ROOM_RESPONSE = 3004;
+  GAME_ACTION_REQUEST = 3005;
+  GAME_ACTION_RESPONSE = 3006;
+  GAME_STATE_UPDATE = 3007;
+  
+  // 聊天
+  CHAT_MESSAGE = 4001;
+  CHAT_BROADCAST = 4002;
+}
+
+// 基础消息头
+message MessageHeader {
+  int32 message_id = 1;
+  MessageType message_type = 2;
+  int64 timestamp = 3;
+  string session_id = 4;
+  int32 user_id = 5;
+}
+
+// 登录请求
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+  string device_id = 3;
+  string platform = 4; // "wechat", "qq", "guest"
+  string version = 5;
+}
+
+// 登录响应
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  string token = 3;
+  int32 user_id = 4;
+  string username = 5;
+  int32 level = 6;
+  int64 exp = 7;
+  int64 coins = 8;
+  int64 diamonds = 9;
+}
+
+// 心跳请求
+message HeartbeatRequest {
+  int64 client_time = 1;
+}
+
+// 心跳响应
+message HeartbeatResponse {
+  int64 server_time = 1;
+  int32 online_users = 2;
+}
+
+// 加入房间请求
+message JoinRoomRequest {
+  int32 room_id = 1;
+  string room_password = 2;
+}
+
+// 加入房间响应
+message JoinRoomResponse {
+  bool success = 1;
+  string message = 2;
+  int32 room_id = 3;
+  string room_name = 4;
+  repeated PlayerInfo players = 5;
+  int32 max_players = 6;
+  int32 current_players = 7;
+}
+
+// 玩家信息
+message PlayerInfo {
+  int32 user_id = 1;
+  string username = 2;
+  int32 level = 3;
+  int32 avatar_id = 4;
+  bool is_ready = 5;
+  bool is_online = 6;
+  int64 join_time = 7;
+}
+
+// 游戏动作请求
+message GameActionRequest {
+  int32 action_type = 1;
+  bytes action_data = 2;
+  int64 timestamp = 3;
+}
+
+// 游戏动作响应
+message GameActionResponse {
+  bool success = 1;
+  string message = 2;
+  int32 action_id = 3;
+}
+
+// 游戏状态更新
+message GameStateUpdate {
+  int32 game_state = 1; // 0: 等待中, 1: 游戏中, 2: 结束
+  int64 game_start_time = 2;
+  int64 game_end_time = 3;
+  repeated PlayerGameState player_states = 4;
+  bytes game_data = 5;
+}
+
+// 玩家游戏状态
+message PlayerGameState {
+  int32 user_id = 1;
+  int32 score = 2;
+  int32 rank = 3;
+  bool is_alive = 4;
+  bytes player_data = 5;
+}
+
+// 聊天消息
+message ChatMessage {
+  int32 from_user_id = 1;
+  string from_username = 2;
+  string content = 3;
+  int64 timestamp = 4;
+  int32 message_type = 5; // 0: 普通, 1: 系统, 2: 私聊
+  int32 to_user_id = 6;
+}
+
+// 聊天广播
+message ChatBroadcast {
+  repeated ChatMessage messages = 1;
+}
+
+// 错误响应
+message ErrorResponse {
+  int32 error_code = 1;
+  string error_message = 2;
+  string details = 3;
+} 

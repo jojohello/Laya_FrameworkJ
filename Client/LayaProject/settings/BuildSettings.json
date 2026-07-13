@@ -1,0 +1,35 @@
+{
+  "name": "JFramework",
+  "sourcesContent": true,
+  "startupScene": "res://767ada5e-aa5b-43a7-b28a-9a1557d27514",
+  "alwaysIncluded": [
+    "ttf",
+    "bigImg",
+    "startupUI"
+  ],
+  "excludeFilesRule": [],
+  "enableVersion": true,
+  "enableSubpackages": true,
+  "subpackages": [
+    {
+      "path": "../src/logic",
+      "mainScript": "res://fab2a401-bee2-4db4-bade-e3966699346e",
+      "autoLoad": true
+    }
+  ],
+  "web": {
+    "useSafeFileExtensions": true
+  },
+  "android": {
+    "targetArchitectures": {
+      "ARMv7": true,
+      "ARM64": false,
+      "x86": false,
+      "x86-64": false
+    },
+    "exportFormat": "APK"
+  },
+  "wxgame": {
+    "appid": "wxb4db22a4eb82dadd"
+  }
+}

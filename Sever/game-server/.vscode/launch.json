@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Debug Game Server",
+      "request": "launch",
+      "mainClass": "com.laya.game.game.GameServerApplication",
+      "projectName": "game-server",
+      "cwd": "${workspaceFolder}/../output/servers/game-server",
+      "console": "integratedTerminal",
+      "args": "",
+      "vmArgs": ""
+    },
+    {
+      "type": "java",
+      "name": "Debug Game Server (with active profile)",
+      "request": "launch",
+      "mainClass": "com.laya.game.game.GameServerApplication",
+      "projectName": "game-server",
+      "cwd": "${workspaceFolder}/../output/servers/game-server",
+      "console": "integratedTerminal",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
+}

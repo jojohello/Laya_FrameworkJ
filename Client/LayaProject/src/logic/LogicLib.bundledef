@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "allowLoadInEditor": true,
+  "allowLoadInRuntime": true,
+  "autoLoad": true,
+  "entries": [
+    "res://f4fd31e3-7a35-40d7-9a8b-e52b4e40b4f5"
+  ],
+  "includeAllFiles": true,
+  "loadBeforeMain": false,
+  "bundleExternals": false
+}

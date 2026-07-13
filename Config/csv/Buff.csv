@@ -1,0 +1,5 @@
+Title,ID,Duration,TickInterval,MaxStack,StackType,AttrAdd,AttrPercent,OnAddAction,OnTickAction,OnRemoveAction,Desc
+Type,int,int,int,int,str,str,str,str,str,str,str
+Description,Buff ID,Duration ms,Tick interval ms,Max stack,Stack behavior,Flat attr add,Percent attr add,Action script on add,Action script on tick,Action script on remove,Client description
+UsedSize,cs,cs,cs,cs,cs,cs,cs,cs,cs,cs,c
+,3001,3000,1000,3,Refresh,attack:10,,,Damage;1001,,Step5 burn buff test
