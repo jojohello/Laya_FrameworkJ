@@ -1,5 +1,6 @@
 package com.laya.game.gateway;
 
+import com.jojohello_laya.common.util.Utf8Console;
 import com.laya.game.gateway.gameserver.GameServerConnectionManager;
 import com.laya.game.gateway.websocket.GatewayWebSocketHandler;
 import jakarta.annotation.PostConstruct;
@@ -53,6 +54,7 @@ public class GatewayServerApplication {
     }
 
     public static void main(String[] args) {
+        Utf8Console.configure();
         SpringApplication.run(GatewayServerApplication.class, args);
         System.out.println("=================================");
         System.out.println("[START] 网关服务器启动成功!");

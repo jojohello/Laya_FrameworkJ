@@ -1,0 +1,11 @@
+[
+  {
+    "ID": 1001,
+    "triggerType": "playerLevelEquals",
+    "triggerArgs": "1",
+    "flowId": 10001,
+    "priority": 100,
+    "version": 1,
+    "enabled": true
+  }
+]

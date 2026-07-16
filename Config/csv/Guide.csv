@@ -1,0 +1,5 @@
+Title,ID,triggerType,triggerArgs,flowId,priority,version,enabled
+Type,int,str,str,int,int,int,bool
+Description,引导ID,双端激发条件类型,激发条件参数,客户端流程ID,优先级,流程版本,是否启用
+UsedSize,cs,cs,cs,cs,cs,cs,cs
+,1001,playerLevelEquals,1,10001,100,1,true

@@ -35,6 +35,8 @@
 
 当前不需要额外引入第三方库，LayaAir 3.3 仍内置 `Laya.TiledMap`。
 
+`Laya.TiledMap` 对应 PlayerSettings 中的 `laya.tiledmap` 模块。不要同时启用名称相近的新版 `laya.tilemap`；后者会初始化 TileMap 物理支持并依赖 2D Box2D 模块，不属于当前 Tiled JSON 地图方案。
+
 建议使用 Tiled Map Editor 1.10.x 制作资源，并导出为 JSON 地图文件给 `Laya.TiledMap.createMap()` 使用。制作约定先保持保守：
 
 - 地图方向优先使用 Orthogonal。

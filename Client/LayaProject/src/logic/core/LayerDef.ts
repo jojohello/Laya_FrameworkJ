@@ -45,6 +45,7 @@ export enum GlobalLayer {
  * 映射到 GlobalLayer 的 UI 区域
  */
 export enum UILayer {
+    Pop = 300,
     MainUI = GlobalLayer.MainUI,          // 100
     UIWindow = GlobalLayer.UIWindow,      // 200
     TipWindow = GlobalLayer.TipWindow,    // 400
@@ -71,6 +72,7 @@ export const LayerNames: { [key: number]: string } = {
     [GlobalLayer.Scene]: "Scene",
     [GlobalLayer.AboveScene]: "AboveScene",
     [GlobalLayer.MainUI]: "MainUI",
+    [UILayer.Pop]: "Pop",
     [GlobalLayer.UIWindow]: "UIWindow",
     [GlobalLayer.TipWindow]: "TipWindow",
     [GlobalLayer.Login]: "Login",

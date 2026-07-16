@@ -4,6 +4,7 @@
 Usage:
   python tools/art/chroma_replace.py --input source.png --output asset.png --match-size existing.png
   python tools/art/chroma_replace.py --input source.png --output asset.png --size 750x279
+  python tools/art/chroma_replace.py --input sheet.png --crop 0,0,512,256 --output asset.png --size 256x128
 
 The script removes a flat border-sampled chroma background, crops transparent
 padding, and resizes the result for Laya assets. It is intentionally small so
@@ -24,6 +25,16 @@ def parse_size(raw: str) -> Tuple[int, int]:
         raise argparse.ArgumentTypeError("size must look like WIDTHxHEIGHT")
     w, h = raw.lower().split("x", 1)
     return int(w), int(h)
+
+
+def parse_crop(raw: str) -> Tuple[int, int, int, int]:
+    parts = raw.split(",")
+    if len(parts) != 4:
+        raise argparse.ArgumentTypeError("crop must look like X,Y,WIDTH,HEIGHT")
+    x, y, width, height = (int(part) for part in parts)
+    if x < 0 or y < 0 or width <= 0 or height <= 0:
+        raise argparse.ArgumentTypeError("crop values must be non-negative with positive size")
+    return x, y, width, height
 
 
 def sample_key(img: Image.Image) -> Tuple[int, int, int]:
@@ -82,6 +93,8 @@ def main() -> None:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--match-size", type=Path)
     parser.add_argument("--size", type=parse_size)
+    parser.add_argument("--crop", type=parse_crop,
+                        help="Crop a sprite-sheet region before chroma removal: X,Y,WIDTH,HEIGHT")
     parser.add_argument("--threshold", type=int, default=28)
     parser.add_argument("--padding", type=int, default=12)
     parser.add_argument("--edge-contract", type=int, default=1)
@@ -91,6 +104,12 @@ def main() -> None:
         parser.error("Use only one of --size or --match-size")
 
     source = Image.open(args.input)
+    source_size = source.size
+    if args.crop:
+        x, y, width, height = args.crop
+        if x + width > source.width or y + height > source.height:
+            parser.error("crop region exceeds source image bounds")
+        source = source.crop((x, y, x + width, y + height))
     cutout = remove_chroma(source, args.threshold, args.edge_contract)
     cropped = crop_alpha(cutout, args.padding)
 
@@ -104,7 +123,7 @@ def main() -> None:
     result = cropped.resize(target_size, Image.Resampling.LANCZOS)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     result.save(args.output)
-    print(f"{args.output}: {source.size} -> {cropped.size} -> {target_size}")
+    print(f"{args.output}: {source_size} -> {source.size} -> {cropped.size} -> {target_size}")
 
 
 if __name__ == "__main__":

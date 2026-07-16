@@ -17,8 +17,8 @@
     <description>Laya游戏网关服务器</description>
 
     <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <httpclient.version>4.5.14</httpclient.version>
     </properties>
@@ -86,12 +86,12 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Common Module - Temporarily removed due to missing source code -->
-        <!-- <dependency>
+        <!-- Common Module -->
+        <dependency>
             <groupId>com.laya.game</groupId>
             <artifactId>common</artifactId>
             <version>1.0.0</version>
-        </dependency> -->
+        </dependency>
     </dependencies>
 
     <build>

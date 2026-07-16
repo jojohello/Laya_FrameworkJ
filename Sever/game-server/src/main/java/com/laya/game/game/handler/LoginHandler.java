@@ -3,6 +3,8 @@ package com.laya.game.game.handler;
 import com.laya.game.game.protocol.GameMessage;
 import com.laya.game.game.protocol.MessageIds;
 import com.laya.game.game.gateway.GatewayRouteManager;
+import com.laya.game.game.player.PlayerRepository;
+import com.laya.game.game.player.PlayerRole;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,9 +17,9 @@ import java.util.UUID;
  *
  * 【重要】userId 的含义：
  *   - userId = 账号ID（Account ID），不是角色ID（Player ID）
- *   - 一个 userId 可以创建多个角色（未来功能）
- *   - 当前阶段：userId 用于路由和账号管理
- *   - Phase 2：将实现 playerId（角色ID），用于游戏业务逻辑
+ *   - 一个 userId 可以创建多个角色
+ *   - userId 用于路由和账号管理，playerId 用于角色业务数据
+ *   - 零角色自动创建，单角色自动选择，多角色等待显式选择协议
  *
  * 支持两种登录方式：
  *   1. Token 方式（推荐）：客户端已通过 Login Server 认证，携带 userId + token
@@ -40,6 +42,7 @@ public class LoginHandler implements MessageHandler {
     @java.lang.SuppressWarnings("all")
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoginHandler.class);
     private final GatewayRouteManager routeManager;
+    private final PlayerRepository playerRepository;
 
     @Override
     public Short getMessageId() {
@@ -73,6 +76,7 @@ public class LoginHandler implements MessageHandler {
                 // 返回登录成功响应
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("userId", userId);
+                attachPlayerSelection(userId, responseData);
                 responseData.put("sessionToken", sessionToken);
                 responseData.put("loginTime", System.currentTimeMillis());
                 GameMessage response = new GameMessage();
@@ -101,6 +105,7 @@ public class LoginHandler implements MessageHandler {
             // 返回登录成功响应
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("userId", generatedUserId);
+            attachPlayerSelection(generatedUserId, responseData);
             responseData.put("username", username);
             responseData.put("sessionToken", sessionToken);
             responseData.put("loginTime", System.currentTimeMillis());
@@ -150,8 +155,20 @@ public class LoginHandler implements MessageHandler {
         return UUID.randomUUID().toString();
     }
 
+    private void attachPlayerSelection(String userId, Map<String, Object> responseData) {
+        java.util.List<PlayerRole> roles = playerRepository.findByUserId(userId);
+        if (roles.isEmpty()) roles = java.util.List.of(playerRepository.resolveOrCreate(userId));
+        if (roles.size() == 1) {
+            responseData.put("playerId", Long.toString(roles.get(0).playerId()));
+            responseData.put("playerSelectionRequired", false);
+        } else {
+            responseData.put("playerSelectionRequired", true);
+        }
+    }
+
     @java.lang.SuppressWarnings("all")
-    public LoginHandler(final GatewayRouteManager routeManager) {
+    public LoginHandler(final GatewayRouteManager routeManager, final PlayerRepository playerRepository) {
         this.routeManager = routeManager;
+        this.playerRepository = playerRepository;
     }
 }

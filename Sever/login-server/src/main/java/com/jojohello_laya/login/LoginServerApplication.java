@@ -1,5 +1,6 @@
 package com.jojohello_laya.login;
 
+import com.jojohello_laya.common.util.Utf8Console;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class LoginServerApplication {
 
     public static void main(String[] args) {
+        Utf8Console.configure();
         SpringApplication.run(LoginServerApplication.class, args);
         System.out.println("=================================");
         System.out.println("[START] 登录服务器启动成功!");

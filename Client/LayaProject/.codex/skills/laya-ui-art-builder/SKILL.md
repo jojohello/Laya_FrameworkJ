@@ -1,6 +1,6 @@
 ---
 name: laya-ui-art-builder
-description: Generate or adjust LayaAir 3 UI art assets, test/sample .ls scene files, .lh prefabs, and simple UI layouts for this project style. Use when Codex needs to create/replace PNG UI resources, inspect or edit Laya .ls/.lh JSON files, create simple test scenes under assets/testAndSample/editorResources, preserve Laya res:// references and meta handling, apply the project's western magic cute v4 art direction, or maintain art-resource workflow documentation.
+description: Design, generate, assemble, revise, audit, and clean up LayaAir 3 UI screens and reusable components. Use when Codex needs an end-to-end independent-screen workflow from requirement/reference collection through 750x1335 composition design, PNG slicing, common-resource reuse, .lh/.ls assembly, res:// and meta handling, visual validation, or redundant UI asset removal.
 ---
 
 # Laya UI Art Builder
@@ -23,6 +23,8 @@ Then read only the needed follow-up docs, usually:
 - `docs/ArtStyleDecisionLog.md` for style decisions
 - `docs/ArtAssetReplacementMap.md` for final asset paths and status
 
+For a new independent screen, a complete screen redesign, or a screen whose parts must be generated and assembled, read `references/independent-ui-production-workflow.md` completely before producing art. The default project design canvas is `750x1335`; confirm actual target serialization and safe areas before fixing logical bounds.
+
 ## Workflow
 
 1. Identify task type:
@@ -33,7 +35,7 @@ Then read only the needed follow-up docs, usually:
    - asset audit/cleanup
    - workflow documentation update
 2. Read project art docs and relevant Laya UI files.
-3. Prefer existing project patterns and existing UI resources.
+3. Audit `assets/ui/common/`, `assets/ui/UI_RESOURCE_INDEX.md`, and related prefabs before producing any new component.
 4. Keep Laya-referenced icons as independent PNGs.
 5. Preserve existing filenames and dimensions when replacing existing assets unless the user asks otherwise.
 6. Do not manually create `.meta` files. Keep existing `.meta` files when only replacing PNG content.
@@ -43,6 +45,8 @@ Then read only the needed follow-up docs, usually:
    - JSON parse for `.ls/.lh` when possible
    - missing references / stale temporary files
    - project docs updated
+
+For redundant-resource cleanup, migrate every filename, runtime path, and UUID reference to one canonical resource before deleting the duplicate PNG and `.meta`. Keep the canonical reusable asset under `assets/ui/common/` when its meaning is not module-specific.
 
 ## When Editing `.ls` / `.lh`
 

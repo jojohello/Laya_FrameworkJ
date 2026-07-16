@@ -19,3 +19,5 @@ Main entry points:
 - Waiting connection: `POST /api/gateway/waiting-connection`
 
 Gateway connects to Game Server as an internal WebSocket client and receives Central registry-change callbacks.
+
+Gateway locally handles only protocols marked `scope: gateway` in `Protocol/message-ids.yaml`. Authenticated non-Gateway messages are transparently forwarded to Game Server, so adding a normal gameplay MessageID does not require a Gateway code change or deployment.

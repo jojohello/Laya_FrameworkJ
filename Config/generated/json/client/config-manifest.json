@@ -20,6 +20,12 @@
       "rows": 2
     },
     {
+      "name": "Guide",
+      "file": "Guide.json",
+      "path": "config/Guide.json",
+      "rows": 1
+    },
+    {
       "name": "Item",
       "file": "Item.json",
       "path": "config/Item.json",

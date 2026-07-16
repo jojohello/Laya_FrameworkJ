@@ -10,6 +10,7 @@ import { LoginMgr } from "./login/LoginMgr";
 import { Protocol } from "./network/Protocol";
 import { MessageDispatcher } from "./network/MessageDispatcher";
 import { LoginProtocol } from "./login/LoginProtocol";
+import { SystemProtocol } from "./network/SystemProtocol";
 
 /**
  * StartMain - 主包入口
@@ -23,6 +24,7 @@ import { LoginProtocol } from "./login/LoginProtocol";
 export class StartMain {
     private _logicMain: any | null = null; // LogicMain 类型（分包加载后才有）
     private _loginScene: Laya.Scene | null = null;
+    private _systemProtocol: SystemProtocol | null = null;
 
     /** Loading 进度追踪 */
     private _loadingProgress: number = 0;        // 当前进度 (0-1)
@@ -54,6 +56,11 @@ export class StartMain {
         NetworkManager.instance.init();
 
         Protocol.injectDependencies(MessageDispatcher, NetworkManager.instance);
+        (Laya.Browser.window as any).messageDispatcher = MessageDispatcher;
+
+        // 全局系统协议必须在连接建立前注册，确保登录期错误也有处理入口。
+        this._systemProtocol = new SystemProtocol();
+        this._systemProtocol.init();
 
         // 7. 创建并初始化 LoginProtocol
         const loginProtocol = new LoginProtocol();
@@ -319,5 +326,3 @@ export class StartMain {
         });
     }
 }
-
-

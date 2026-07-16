@@ -111,6 +111,10 @@ NetworkManager.instance.disconnect();
 第 5 次：延迟 16 秒（最大延迟）
 ```
 
+### SystemProtocol - 全局服务器错误
+
+`SystemProtocol` 在 WebSocket 连接前注册 `ERROR=9001`，统一记录 Gateway 或 Game Server 返回的 `reason/code`，并通过全局 `eventDispatcher` 派发 `serverError` 事件。业务 UI 可以订阅该事件展示提示，不应重复注册 9001。
+
 ## 快速开始
 
 ### 1. 连接服务器

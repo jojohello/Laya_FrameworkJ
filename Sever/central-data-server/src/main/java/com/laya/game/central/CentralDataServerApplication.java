@@ -1,5 +1,6 @@
 package com.laya.game.central;
 
+import com.jojohello_laya.common.util.Utf8Console;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -39,6 +40,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class CentralDataServerApplication {
 
     public static void main(String[] args) {
+        Utf8Console.configure();
         SpringApplication.run(CentralDataServerApplication.class, args);
         System.out.println("=================================");
         System.out.println("[START] 中心数据服务器启动成功!");

@@ -12,7 +12,7 @@ Treat source and runtime configuration as authoritative when documentation disag
 
 ## Development Baseline
 
-- Java 25 and Maven multi-module build.
+- Java 21 bytecode target and Maven multi-module build. A newer JDK may run Maven, but Maven must compile with `--release 21` because Spring Boot 3.2.0's ASM cannot scan Java 25 class files.
 - Spring Boot 3.2.0.
 - Project-maintained text is UTF-8 without BOM with LF line endings.
 - Do not edit `target`, `output`, or log artifacts as source.

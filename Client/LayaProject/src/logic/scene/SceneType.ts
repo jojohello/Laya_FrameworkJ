@@ -13,8 +13,7 @@
 export enum SceneType {
     /** 主场景（ID=1） */
     MainScene = 1,
-    
-    // 后续场景在此扩展
-    // /** 战斗场景（ID=2） */
-    // BattleScene = 2,
+
+    /** 战斗场景（ID=2） */
+    BattleScene = 2,
 }

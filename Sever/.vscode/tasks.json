@@ -7,8 +7,8 @@
             "command": "mvn",
             "args": [
                 "spring-boot:run",
-                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK",
-                "-Dspring-boot.run.arguments=--logging.charset.console=GBK --logging.charset.file=UTF-8"
+                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+                "-Dspring-boot.run.arguments=--logging.charset.console=UTF-8 --logging.charset.file=UTF-8"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/central-data-server"
@@ -28,8 +28,8 @@
             "command": "mvn",
             "args": [
                 "spring-boot:run",
-                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK",
-                "-Dspring-boot.run.arguments=--logging.charset.console=GBK --logging.charset.file=UTF-8"
+                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+                "-Dspring-boot.run.arguments=--logging.charset.console=UTF-8 --logging.charset.file=UTF-8"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/gateway-server"
@@ -49,8 +49,8 @@
             "command": "mvn",
             "args": [
                 "spring-boot:run",
-                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=GBK -Dsun.stderr.encoding=GBK",
-                "-Dspring-boot.run.arguments=--logging.charset.console=GBK --logging.charset.file=UTF-8"
+                "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+                "-Dspring-boot.run.arguments=--logging.charset.console=UTF-8 --logging.charset.file=UTF-8"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/login-server"

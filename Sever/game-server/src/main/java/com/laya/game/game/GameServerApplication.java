@@ -1,5 +1,6 @@
 package com.laya.game.game;
 
+import com.jojohello_laya.common.util.Utf8Console;
 import com.laya.game.game.config.ConfigManager;
 import com.laya.game.game.configStruct.TestConfig;
 import com.laya.game.game.gateway.GatewayRouteManager;
@@ -27,7 +28,7 @@ import java.util.Map;
  * @author Laya Game Server Framework
  * @version 1.0.0
  */
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication
 @EnableAsync
 @EnableScheduling
 public class GameServerApplication {
@@ -118,6 +119,7 @@ public class GameServerApplication {
     }
 
     public static void main(String[] args) {
+        Utf8Console.configure();
         try {
             ConfigurableApplicationContext context = SpringApplication.run(GameServerApplication.class, args);
             Environment env = context.getEnvironment();

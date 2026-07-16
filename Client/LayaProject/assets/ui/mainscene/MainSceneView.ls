@@ -9,8 +9,17 @@
   "bottom": 0,
   "name": "Scene2D",
   "width": 750,
-  "height": 1334,
+  "height": 1335,
   "_$child": [
+    {
+      "_$id": "player-profile-instance",
+      "_$prefab": "ab8e44cd-91b6-47f5-8a0a-86061addd07c",
+      "name": "playerProfile",
+      "active": true,
+      "x": 12,
+      "y": 12,
+      "visible": true
+    },
     {
       "_$id": "dgyiz0mt",
       "_$type": "GBox",
@@ -100,21 +109,6 @@
               "visible": true
             }
           ]
-        }
-      ]
-    },
-    {
-      "_$id": "ktzq2lkl",
-      "_$prefab": "39b530b7-91c5-484b-8c9e-288b21bdda16",
-      "name": "HealthBar",
-      "active": true,
-      "x": 335,
-      "y": 810,
-      "visible": true,
-      "_$child": [
-        {
-          "_$override": "18rp93nt",
-          "name": "mp_process"
         }
       ]
     }

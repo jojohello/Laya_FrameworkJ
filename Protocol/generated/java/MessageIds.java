@@ -6,8 +6,8 @@ package com.laya.game.protocol;
  * ⚠️ 此文件由 Protocol/message-ids.yaml 自动生成
  * ⚠️ 请勿手动修改，修改请编辑 message-ids.yaml 后重新生成
  *
- * @generated 2026-07-13
- * @version 1.0.0
+ * @generated
+ * @version 1.1.0
  */
 public class MessageIds {
 
@@ -15,6 +15,8 @@ public class MessageIds {
     public static final short LOGIN = 101;
     public static final short LOGIN_SUCCESS = 102;
     public static final short LOGIN_FAILED = 103;
+    public static final short GAME_INIT_REQUEST = 105;
+    public static final short GAME_INIT_RESPONSE = 106;
 
     // ========== 认证类 (1xxx) ==========
     public static final short AUTH = 1001;
@@ -28,6 +30,12 @@ public class MessageIds {
     // ========== 游戏逻辑类 (3xxx) ==========
     public static final short GET_PLAYER_INFO = 3010;
     public static final short PLAYER_INFO = 3011;
+    public static final short PLAYER_LEVEL_UP_REQUEST = 3012;
+    public static final short PLAYER_LEVEL_UP_RESPONSE = 3013;
+    public static final short FUNCTION_OPEN_STATES = 4001;
+    public static final short FUNCTION_OPEN_PUSH = 4002;
+    public static final short GUIDE_PROGRESS_REQUEST = 4101;
+    public static final short GUIDE_PROGRESS_RESPONSE = 4102;
 
     // ========== 系统类 (9xxx) ==========
     public static final short ERROR = 9001;
@@ -36,6 +44,8 @@ public class MessageIds {
 
     // 私有构造函数（工具类）
     private MessageIds() {}
+
+
 
     /**
      * 根据ID获取消息名称（用于日志）
@@ -48,6 +58,8 @@ public class MessageIds {
             case 101: return "LOGIN";
             case 102: return "LOGIN_SUCCESS";
             case 103: return "LOGIN_FAILED";
+            case 105: return "GAME_INIT_REQUEST";
+            case 106: return "GAME_INIT_RESPONSE";
             case 1001: return "AUTH";
             case 1002: return "AUTH_SUCCESS";
             case 1003: return "AUTH_FAILED";
@@ -55,6 +67,12 @@ public class MessageIds {
             case 2002: return "HEARTBEAT_RESPONSE";
             case 3010: return "GET_PLAYER_INFO";
             case 3011: return "PLAYER_INFO";
+            case 3012: return "PLAYER_LEVEL_UP_REQUEST";
+            case 3013: return "PLAYER_LEVEL_UP_RESPONSE";
+            case 4001: return "FUNCTION_OPEN_STATES";
+            case 4002: return "FUNCTION_OPEN_PUSH";
+            case 4101: return "GUIDE_PROGRESS_REQUEST";
+            case 4102: return "GUIDE_PROGRESS_RESPONSE";
             case 9001: return "ERROR";
             case 9002: return "NOTIFICATION";
             case 9004: return "KICK";

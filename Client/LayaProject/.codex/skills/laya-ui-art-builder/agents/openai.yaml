@@ -1,4 +1,4 @@
 interface:
   display_name: "Laya UI Art Builder"
-  short_description: "Generate and adjust LayaAir UI art assets, test scenes, and .ls/.lh layouts."
-  default_prompt: "Use this skill to create or adjust LayaAir UI art assets, test/sample .ls scenes, .lh prefabs, and preserve project Laya resource rules."
+  short_description: "Design and assemble LayaAir UI screens and assets."
+  default_prompt: "Use $laya-ui-art-builder to design a complete LayaAir UI at 750x1335, reuse common assets, slice production PNGs, and assemble the final .lh or .ls."

@@ -3,6 +3,7 @@ import { ItemMgr } from "./ItemMgr";
 import { BagChangeData, BagSnapshotData } from "./BagData";
 import { BagInfo } from "./BagInfo";
 import { BagProtocol } from "./BagProtocol";
+import { BagInitData } from "../init/GameInitData";
 
 /** Public runtime entry point for the player bag. */
 export class BagMgr implements IManager {
@@ -63,6 +64,12 @@ export class BagMgr implements IManager {
         if (!snapshot) return false;
         this._bag.loadSnapshot(snapshot);
         return this.usedSlots <= this.capacity;
+    }
+    applyInit(data: BagInitData): boolean {
+        return this.loadSnapshot({
+            Capacity: data?.capacity ?? 40,
+            Items: (data?.items || []).map(item => ({ ItemID: item.itemId, Count: item.count }))
+        });
     }
     setCapacity(capacity: number): boolean { return this._bag.setCapacity(capacity, id => ItemMgr.instance.getItem(id)); }
 

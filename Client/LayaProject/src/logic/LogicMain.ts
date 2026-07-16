@@ -13,9 +13,16 @@ import { SkillMgr } from "./skill/SkillMgr";
 import { ItemMgr } from "./item/ItemMgr";
 import { BagMgr } from "./item/BagMgr";
 import { ConfigMgr } from "./config/ConfigMgr";
+import { FunctionOpenMgr } from "./functionOpen/FunctionOpenMgr";
+import { PlayerMgr } from "./player/PlayerMgr";
+import { WalletMgr } from "./wallet/WalletMgr";
+import { DialogMgr } from "./ui/dialog/DialogMgr";
+import { GuideMgr } from "./guide/GuideMgr";
+import { GuideCommandRegistry } from "./guide/GuideCommandRegistry";
 
 // 导入场景类并注册到 window（供 SceneMgr 动态创建）
 import { MainScene } from "./mainScene/MainScene";
+import { BattleScene } from "./battleScene/BattleScene";
 
 
 
@@ -43,6 +50,7 @@ export class LogicMain {
 
         // 1.5 注册场景类到 window（供 SceneMgr 动态创建）
         (Laya.Browser.window as any).MainScene = MainScene;
+        (Laya.Browser.window as any).BattleScene = BattleScene;
 
         // 2. 初始化配置管理器（必须在其他 Manager 之前完成）
         await ConfigMgr.instance.init();
@@ -52,8 +60,14 @@ export class LogicMain {
         ManagerHub.instance.register(SkillMgr.instance);
         ManagerHub.instance.register(ItemMgr.instance);
         ManagerHub.instance.register(BagMgr.instance);
+        ManagerHub.instance.register(FunctionOpenMgr.instance);
+        ManagerHub.instance.register(PlayerMgr.instance);
+        ManagerHub.instance.register(WalletMgr.instance);
         ManagerHub.instance.register(SceneMgr.instance);  // 场景管理器
         ManagerHub.instance.register(UIManager.instance);
+        ManagerHub.instance.register(DialogMgr.instance);
+        GuideCommandRegistry.instance.register("player.levelUp", () => PlayerMgr.instance.levelUp());
+        ManagerHub.instance.register(GuideMgr.instance);
 
 
         // 4. 初始化所有 Manager
@@ -93,6 +107,14 @@ export class LogicMain {
 
             // 2. 登录到 Game Server
             const userId = App.network.userId || "guest_" + Date.now();
+            App.loginMgr.onGameLoginSuccess = () => {
+                FunctionOpenMgr.instance.requestFullState();
+            };
+            if (App.networkManager.reconnectManager) {
+                App.networkManager.reconnectManager.onReconnected = () => {
+                    App.loginMgr.sendGameLogin(userId);
+                };
+            }
 
             // ✅ 通过 App 访问 LoginMgr
             App.loginMgr.sendGameLogin(userId);

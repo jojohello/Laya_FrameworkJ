@@ -25,7 +25,13 @@ Rules:
 | `assets/ui/common/imgs/title-bg.png` | Common title bar/title plate background | generated v4 title bar | 540x132 | 9-slice/title bg | replaced | Kept old meta/uuid. |
 | `assets/ui/common/imgs/view-bg-1.png` | Common horizontal panel/background plate | generated v4 panel | 505x166 | panel bg | replaced | Kept old meta/uuid. Because the old asset is shallow, use this as a horizontal info panel. |
 | `assets/ui/common/imgs/view-bg-2.png` | Small reward/item frame or small panel | generated v4 reward frame | 177x178 | item/reward frame | replaced | Kept old meta/uuid. Center kept clean for item icons. |
-| `assets/ui/common/imgs/btn-add.png` | Add button icon | generated v4 add button | 99x98 | independent button icon | replaced | Kept old meta/uuid. |
+| `assets/ui/common/imgs/btn-add.png` | Canonical compact add icon | unified top-HUD production sheet | 28x28 | independent icon | replaced | Kept the common meta/UUID; supersedes the redundant HUD-specific copy. |
+| `assets/ui/common/imgs/player-avatar-frame.png` | Canonical circular player portrait frame | unified top-HUD production sheet | 88x88 | independent overlay | replaced | Kept the common meta/UUID; supersedes the redundant main-scene copy. |
+| `assets/ui/common/imgs/currency-crystal.png` | Premium-currency icon | approved top-HUD production sheet | 44x56 | independent icon | ready | No baked amount; formal currency Item remains to be configured. |
+| `assets/ui/common/imgs/currency-gold.png` | Gold currency icon | approved top-HUD production sheet | 52x52 | independent icon | ready | Wallet balance uses Item ID 1001. |
+| `assets/ui/common/imgs/stamina-potion.png` | Stamina icon | approved top-HUD production sheet | 54x58 | independent icon | ready | No baked amount or maximum. |
+| `assets/ui/common/imgs/exp-track.png` | Compact EXP track | approved top-HUD production sheet | 196x22 | independent bar background | ready | Dark track with restrained gold edge. |
+| `assets/ui/common/imgs/exp-fill.png` | Compact EXP fill | approved top-HUD production sheet | 190x14 | independent bar fill | ready | Green fill kept separate from the track. |
 | `assets/ui/common/imgs/btn-setting.png` | Settings button icon | generated v4 settings icon | 142x143 | independent button icon | replaced | Kept old meta/uuid. Slight cyan edge is acceptable at target size; revisit if visible in UI. |
 | `assets/ui/common/imgs/red-point.png` | Notification red dot | generated v4 red point | 80x81 | independent notification icon | replaced | Kept old meta/uuid. No baked symbol/text. |
 | `assets/ui/common/imgs/panel-bg.png` | Large common window panel for manual assembly | generated v4 panel | 640x399 | independent/9-slice panel | ready | New formal asset. Use for large windows instead of stretching `view-bg-1.png`. |
@@ -44,6 +50,8 @@ Rules:
 | `assets/ui/mainscene/imgs/icon-cup.png` | Ranking/cup feature icon | generated v4 trophy icon | 234x189 | system button icon | replaced | Kept old meta/uuid. Gold is bright; revisit only if it overpowers UI in screen. |
 | `assets/ui/mainscene/imgs/icon-flag.png` | Task/flag feature icon | generated v4 task flag icon | 235x244 | system button icon | replaced | Kept old meta/uuid. |
 | `assets/ui/mainscene/imgs/icon-battle.png` | Battle/arena entrance feature icon | generated v4 crossed swords arena icon | 220x210 | system button icon | ready | New formal asset for opening the battlefield screen. Let Laya generate `.meta`. |
+| `assets/ui/mainscene/imgs/player-profile-bg.png` | Compact top-HUD support strip | unified top-HUD production sheet | 520x54 | fixed horizontal background | replaced | Desaturated teal-blue center with shared honey-gold/cyan treatment; existing UUID preserved. |
+| `assets/ui/mainscene/imgs/player-level-badge.png` | Empty level badge | unified top-HUD production sheet | 36x36 | independent overlay | replaced | Level text is rendered by Laya. |
 
 ## Big Image Assets
 

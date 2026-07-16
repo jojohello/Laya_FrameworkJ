@@ -12,6 +12,8 @@
 export const LOGIN = 101;
 export const LOGIN_SUCCESS = 102;
 export const LOGIN_FAILED = 103;
+export const GAME_INIT_REQUEST = 105;
+export const GAME_INIT_RESPONSE = 106;
 
 // ========== 认证类 (1xxx) ==========
 export const AUTH = 1001;
@@ -25,6 +27,12 @@ export const HEARTBEAT_RESPONSE = 2002;
 // ========== 游戏逻辑类 (3xxx) ==========
 export const GET_PLAYER_INFO = 3010;
 export const PLAYER_INFO = 3011;
+export const PLAYER_LEVEL_UP_REQUEST = 3012;
+export const PLAYER_LEVEL_UP_RESPONSE = 3013;
+
+// ========== 系统开启类 (4xxx) ==========
+export const FUNCTION_OPEN_STATES = 4001;
+export const FUNCTION_OPEN_PUSH = 4002;
 
 // ========== 系统类 (9xxx) ==========
 export const ERROR = 9001;
@@ -38,6 +46,8 @@ export const MessageIds = {
     LOGIN,
     LOGIN_SUCCESS,
     LOGIN_FAILED,
+    GAME_INIT_REQUEST,
+    GAME_INIT_RESPONSE,
     AUTH,
     AUTH_SUCCESS,
     AUTH_FAILED,
@@ -45,6 +55,10 @@ export const MessageIds = {
     HEARTBEAT_RESPONSE,
     GET_PLAYER_INFO,
     PLAYER_INFO,
+    PLAYER_LEVEL_UP_REQUEST,
+    PLAYER_LEVEL_UP_RESPONSE,
+    FUNCTION_OPEN_STATES,
+    FUNCTION_OPEN_PUSH,
     ERROR,
     NOTIFICATION,
     KICK
@@ -66,6 +80,8 @@ export function getMessageName(id: number): string {
         case 101: return "LOGIN";
         case 102: return "LOGIN_SUCCESS";
         case 103: return "LOGIN_FAILED";
+        case 105: return "GAME_INIT_REQUEST";
+        case 106: return "GAME_INIT_RESPONSE";
         case 1001: return "AUTH";
         case 1002: return "AUTH_SUCCESS";
         case 1003: return "AUTH_FAILED";
@@ -73,6 +89,10 @@ export function getMessageName(id: number): string {
         case 2002: return "HEARTBEAT_RESPONSE";
         case 3010: return "GET_PLAYER_INFO";
         case 3011: return "PLAYER_INFO";
+        case 3012: return "PLAYER_LEVEL_UP_REQUEST";
+        case 3013: return "PLAYER_LEVEL_UP_RESPONSE";
+        case 4001: return "FUNCTION_OPEN_STATES";
+        case 4002: return "FUNCTION_OPEN_PUSH";
         case 9001: return "ERROR";
         case 9002: return "NOTIFICATION";
         case 9004: return "KICK";
@@ -91,6 +111,8 @@ export function getMessageId(name: string): number | null {
         case "LOGIN": return 101;
         case "LOGIN_SUCCESS": return 102;
         case "LOGIN_FAILED": return 103;
+        case "GAME_INIT_REQUEST": return 105;
+        case "GAME_INIT_RESPONSE": return 106;
         case "AUTH": return 1001;
         case "AUTH_SUCCESS": return 1002;
         case "AUTH_FAILED": return 1003;
@@ -98,6 +120,10 @@ export function getMessageId(name: string): number | null {
         case "HEARTBEAT_RESPONSE": return 2002;
         case "GET_PLAYER_INFO": return 3010;
         case "PLAYER_INFO": return 3011;
+        case "PLAYER_LEVEL_UP_REQUEST": return 3012;
+        case "PLAYER_LEVEL_UP_RESPONSE": return 3013;
+        case "FUNCTION_OPEN_STATES": return 4001;
+        case "FUNCTION_OPEN_PUSH": return 4002;
         case "ERROR": return 9001;
         case "NOTIFICATION": return 9002;
         case "KICK": return 9004;

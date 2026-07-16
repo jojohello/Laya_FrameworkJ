@@ -20,12 +20,27 @@ const yaml = require('js-yaml');
 // ========== 配置 ==========
 const CONFIG = {
     yamlFile: path.join(__dirname, '..', 'message-ids.yaml'),
-    javaOutput: path.join(__dirname, '..', 'generated', 'java', 'MessageIds.java'),
+    javaOutputs: [
+        {
+            path: path.join(__dirname, '..', 'generated', 'java', 'MessageIds.java'),
+            packageName: 'com.laya.game.protocol',
+            scopes: null,
+        },
+        {
+            path: path.join(__dirname, '..', '..', 'Sever', 'game-server', 'src', 'main', 'java', 'com', 'laya', 'game', 'game', 'protocol', 'MessageIds.java'),
+            packageName: 'com.laya.game.game.protocol',
+            scopes: ['game', 'shared'],
+        },
+        {
+            path: path.join(__dirname, '..', '..', 'Sever', 'gateway-server', 'src', 'main', 'java', 'com', 'laya', 'game', 'gateway', 'protocol', 'MessageIds.java'),
+            packageName: 'com.laya.game.gateway.protocol',
+            scopes: ['gateway', 'shared'],
+        },
+    ],
     // TypeScript 输出位置：直接输出到 Logic 包
     tsOutput: path.join(__dirname, '..', '..', 'Client', 'LayaProject', 'src', 'logic', 'common', 'MessageIds.ts'),
     // 备份位置（generated 目录，用于对比）
     tsBackup: path.join(__dirname, '..', 'generated', 'typescript', 'MessageIds.ts'),
-    javaPackage: 'com.laya.game.protocol',
 };
 
 // ========== 主函数 ==========
@@ -46,10 +61,13 @@ function main() {
 
         // 3. 生成 Java 代码
         console.log('🔨 生成 Java 代码...');
-        const javaCode = generateJavaCode(messages, config.version);
-        fs.mkdirSync(path.dirname(CONFIG.javaOutput), { recursive: true });
-        fs.writeFileSync(CONFIG.javaOutput, javaCode, 'utf8');
-        console.log('✅ 生成完成:', CONFIG.javaOutput);
+        for (const output of CONFIG.javaOutputs) {
+            const outputMessages = filterMessagesForScopes(messages, output.scopes);
+            const javaCode = generateJavaCode(outputMessages, config.version, output.packageName, output.scopes);
+            fs.mkdirSync(path.dirname(output.path), { recursive: true });
+            fs.writeFileSync(output.path, javaCode, 'utf8');
+            console.log('✅ 生成完成:', output.path);
+        }
 
         // 4. 生成 TypeScript 代码
         console.log('🔨 生成 TypeScript 代码...');
@@ -68,7 +86,7 @@ function main() {
         console.log('\n================================');
         console.log('🎉 代码生成成功！');
         console.log('\n📋 生成的文件：');
-        console.log('  1. Java:', CONFIG.javaOutput);
+        console.log('  1. Java:', CONFIG.javaOutputs.map(output => output.path).join(', '));
         console.log('  2. TypeScript (Logic 包):', CONFIG.tsOutput);
         console.log('  3. TypeScript (备份):', CONFIG.tsBackup);
         console.log('\n⚠️ 注意：');
@@ -97,17 +115,28 @@ function parseMessages(config) {
         }
 
         // 验证消息ID
-        if (typeof value !== 'number') {
-            throw new Error(`消息 "${key}" 的ID必须是数字，当前值: ${value}`);
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            throw new Error(`消息 "${key}" 必须使用 { id, scope } 格式`);
         }
 
-        if (value < 0 || value > 65535) {
-            throw new Error(`消息 "${key}" 的ID必须在 0-65535 范围内，当前值: ${value}`);
+        const { id, scope } = value;
+
+        if (typeof id !== 'number') {
+            throw new Error(`消息 "${key}" 的id必须是数字，当前值: ${id}`);
+        }
+
+        if (!['gateway', 'game', 'shared'].includes(scope)) {
+            throw new Error(`消息 "${key}" 的scope必须是 gateway、game 或 shared，当前值: ${scope}`);
+        }
+
+        if (id < 0 || id > 65535) {
+            throw new Error(`消息 "${key}" 的ID必须在 0-65535 范围内，当前值: ${id}`);
         }
 
         messages.push({
             name: key,
-            id: value
+            id,
+            scope
         });
     }
 
@@ -126,11 +155,13 @@ function parseMessages(config) {
     return messages;
 }
 
-// ========== 生成 Java 代码 ==========
-function generateJavaCode(messages, version) {
-    const timestamp = new Date().toISOString().split('T')[0];
+function filterMessagesForScopes(messages, scopes) {
+    return scopes ? messages.filter(message => scopes.includes(message.scope)) : messages;
+}
 
-    let code = `package ${CONFIG.javaPackage};
+// ========== 生成 Java 代码 ==========
+function generateJavaCode(messages, version, packageName = 'com.laya.game.protocol', scopes = null) {
+    let code = `package ${packageName};
 
 /**
  * 消息ID定义
@@ -138,7 +169,7 @@ function generateJavaCode(messages, version) {
  * ⚠️ 此文件由 Protocol/message-ids.yaml 自动生成
  * ⚠️ 请勿手动修改，修改请编辑 message-ids.yaml 后重新生成
  *
- * @generated ${timestamp}
+ * @generated
  * @version ${version}
  */
 public class MessageIds {
@@ -158,6 +189,26 @@ public class MessageIds {
 
     code += `    // 私有构造函数（工具类）
     private MessageIds() {}
+
+`;
+
+    if (scopes && scopes.includes('gateway')) {
+        const gatewayMessages = messages.filter(message => message.scope === 'gateway');
+        code += `    /** 判断消息是否属于 Gateway 本地协议。 */
+    public static boolean isGatewayScoped(short id) {
+        switch (id) {
+`;
+        for (const msg of gatewayMessages) {
+            code += `            case ${msg.id}: return true;\n`;
+        }
+        code += `            default: return false;
+        }
+    }
+
+`;
+    }
+
+    code += `
 
     /**
      * 根据ID获取消息名称（用于日志）
@@ -184,15 +235,13 @@ public class MessageIds {
 
 // ========== 生成 TypeScript 代码 ==========
 function generateTypeScriptCode(messages, version) {
-    const timestamp = new Date().toISOString().split('T')[0];
-
     let code = `/**
  * 消息ID定义
  *
  * ⚠️ 此文件由 Protocol/message-ids.yaml 自动生成
  * ⚠️ 请勿手动修改，修改请编辑 message-ids.yaml 后重新生成
  *
- * @generated ${timestamp}
+ * @generated
  * @version ${version}
  */
 
@@ -329,4 +378,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { parseMessages, generateJavaCode, generateTypeScriptCode };
+module.exports = { parseMessages, filterMessagesForScopes, generateJavaCode, generateTypeScriptCode };

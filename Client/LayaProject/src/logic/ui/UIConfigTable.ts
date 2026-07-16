@@ -43,7 +43,7 @@ export const UIConfigTable: { [name: string]: any } = {
     "CommonDialog": {
         path: "ui/dialog/commonDialog.ls",
         layerName: "TipWindow",
-        zOrder: UILayer.TipWindow,
+        zOrder: UILayer.Pop,
         singleton: true,
         autoDestroy: true,
         enterAnim: true,

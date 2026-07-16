@@ -1,6 +1,6 @@
 # Protocol 消息 ID 系统
 
-`Protocol` 维护前后端通信消息 ID。`message-ids.yaml` 是唯一编辑入口，Node.js 工具生成 TypeScript 与 Java 常量。
+`Protocol` 维护前后端通信消息 ID 和服务器处理作用域。`message-ids.yaml` 是唯一编辑入口，Node.js 工具生成 TypeScript 与按作用域过滤的 Java 常量。
 
 ## 目录
 
@@ -34,19 +34,21 @@ npm run generate
 - `Protocol/generated/java/MessageIds.java`
 - `Protocol/generated/typescript/MessageIds.ts`
 - `Client/LayaProject/src/logic/common/MessageIds.ts`
+- `Sever/game-server/.../protocol/MessageIds.java`
+- `Sever/gateway-server/.../protocol/MessageIds.java`
 
-客户端 TypeScript 输出已自动同步。Gateway 与 Game Server 使用各自包名下的 `MessageIds.java`，当前尚未由生成器直接写入；协议变更时必须人工同步并通过服务器构建确认，自动化工作已记录在当前 Plan。
+生成器会按每个 Java 消费端的正确 package 和 scope 直接写入：客户端获得全部协议，Game Server 获得 `game/shared`，Gateway 获得 `gateway/shared`。协议变更后不得再手工复制或修补常量文件。
 
 ## 添加消息
 
-在 YAML 中使用唯一的 `UPPER_SNAKE_CASE` 名称与数值：
+在 YAML 中使用唯一的 `UPPER_SNAKE_CASE` 名称、数值和作用域：
 
 ```yaml
-ITEM_USE: 5001
-ITEM_USE_RESULT: 5002
+ITEM_USE: { id: 5001, scope: game }
+ITEM_USE_RESULT: { id: 5002, scope: game }
 ```
 
-运行生成器后，同时提交 YAML、`generated` 中的输出、客户端生成文件以及受影响的服务器消费端。
+普通业务协议使用 `game`，运行生成器后不应改变 Gateway 的常量文件。认证、心跳等 Gateway 本地协议使用 `gateway`；两端都要引用的系统协议使用 `shared`。
 
 ## 当前编号范围
 

@@ -2,7 +2,7 @@
 
 ## 作用域
 
-本目录只统一消息名称与数值 ID，不定义完整消息负载 schema。字段结构和处理语义仍由客户端、Gateway 与 Game Server 的消费代码共同形成契约。
+本目录统一消息名称、数值 ID 和服务器处理作用域，不定义完整消息负载 schema。字段结构和处理语义仍由客户端、Gateway 与 Game Server 的消费代码共同形成契约。
 
 ## 唯一来源
 
@@ -12,6 +12,7 @@
 
 - 同一输入重复生成得到相同语义结果。
 - 名称唯一、ID 唯一，ID 位于 0-65535。
+- 每条消息必须声明 `gateway`、`game` 或 `shared` 作用域。
 - 所有纳入版本管理的消费端都能检测与 YAML 的漂移。
 - 一次协议变更同时更新客户端与服务器并共同发布。
 
@@ -29,9 +30,17 @@
 
 修改这些 ID 时必须同时修改 YAML、生成结果和 Start 常量，并实际验证登录。长期方向是让 Start 也消费由 YAML 派生的最小生成文件，消除人工同步。
 
+## 协议作用域
+
+- `gateway`：Gateway 本地处理或产生的认证、心跳和网关控制协议。
+- `game`：由 Game Server 处理或产生的游戏业务协议。
+- `shared`：Gateway 与 Game Server 都需要使用的系统协议。
+
+客户端生成全部协议。Game Server 只生成 `game/shared`，Gateway 只生成 `gateway/shared`。Gateway 仅本地处理 `gateway` 消息；已认证连接上的其他消息默认透明转发，是否支持由 Game Server 决定。因此新增普通 `game` 协议不得要求修改或重新发布 Gateway。
+
 ## Java 消费端
 
-Gateway 与 Game Server 的 Java 类位于不同包。通用生成文件的包名不能直接复制后编译，因此生成器应为每个消费端按目标包生成内容，而不是依赖手改 package 或只比较常量。
+Gateway 与 Game Server 的 Java 类位于不同包且消费的作用域不同。生成器必须同时按目标 package 和 scope 过滤输出，而不是依赖手改、复制完整常量集或业务白名单。
 
 在自动化完成前，任何 YAML 变化都要检查：
 

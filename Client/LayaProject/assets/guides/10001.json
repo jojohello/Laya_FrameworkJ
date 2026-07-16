@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "flowId": 10001,
+  "steps": [
+    {
+      "stepId": 1,
+      "waitFor": [
+        {
+          "type": "sceneActive",
+          "params": {
+            "sceneId": 1
+          }
+        },
+        {
+          "type": "uiReady",
+          "params": {
+            "view": "MainUI"
+          }
+        },
+        {
+          "type": "dialogIdle",
+          "params": {}
+        }
+      ],
+      "actions": [
+        {
+          "type": "showConfirmDialog",
+          "params": {
+            "title": "新手引导",
+            "message": "欢迎来到冒险世界！\n确认后将升至2级并开启战斗地图。",
+            "confirmText": "确定",
+            "showClose": false
+          }
+        }
+      ]
+    },
+    {
+      "stepId": 2,
+      "actions": [
+        {
+          "type": "invokeCommand",
+          "params": {
+            "commandKey": "player.levelUp"
+          }
+        }
+      ]
+    },
+    {
+      "stepId": 3,
+      "waitFor": [
+        {
+          "type": "playerLevelAtLeast",
+          "params": {
+            "level": 2
+          }
+        }
+      ],
+      "actions": []
+    }
+  ]
+}

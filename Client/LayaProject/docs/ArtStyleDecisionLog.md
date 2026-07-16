@@ -176,6 +176,28 @@ Future prompt add-on:
 Ensure clear separation from a bright pastel fantasy background: slightly stronger border, soft dark grounding/shadow, and a panel center hue that does not merge with castle stone, grass, or sky.
 ```
 
+## 2026-07-16: Main Scene Top HUD Decision
+
+The complete top-HUD concept was approved before production slicing. The locked composition is:
+
+- a compact medium-dark desaturated teal-blue leather support instead of a pale parchment information panel or a near-black bar
+- a circular avatar overlapping the left edge as the main visual anchor
+- a small attached level badge, player name, and a thin green EXP bar
+- compact currency and stamina groups continuing on the same strip
+- restrained honey-gold outlines with cyan reserved for magic and add actions
+
+Production rules learned from the rejected assembly:
+
+- design and approve the complete silhouette and information density before cutting independent assets
+- do not let one generic panel background determine the whole composition
+- keep fixed end caps and decorations in the strip image, while keeping icons, values, avatar, badge, and progress fill independent
+- export close to the intended runtime display size; do not retain oversized source pixels in formal UI assets
+- render all player names, levels, balances, stamina, and progress values through Laya text/data binding
+- the top HUD is screen UI, not scene-space HUD; scene-object health bars must not be used as its layout reference
+- design and review it on the full `750x1335` canvas; the finalized logical bounds are approximately `560x88`, about 75% of screen width and 6.6% of screen height
+- keep raster dimensions close to runtime size: the support strip is `520x54`, the common portrait frame is `88x88`, the level badge is `36x36`, and the common add icon is `28x28`
+- share one teal-blue center, soft honey-gold border, cyan accent, border weight, and highlight direction across the strip, portrait frame, level badge, and add icon
+
 ## Reuse Planning Rule
 
 Before producing final screen-specific UI, define reusable assets first:

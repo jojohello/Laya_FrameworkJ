@@ -1,6 +1,6 @@
 # Framework-J Server
 
-Framework-J's server side is a Java 25 and Spring Boot 3.2 multi-module project. It provides login, session and gateway allocation, client connection proxying, and game-message routing.
+Framework-J's server side is a Java 21 bytecode target and Spring Boot 3.2 multi-module project. It provides login, session and gateway allocation, client connection proxying, and game-message routing.
 
 ## Active Services
 
@@ -16,7 +16,7 @@ Framework-J's server side is a Java 25 and Spring Boot 3.2 multi-module project.
 
 ## Start
 
-Prerequisites are JDK 25, Maven, Redis, and any database required by the selected profile.
+Prerequisites are JDK 21 or newer, Maven, Redis, and any database required by the selected profile. Builds must keep the Maven compiler release at 21; Java 25 class files are not compatible with Spring Boot 3.2.0's component-scanning ASM.
 
 ```powershell
 mvn clean package

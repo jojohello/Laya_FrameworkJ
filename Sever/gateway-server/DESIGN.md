@@ -23,6 +23,8 @@ The current disconnect path removes the live session immediately. Reconnect rete
 
 Do not block WebSocket callback threads on gameplay work. Do not trust routing fields supplied by an unauthenticated client.
 
+Message scope comes from `Protocol/message-ids.yaml`. Gateway handles only `gateway`-scoped messages locally. Every other message from an authenticated session is forwarded to Game Server without a gameplay allowlist; unknown business IDs are rejected by Game Server, not Gateway. Before forwarding, Gateway must overwrite `userId`, `sessionId`, and `gatewayId` from trusted session state after copying client data so those routing fields cannot be spoofed.
+
 ## Lifecycle
 
 Gateway heartbeats Central every 5 seconds and actively unregisters during graceful shutdown. Central timeout detection is the fallback. Registry-change callbacks should update Game Server connections; polling is recovery behavior.

@@ -6,6 +6,7 @@ import { Config } from "../Config";
 import { LoginProtocol } from "./LoginProtocol";
 
 export class LoginMgr {
+    public onGameLoginSuccess: (() => void) | null = null;
     private static _instance: LoginMgr;
     private _sdkMgr: SDKMgr;
     private _isLoggedIn: boolean = false;
@@ -205,6 +206,7 @@ export class LoginMgr {
      */
     public async handleLoginSuccess(data: any): Promise<void> {
         this._isLoggedIn = true;
+        this.onGameLoginSuccess?.();
     }
 
     /**

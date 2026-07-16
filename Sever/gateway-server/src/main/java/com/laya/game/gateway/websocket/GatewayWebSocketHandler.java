@@ -91,18 +91,30 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
                 sendErrorMessage(session, "Message missing msgId");
                 return;
             }
-            // 根据 msgId 路由到不同的处理方法
-            if (msgId == MessageIds.AUTH) {
-                handleAuthMessage(session, clientSession, incomingMessage);
-            } else if (msgId == MessageIds.HEARTBEAT) {
-                handleHeartbeatMessage(session, clientSession, incomingMessage);
-            } else if (msgId == MessageIds.LOGIN || msgId == MessageIds.GET_PLAYER_INFO) {
-                // 业务消息：转发到Game Server
-                handleBusinessMessage(session, clientSession, incomingMessage);
-            } else {
-                log.warn("Unknown message ID: {} ({}) from session: {}", msgId, MessageIds.getName(msgId), sessionId);
-                sendErrorMessage(session, "Unknown message ID: " + msgId);
+            if (MessageIds.isGatewayScoped(msgId)) {
+                if (msgId == MessageIds.AUTH) {
+                    handleAuthMessage(session, clientSession, incomingMessage);
+                } else if (msgId == MessageIds.HEARTBEAT) {
+                    if (!clientSession.isAuthenticated()) {
+                        sendErrorMessage(session, "Authentication required");
+                        return;
+                    }
+                    handleHeartbeatMessage(session, clientSession, incomingMessage);
+                } else {
+                    log.warn("Client sent non-request Gateway message: msgId={}, sessionId={}", msgId, sessionId);
+                    sendErrorMessage(session, "Unsupported Gateway message");
+                }
+                return;
             }
+
+            if (!clientSession.isAuthenticated() || clientSession.getUserId() == null) {
+                log.warn("Unauthenticated business message rejected: msgId={}, sessionId={}", msgId, sessionId);
+                sendErrorMessage(session, "Authentication required");
+                return;
+            }
+
+            // 非 Gateway 作用域一律视为业务消息；Game Server 决定是否支持该 MessageID。
+            handleBusinessMessage(session, clientSession, incomingMessage);
         } catch (Exception e) {
             log.error("Error handling WebSocket message from {}: {}", sessionId, e.getMessage(), e);
             sendErrorMessage(session, "Message processing error: " + e.getMessage());
@@ -194,7 +206,7 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
     }
 
     /**
-     * 处理业务消息（不需要认证）
+     * 处理已认证业务消息
      *
      * 新架构：
      * - userId 在消息顶层，Gateway 直接读取，不解析 data
@@ -209,26 +221,21 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
             forwardMessage.setMsgId(message.getMsgId());
             forwardMessage.setMessage(message.getMessage());
             // 路由信息：直接从消息头部读取（不解析 data）
-            forwardMessage.setUserId(message.getUserId());
-            // Gateway 附加信息
+            // 业务数据先复制，随后由 Gateway 覆盖可信路由字段，禁止客户端伪造。
             @SuppressWarnings("unchecked")
             Map<String, Object> enrichedData = new java.util.HashMap<>();
-            enrichedData.put("gatewayId", getGatewayId());
-            enrichedData.put("sessionId", clientSession.getSessionId());
-            // 如果客户端 session 已经有 userId，优先使用（已认证的用户）
-            if (clientSession.getUserId() != null) {
-                forwardMessage.setUserId(clientSession.getUserId());
-            }
-            // 保留原始业务数据（不修改）
             if (message.getData() != null) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> originalData = message.getData() instanceof Map ? (Map<String, Object>) message.getData() : new java.util.HashMap<>();
                 enrichedData.putAll(originalData);
             }
+            enrichedData.put("gatewayId", getGatewayId());
+            enrichedData.put("sessionId", clientSession.getSessionId());
+            forwardMessage.setUserId(clientSession.getUserId());
             forwardMessage.setData(enrichedData);
             // 序列化为JSON
             String json = objectMapper.writeValueAsString(forwardMessage);
-            log.info("转发业务消息到Game Server: msgId={} ({}), userId={}, sessionId={}", message.getMsgId(), MessageIds.getName(message.getMsgId()), forwardMessage.getUserId(), clientSession.getSessionId());
+            log.info("转发业务消息到Game Server: msgId={}, userId={}, sessionId={}", message.getMsgId(), forwardMessage.getUserId(), clientSession.getSessionId());
             // 转发到Game Server
             boolean success = gameServerConnectionManager.forwardToGameServer(json);
             if (!success) {
@@ -269,7 +276,8 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
      * 发送错误消息
      */
     private void sendErrorMessage(WebSocketSession session, String error) {
-        sendMessage(session, new WebSocketMessage(MessageIds.ERROR, error, Map.of("timestamp", System.currentTimeMillis())));
+        sendMessage(session, new WebSocketMessage(MessageIds.ERROR, error,
+                Map.of("reason", error, "timestamp", System.currentTimeMillis())));
     }
 
     /**

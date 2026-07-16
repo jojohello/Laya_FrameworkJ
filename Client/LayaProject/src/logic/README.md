@@ -12,13 +12,15 @@
 |------|--------------------|
 | `config` | `ConfigMgr` |
 | `resource` | `ResourceMgr` |
-| `scene` | `SceneMgr`、`BaseScene` |
+| `scene` | `SceneMgr`、`BaseScene`、`BattleScene` |
 | `sceneObj` | `BaseSceneObj` 及对象类型 |
 | `ui` | `UIManager` |
+| `mainScene` | `MainSceneView` loads the compact `ui/mainscene/playerProfile.lh` HUD and binds player/Wallet/function-open state |
 | `skill` | `SkillMgr`、`SkillAgent` |
 | `item` | `ItemMgr`、`BagMgr` |
 | `ai` | `AIAgent`、`AIScheduler` |
 | `action` | `ActionFactory`、Action 执行体系 |
+| `guide` | `GuideMgr`、双端条件、异步引导流程与服务器进度同步 |
 | `damage` | `DamageExecutor` |
 | `map` | `SceneMapFactory` |
 

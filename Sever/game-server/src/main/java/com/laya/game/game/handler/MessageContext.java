@@ -48,20 +48,18 @@ public class MessageContext {
      * 优先级：在 sendResponse() 时，sessionId > userId > gatewayId
      */
     private String sessionId;
-    // private String playerId;  // 预留字段，Phase 2 启用
     /**
      * 角色ID（Player/Character ID）
      *
-     * 含义：游戏角色的唯一标识（当前未实现，预留字段）
+     * 含义：Game Server 内部生成的游戏角色唯一标识
      * 来源：首次进入游戏时创建，或从角色列表中选择
      * 作用：
      *   1. 角色级操作：背包、装备、技能、任务等游戏数据
      *   2. 角色切换：一个账号可以有多个角色
      *   3. 业务逻辑：游戏功能主要使用 playerId 而非 userId
      *
-     * 示例：player_12345, char_abc123
-     *
-     * TODO: Phase 2 实现角色系统后启用此字段
+     * 当前零/单角色阶段由业务处理器根据已认证 userId 解析一次角色；多角色协议完成后，
+     * 应将选择结果绑定到会话上下文，不能接受客户端未经校验地指定 playerId。
      *
      * 设计思路：
      *   - userId: 账号维度（登录、充值、封号）

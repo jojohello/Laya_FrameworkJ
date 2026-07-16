@@ -1,0 +1,79 @@
+import { IManager } from "../../core/IManager";
+import { UILayer } from "../../core/LayerDef";
+import { UIManager } from "../UIManager";
+import { DialogHandle, DialogOptions } from "./IDialog";
+
+/** 统一管理模态弹窗，保证 mask、层级和回调生命周期一致。 */
+export class DialogMgr implements IManager {
+    private static _instance: DialogMgr;
+    static get instance(): DialogMgr {
+        if (!this._instance) this._instance = new DialogMgr();
+        return this._instance;
+    }
+
+    private _active: { root: Laya.Scene; overlay: Laya.Sprite; options: DialogOptions } | null = null;
+    private constructor() {}
+
+    async init(): Promise<void> {}
+    update(_dt: number): void {}
+    reset(): void { this.close(); }
+    release(): void { this.close(); }
+
+    async show(options: DialogOptions): Promise<DialogHandle> {
+        this.close();
+        const root = await UIManager.instance.open("CommonDialog", { modal: true });
+        if (!(root instanceof Laya.Scene)) throw new Error("CommonDialog resource did not create a Scene");
+        root.zOrder = UILayer.Pop;
+        const overlay = new Laya.Sprite();
+        overlay.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#000000");
+        overlay.alpha = 0.42;
+        overlay.mouseEnabled = true;
+        root.addChildAt(overlay, 0);
+        this._active = { root, overlay, options };
+        this.bindResource(root, options);
+        return { close: () => this.close() };
+    }
+
+    close(notifyClosed: boolean = true): void {
+        const active = this._active;
+        if (!active) return;
+        this._active = null;
+        if (notifyClosed) active.options.onClosed?.(false);
+        active.overlay.destroy();
+        UIManager.instance.close("CommonDialog");
+    }
+
+    get isOpened(): boolean { return this._active !== null; }
+
+    private bindResource(root: Laya.Scene, options: DialogOptions): void {
+        const panel = this.getChild(root, "panel");
+        const title = this.getChild(panel, "titleText") as any;
+        const context = this.getChild(panel, "contextText") as any;
+        const confirm = this.getChild(panel, "confirmButton") as any;
+        const cancel = this.getChild(panel, "cancelButton") as any;
+        const close = this.getChild(panel, "closeButton") as any;
+        const closeIcon = this.getChild(close, "icon") as any;
+        if (!panel || !title || !context || !confirm || !cancel || !close) {
+            throw new Error("CommonDialog resource is missing required nodes");
+        }
+        title.text = options.title || "提示";
+        context.text = options.message;
+        if (closeIcon) closeIcon.url = "ui/common/imgs/btn-close.png";
+        confirm.title = options.confirmText || "确定";
+        cancel.title = options.cancelText || "取消";
+        const controller = panel.getController?.("dialogButtons");
+        if (controller) controller.selectedIndex = options.cancelText ? 1 : 0;
+        cancel.visible = !!options.cancelText;
+        close.visible = options.showClose !== false;
+        close.touchable = options.showClose !== false;
+        confirm.x = options.cancelText ? 175 : 245;
+        confirm.on(Laya.Event.CLICK, this, () => { options.onConfirm?.(); options.onClosed?.(true); this.close(false); });
+        cancel.on(Laya.Event.CLICK, this, () => { options.onCancel?.(); options.onClosed?.(false); this.close(false); });
+        close.on(Laya.Event.CLICK, this, () => { options.onClose?.(); options.onClosed?.(false); this.close(false); });
+    }
+
+    private getChild(parent: any, name: string): any {
+        if (!parent) return null;
+        return parent.getChild?.(name) || parent.getChildByName?.(name) || null;
+    }
+}

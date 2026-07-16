@@ -68,3 +68,5 @@ WebSocket callbacks, scheduled heartbeats, and message executors run concurrentl
 - Never infer completion from an old checklist. Confirm classes, wiring, runtime behavior, and tests.
 - Do not claim production readiness while test coverage is absent or secrets have insecure defaults.
 - Keep source comments and documentation in UTF-8 without BOM and LF; do not bulk-rewrite generated artifacts.
+- Every service entry point must call the shared `Utf8Console.configure()` before Spring and logging initialization. This keeps Chinese console output UTF-8 under IDE, Maven, and packaged-JAR startup instead of relying only on launcher-specific JVM flags.
+- VS Code launch and task configurations must keep `logging.charset.console`, `stdout.encoding`, and `stderr.encoding` on UTF-8. A command-line `GBK` override takes precedence over `application.yml` and corrupts SLF4J output in the UTF-8 integrated terminal.
