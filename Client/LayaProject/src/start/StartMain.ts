@@ -61,6 +61,7 @@ export class StartMain {
         // 全局系统协议必须在连接建立前注册，确保登录期错误也有处理入口。
         this._systemProtocol = new SystemProtocol();
         this._systemProtocol.init();
+        (Laya.Browser.window as any)["systemProtocol"] = this._systemProtocol;
 
         // 7. 创建并初始化 LoginProtocol
         const loginProtocol = new LoginProtocol();

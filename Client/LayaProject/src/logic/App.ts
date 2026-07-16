@@ -30,6 +30,8 @@ export class App {
     // LoginMgr（从 window 获取）
     static loginMgr: any;
 
+    static systemProtocol: any;
+
     // SceneMgr（Logic 分包，直接导入）
     static sceneMgr: SceneMgr;
 
@@ -63,6 +65,7 @@ export class App {
         // 获取 Manager 实例
         this.networkManager = (Laya.Browser.window as any).networkManager;
         this.loginMgr = (Laya.Browser.window as any).loginMgr;
+        this.systemProtocol = (Laya.Browser.window as any).systemProtocol;
 
         // Logic 分包的 Manager（直接导入单例）
         this.sceneMgr = SceneMgr.instance;

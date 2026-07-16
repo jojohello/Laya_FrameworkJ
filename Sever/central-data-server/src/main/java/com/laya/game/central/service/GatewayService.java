@@ -11,6 +11,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Arrays;
@@ -30,6 +33,7 @@ public class GatewayService {
     @java.lang.SuppressWarnings("all")
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GatewayService.class);
     private final GatewayAllocationRepository allocationRepository;
+    private final RestTemplate restTemplate;
     @Value("${laya.central.gateway.allocation-timeout:30000}")
     private int allocationTimeoutMillis;
     @Value("${laya.central.gateway.max-allocations-per-gateway:1000}")
@@ -108,7 +112,7 @@ public class GatewayService {
             // 检查是否过期
             if (allocation.getExpiresAt().isAfter(LocalDateTime.now())) {
                 log.debug("User {} already has valid gateway allocation: {}:{}", userId, allocation.getGatewayIp(), allocation.getGatewayPort());
-                return Optional.of(allocation);
+                return notifyGatewayWaiting(allocation) ? Optional.of(allocation) : Optional.empty();
             } else {
                 // 过期则回收
                 recycleAllocation(allocation);
@@ -129,7 +133,23 @@ public class GatewayService {
         allocation.setExpiresAt(LocalDateTime.now().plusNanos(allocationTimeoutMillis * 1000000L));
         GatewayAllocation savedAllocation = allocationRepository.save(allocation);
         log.info("Allocated gateway for user {}: {}:{}, expires at {}", userId, selectedGateway.getIp(), selectedGateway.getPort(), savedAllocation.getExpiresAt());
-        return Optional.of(savedAllocation);
+        return notifyGatewayWaiting(savedAllocation) ? Optional.of(savedAllocation) : Optional.empty();
+    }
+
+    private boolean notifyGatewayWaiting(GatewayAllocation allocation) {
+        try {
+            String encodedUserId = URLEncoder.encode(allocation.getUserId(), StandardCharsets.UTF_8);
+            String url = "http://" + allocation.getGatewayIp() + ":" + allocation.getGatewayPort()
+                    + "/api/gateway/waiting-connection?userId=" + encodedUserId;
+            restTemplate.postForEntity(url, null, Map.class);
+            log.info("Notified gateway waiting list for user {} at {}:{}",
+                    allocation.getUserId(), allocation.getGatewayIp(), allocation.getGatewayPort());
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to notify gateway waiting list for user {}: {}",
+                    allocation.getUserId(), e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -536,7 +556,8 @@ public class GatewayService {
     }
 
     @java.lang.SuppressWarnings("all")
-    public GatewayService(final GatewayAllocationRepository allocationRepository) {
+    public GatewayService(final GatewayAllocationRepository allocationRepository, final RestTemplate restTemplate) {
         this.allocationRepository = allocationRepository;
+        this.restTemplate = restTemplate;
     }
 }

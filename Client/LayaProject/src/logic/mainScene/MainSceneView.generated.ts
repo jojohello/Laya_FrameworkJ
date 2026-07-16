@@ -5,6 +5,7 @@
  * ui/mainscene/MainSceneView.ls
  */
 export class MainSceneViewBase extends Laya.Scene {
+    public playerProfile!: Laya.GBox;
     public btn_list!: Laya.GList;
 }
 

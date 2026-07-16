@@ -1,5 +1,7 @@
 package com.laya.game.central.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 // import org.springframework.data.annotation.CreatedDate;
 // import org.springframework.data.annotation.LastModifiedDate;
 // import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -29,6 +31,7 @@ import java.util.Objects;
 //     @Index(name = "idx_expires_at", columnList = "expiresAt")
 // })
 // @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserSession implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -166,6 +169,7 @@ public class UserSession implements Serializable {
     /**
      * 检查会话是否有效
      */
+    @JsonIgnore
     public boolean isValid() {
         return status == SessionStatus.ACTIVE && 
                expiresAt != null && 
@@ -325,6 +329,7 @@ public class UserSession implements Serializable {
     /**
      * 获取创建时间 (别名方法)
      */
+    @JsonIgnore
     public LocalDateTime getCreatedTime() {
         return this.createdDate;
     }
@@ -332,6 +337,7 @@ public class UserSession implements Serializable {
     /**
      * 获取更新时间 (别名方法)
      */
+    @JsonIgnore
     public LocalDateTime getUpdatedTime() {
         return this.lastModifiedDate;
     }
@@ -339,6 +345,7 @@ public class UserSession implements Serializable {
     /**
      * 获取连接时间 (别名方法)
      */
+    @JsonIgnore
     public LocalDateTime getConnectedAt() {
         return this.lastActiveTime;
     }
@@ -346,6 +353,7 @@ public class UserSession implements Serializable {
     /**
      * 获取强制下线原因 (别名方法)
      */
+    @JsonIgnore
     public String getForceOfflineReason() {
         return this.forceLogoutReason;
     }

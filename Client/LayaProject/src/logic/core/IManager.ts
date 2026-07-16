@@ -4,8 +4,8 @@
 /**
  * Manager 统一接口
  *
- * 所有业务模块的 Manager 都应该实现此接口
- * 通过 ManagerHub 统一管理生命周期
+ * 只有需要 ManagerHub 统一协调生命周期的 Manager 才实现此接口。
+ * 各方法按需实现，不需要某阶段时直接省略。
  *
  * 生命周期顺序：
  * 1. init()    - 初始化（加载资源、创建Protocol、注册事件）
@@ -55,7 +55,7 @@ export interface IManager {
      *
      * 调用时机：ManagerHub.init() 时按注册顺序调用
      */
-    init(): void | Promise<void>;
+    init?(): void | Promise<void>;
 
     /**
      * 每帧更新
@@ -71,10 +71,10 @@ export interface IManager {
      * @param dt 距离上一帧的时间间隔（秒），例如 0.016（60FPS时）
      *
      * 注意：
-     * - 如果 Manager 不需要每帧更新，可以实现为空方法
+     * - 如果 Manager 不需要每帧更新，应省略 update，不保留空方法
      * - 不要在 update 中执行耗时操作，会导致卡顿
      */
-    update(dt: number): void;
+    update?(dt: number): void;
 
     /**
      * 重置状态
@@ -91,7 +91,7 @@ export interface IManager {
      *
      * 注意：reset 后 Manager 仍然可用，只是数据清空
      */
-    reset(): void;
+    reset?(): void;
 
     /**
      * 释放资源
@@ -109,5 +109,5 @@ export interface IManager {
      *
      * 注意：release 后 Manager 不应再使用，需要重新 init
      */
-    release(): void;
+    release?(): void;
 }

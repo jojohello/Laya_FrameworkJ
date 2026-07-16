@@ -17,6 +17,8 @@ import java.util.Map;
 
 @Component
 public class GameInitHandler implements MessageHandler {
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(GameInitHandler.class);
     private final List<GameInitDataProvider> providers;
     private final ObjectMapper objectMapper;
     private final int maxPayloadBytes;
@@ -48,6 +50,8 @@ public class GameInitHandler implements MessageHandler {
                 sections.put(provider.sectionName(), provider.build(playerContext));
             } catch (RuntimeException e) {
                 errors.add(provider.sectionName());
+                log.error("[GAME_INIT] Failed to build section: userId={}, playerId={}, section={}",
+                        userId, player.playerId(), provider.sectionName(), e);
             }
         }
         Map<String, Object> data = new LinkedHashMap<>();
@@ -59,10 +63,17 @@ public class GameInitHandler implements MessageHandler {
             if (bytes > maxPayloadBytes) {
                 data.put("sections", Map.of());
                 data.put("errors", List.of("payload_too_large"));
+                log.warn("[GAME_INIT] Snapshot rejected because it is too large: userId={}, playerId={}, bytes={}, limit={}",
+                        userId, player.playerId(), bytes, maxPayloadBytes);
+            } else {
+                log.info("[GAME_INIT] Snapshot ready: userId={}, playerId={}, sections={}, errors={}, bytes={}",
+                        userId, player.playerId(), sections.keySet(), errors, bytes);
             }
         } catch (Exception e) {
             data.put("sections", Map.of());
             data.put("errors", List.of("serialization_failed"));
+            log.error("[GAME_INIT] Snapshot serialization preflight failed: userId={}, playerId={}",
+                    userId, player.playerId(), e);
         }
         GameMessage response = new GameMessage();
         response.setMsgId(MessageIds.GAME_INIT_RESPONSE);

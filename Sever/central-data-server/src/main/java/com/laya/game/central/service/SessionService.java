@@ -34,9 +34,9 @@ public class SessionService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SessionService.class);
     private final UserSessionRepository sessionRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    @Value("${app.jwt.secret:laya-game-server-jwt-secret-key-2024}")
+    @Value("${jwt.secret:laya-game-jwt-secret-key-2024-very-long-and-secure}")
     private String jwtSecret;
-    @Value("${app.jwt.expiration:86400}")
+    @Value("${jwt.expiration:3600}")
     private int jwtExpirationSeconds;
     @Value("${app.session.max-per-user:3}")
     private int maxSessionsPerUser;
@@ -62,7 +62,8 @@ public class SessionService {
         session.setSessionId(UUID.randomUUID().toString());
         session.setUserId(userId);
         session.setTokenHash(tokenHash);
-        session.setLoginTimestamp(LocalDateTime.now());
+        session.setLoginTimestamp(LocalDateTime.ofInstant(
+                java.time.Instant.ofEpochMilli(loginTimestamp), java.time.ZoneId.systemDefault()));
         session.setStatus(UserSession.SessionStatus.ACTIVE);
         session.setLoginIp(loginIp);
         session.setPlatform(platform);
@@ -74,6 +75,53 @@ public class SessionService {
         UserSession savedSession = sessionRepository.save(session);
         log.info("Created new session: sessionId={}, userId={}, platform={}", savedSession.getSessionId(), userId, platform);
         return savedSession;
+    }
+
+    /**
+     * 注册由 Login Server 签发的正式登录会话。
+     */
+    @Transactional
+    @CacheEvict(value = "sessions", allEntries = true)
+    public UserSession registerExternalSession(String userId, String token, Long loginTimestamp,
+                                               String loginIp, String platform,
+                                               String clientVersion, String userAgent) {
+        if (userId == null || loginTimestamp == null || !StringUtils.hasText(token)) {
+            throw new IllegalArgumentException("Missing external session identity");
+        }
+        Claims claims = validateJwtToken(token);
+        if (claims == null) {
+            throw new IllegalArgumentException("Invalid Login Server token");
+        }
+        String tokenUserId = claims.get("userId", String.class);
+        Long tokenTimestamp = claims.get("loginTimestamp", Long.class);
+        if (!userId.equals(tokenUserId) || !loginTimestamp.equals(tokenTimestamp)) {
+            throw new IllegalArgumentException("Login Server token content mismatch");
+        }
+
+        cleanupUserOldSessions(userId);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = claims.getExpiration() == null
+                ? now.plusSeconds(jwtExpirationSeconds)
+                : LocalDateTime.ofInstant(claims.getExpiration().toInstant(), java.time.ZoneId.systemDefault());
+
+        UserSession session = new UserSession();
+        session.setSessionId(UUID.randomUUID().toString());
+        session.setUserId(userId);
+        session.setTokenHash(passwordEncoder.encode(token));
+        session.setLoginTimestamp(LocalDateTime.ofInstant(
+                java.time.Instant.ofEpochMilli(loginTimestamp), java.time.ZoneId.systemDefault()));
+        session.setStatus(UserSession.SessionStatus.ACTIVE);
+        session.setLoginIp(loginIp);
+        session.setPlatform(platform);
+        session.setClientVersion(clientVersion);
+        session.setUserAgent(userAgent);
+        session.setLastActiveTime(now);
+        session.setExpiresAt(expiresAt);
+        session.setCreatedDate(now);
+        session.setLastModifiedDate(now);
+        UserSession saved = sessionRepository.save(session);
+        log.info("Registered Login Server session: sessionId={}, userId={}", saved.getSessionId(), userId);
+        return saved;
     }
 
     /**

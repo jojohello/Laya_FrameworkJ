@@ -1,6 +1,7 @@
 {
   "_$ver": 1,
   "_$id": "playerProfileRoot",
+  "_$runtime": "res://8710ccca-0c72-4074-8286-59e75bc2524d",
   "_$type": "GBox",
   "name": "playerProfile",
   "x": 12,
@@ -17,19 +18,18 @@
       "y": 17,
       "width": 520,
       "height": 54,
-      "src": "res://93b8cc92-6fce-4d61-8238-bdf46e83999f",
-      "autoSize": false
+      "src": "res://93b8cc92-6fce-4d61-8238-bdf46e83999f"
     },
     {
       "_$id": "playerAvatar",
+      "_$var": true,
       "_$type": "GLoader",
       "name": "playerAvatar",
       "x": 8,
       "y": 8,
       "width": 72,
       "height": 72,
-      "src": "res://a6851056-c313-42ac-acfb-ad62dbea71ca",
-      "autoSize": false
+      "src": "res://a6851056-c313-42ac-acfb-ad62dbea71ca"
     },
     {
       "_$id": "avatarFrame",
@@ -37,8 +37,7 @@
       "name": "avatarFrame",
       "width": 88,
       "height": 88,
-      "src": "res://09996515-04f6-4dc3-9184-d75cc1a62005",
-      "autoSize": false
+      "src": "res://09996515-04f6-4dc3-9184-d75cc1a62005"
     },
     {
       "_$id": "levelBadge",
@@ -46,11 +45,11 @@
       "name": "levelBadge",
       "width": 36,
       "height": 36,
-      "src": "res://d5295f8e-284f-4ecb-8c61-6bdba2d9c0c3",
-      "autoSize": false
+      "src": "res://d5295f8e-284f-4ecb-8c61-6bdba2d9c0c3"
     },
     {
       "_$id": "playerLevel",
+      "_$var": true,
       "_$type": "GTextField",
       "name": "playerLevel",
       "x": 5,
@@ -68,6 +67,7 @@
     },
     {
       "_$id": "playerName",
+      "_$var": true,
       "_$type": "GTextField",
       "name": "playerName",
       "x": 90,
@@ -78,7 +78,6 @@
       "fontSize": 18,
       "color": "#fff0d5",
       "bold": true,
-      "align": "left",
       "valign": "middle",
       "overflow": 2,
       "stroke": 2,
@@ -92,8 +91,7 @@
       "y": 45,
       "width": 112,
       "height": 14,
-      "src": "res://4d0bab01-848e-4666-adf1-5f283307af31",
-      "autoSize": false
+      "src": "res://4d0bab01-848e-4666-adf1-5f283307af31"
     },
     {
       "_$id": "expFill",
@@ -103,8 +101,7 @@
       "y": 47,
       "width": 106,
       "height": 10,
-      "src": "res://cbd650c8-bdd1-4dff-a156-6ecd4f890e7f",
-      "autoSize": false
+      "src": "res://cbd650c8-bdd1-4dff-a156-6ecd4f890e7f"
     },
     {
       "_$id": "crystalIcon",
@@ -114,11 +111,11 @@
       "y": 23,
       "width": 30,
       "height": 40,
-      "src": "res://7f5ae00c-fa5a-4744-bd44-f82bf7c5f27b",
-      "autoSize": false
+      "src": "res://7f5ae00c-fa5a-4744-bd44-f82bf7c5f27b"
     },
     {
       "_$id": "crystalAmount",
+      "_$var": true,
       "_$type": "GTextField",
       "name": "crystalAmount",
       "x": 241,
@@ -142,8 +139,7 @@
       "y": 28,
       "width": 28,
       "height": 28,
-      "src": "res://f017667b-622f-4a31-a727-78e287e80efb",
-      "autoSize": false
+      "src": "res://f017667b-622f-4a31-a727-78e287e80efb"
     },
     {
       "_$id": "goldIcon",
@@ -153,11 +149,11 @@
       "y": 25,
       "width": 36,
       "height": 36,
-      "src": "res://b66f6650-1923-4e73-aa77-a7edc56855b4",
-      "autoSize": false
+      "src": "res://b66f6650-1923-4e73-aa77-a7edc56855b4"
     },
     {
       "_$id": "goldAmount",
+      "_$var": true,
       "_$type": "GTextField",
       "name": "goldAmount",
       "x": 345,
@@ -181,8 +177,7 @@
       "y": 28,
       "width": 28,
       "height": 28,
-      "src": "res://f017667b-622f-4a31-a727-78e287e80efb",
-      "autoSize": false
+      "src": "res://f017667b-622f-4a31-a727-78e287e80efb"
     },
     {
       "_$id": "staminaIcon",
@@ -192,11 +187,11 @@
       "y": 22,
       "width": 38,
       "height": 42,
-      "src": "res://c552efbd-fcb9-42e7-99e6-2268a99106ff",
-      "autoSize": false
+      "src": "res://c552efbd-fcb9-42e7-99e6-2268a99106ff"
     },
     {
       "_$id": "staminaAmount",
+      "_$var": true,
       "_$type": "GTextField",
       "name": "staminaAmount",
       "x": 451,
@@ -220,8 +215,7 @@
       "y": 28,
       "width": 28,
       "height": 28,
-      "src": "res://f017667b-622f-4a31-a727-78e287e80efb",
-      "autoSize": false
+      "src": "res://f017667b-622f-4a31-a727-78e287e80efb"
     }
   ]
 }

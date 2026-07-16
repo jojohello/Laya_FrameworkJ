@@ -1,13 +1,13 @@
 # Guide 引导模块
 
-`GuideMgr` 负责接收服务器下发的可执行引导和进度，等待客户端场景/UI 条件满足后，串行执行 `assets/guides/{flowId}.json`。
+`GuideMgr` 负责接收服务器下发的 FIFO 引导队列和进度，等待队首的客户端限制条件满足后，串行执行 `assets/guides/{flowId}.json`。
 
 ## 配置与流程
 
 - `Config/csv/Guide.csv` 是双端 Guide 索引表的唯一编辑入口。
-- `triggerType/triggerArgs` 由服务器权威判断，客户端根据已同步状态重复判断以选择合适的展示时机。
+- `triggerType/triggerArgs` 是激活条件，由服务器权威判断并在首次满足时持久化入队；客户端不重复判断激活条件。
 - `flowId` 对应客户端 `guides/{flowId}.json`。
-- 流程由有序 `steps` 组成；每步先等待 `waitFor`，再顺序执行 `actions`。
+- 流程由有序 `steps` 组成；`waitFor` 是动作限制条件，每步满足后再顺序执行 `actions`。队首不满足时不会跳过到下一条 Guide。
 
 当前条件：`playerLevelEquals`、`playerLevelAtLeast`、`sceneActive`、`uiReady`、`dialogIdle`。
 

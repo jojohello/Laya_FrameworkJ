@@ -544,6 +544,15 @@ enum LogLevel {
 
 ## 已知问题和坑点
 
+### 0. 登录、鉴权与业务初始化必须形成可等待的状态链
+
+- WebSocket 连接成功只代表传输层可用，不代表 Gateway 鉴权成功。
+- 客户端必须等待明确的鉴权成功响应后才能发送 Game 登录、`GAME_INIT` 或其他业务协议；禁止用固定延迟猜测服务器已经就绪。
+- 鉴权失败响应必须保留完整 envelope，至少把 `msgId`、`code`、`message/reason` 和 `data` 传给协议处理层，不能只转发 `data` 后丢失真实失败原因。
+- 新增协议时按作用域决定由 Gateway 本地处理还是转发 Game Server；除心跳、鉴权和连接管理外，Gateway 不应重复实现游戏业务协议。
+- 登录和重连都必须重新请求统一初始化快照；各业务模块只消费自己的 section，不得依赖其他 section 的到达顺序。
+- 初始化调试至少保留三类日志：请求已发出、响应 section 列表、各模块 `applyInit` 结果。缺少其中任一项时，不能仅凭“进入主界面”判断初始化成功。
+
 ### 1. LayaAir Socket 的 connectByUrl 行为
 
 **观察**：

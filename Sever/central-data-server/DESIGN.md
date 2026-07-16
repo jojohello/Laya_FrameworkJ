@@ -21,6 +21,8 @@ Registry identity is an instance identity. Do not key a multi-instance registry 
 ## Data And Security
 
 - `userId` is account identity and owns login sessions and Gateway allocation.
+- Login Server may authenticate a platform account and sign the shared JWT, but Central must validate and register that exact `userId + loginTimestamp + tokenHash` session before the login response is considered successful.
+- Gateway allocation is incomplete until Central has notified the selected Gateway to place the user in its short-lived waiting set. Allocation retries must refresh that handoff because Gateway restart loses in-memory waiting entries.
 - Token validation compares protected token material and login timestamp; raw tokens must not appear in logs.
 - Production service authentication and JWT secrets must be external values with no usable fallback.
 - In-memory repositories or caches are development choices and cannot provide cluster-wide durability.

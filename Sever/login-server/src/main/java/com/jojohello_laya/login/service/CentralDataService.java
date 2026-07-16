@@ -32,18 +32,29 @@ public class CentralDataService {
      */
     public boolean storeLoginRecord(LoginRecord record) {
         try {
-            log.info("正在向中心服务器存储登录记录: userId={}, loginTimestamp={}", record.getUserId(), record.getLoginTimestamp());
-            String url = config.getUrl() + "/api/login/store";
+            log.info("正在向中心服务器注册登录会话: userId={}, loginTimestamp={}", record.getUserId(), record.getLoginTimestamp());
+            String url = config.getUrl() + "/api/v1/sessions/register";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<LoginRecord> request = new HttpEntity<>(record, headers);
+            Map<String, Object> sessionData = new java.util.HashMap<>();
+            sessionData.put("userId", record.getUserId());
+            sessionData.put("token", record.getToken());
+            sessionData.put("loginTimestamp", record.getLoginTimestamp());
+            sessionData.put("loginIp", record.getClientIp());
+            sessionData.put("platform", record.getPlatform());
+            sessionData.put("clientVersion", record.getVersion());
+            sessionData.put("userAgent", record.getDeviceInfo());
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(sessionData, headers);
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.POST, request, new ParameterizedTypeReference<Map<String, Object>>() {
             });
-            if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("登录记录存储成功: userId={}", record.getUserId());
+            boolean success = response.getStatusCode() == HttpStatus.OK
+                    && response.getBody() != null
+                    && Boolean.TRUE.equals(response.getBody().get("success"));
+            if (success) {
+                log.info("登录会话注册成功: userId={}", record.getUserId());
                 return true;
             } else {
-                log.warn("登录记录存储失败，状态码: {}", response.getStatusCode());
+                log.warn("登录会话注册失败: status={}, body={}", response.getStatusCode(), response.getBody());
                 return false;
             }
         } catch (HttpClientErrorException e) {

@@ -6,10 +6,11 @@
 
 ## 执行顺序
 
-- [ ] 在 LayaAir IDE 中验证“登录 → 收到 player/guide 初始化 → 1级弹窗 → 确认 → 服务端升到2级 → Guide完成”的完整流程。
-- [ ] 断线发生在弹窗前、确认后和升级响应后时，分别验证 `currentStepId` 恢复与幂等完成。
+- [ ] 重启 Game Server 后确认日志依次出现 `[GUIDE] Queue snapshot`、`[GAME_INIT] Snapshot ready`、客户端 `[Guide] Init applied`，并验证 1 级弹窗。
+- [ ] 在 LayaAir IDE 中验证“Gateway 鉴权 → Game 登录 → 收到 player/guide 初始化 → 1级弹窗 → 确认 → 服务端升到2级 → Guide完成”的完整流程。
+- [ ] 断线发生在弹窗前、确认后和升级响应后时，分别验证 FIFO 队列、`currentStepId` 恢复与幂等完成。
 - [ ] 增加稳定 `guideKey` 的 UI 目标注册机制，再实现遮罩挖孔、手指提示和只允许目标点击的动作。
-- [ ] 为 GuideRepository 增加 MySQL 集成测试，覆盖重复开始、步骤倒退、重复完成和版本不匹配。
+- [ ] 为 GuideRepository 增加 MySQL 集成测试，覆盖重复激活入队、队首约束、步骤倒退、重复完成和版本不匹配。
 
 ## 验收条件
 

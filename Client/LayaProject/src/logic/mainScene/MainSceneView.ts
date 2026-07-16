@@ -8,6 +8,7 @@ import { FunctionOpenMgr } from "../functionOpen/FunctionOpenMgr";
 import { SceneMgr } from "../scene/SceneMgr";
 import { SceneType } from "../scene/SceneType";
 import { WalletMgr } from "../wallet/WalletMgr";
+import { TopPrefab } from "./TopPrefab";
 
 const { regClass } = Laya;
 
@@ -22,7 +23,7 @@ export class MainSceneView extends MainSceneViewBase {
     private static readonly DISPLAY_EXP_PER_LEVEL = 100;
 
     private _selectedButtonIndex: number = -1;
-    private _playerProfile: Laya.GBox | null = null;
+    private _playerProfile: TopPrefab | null = null;
     private _avatarMask: Laya.Sprite | null = null;
 
     constructor() {
@@ -39,7 +40,7 @@ export class MainSceneView extends MainSceneViewBase {
         this.initButtonList();
         this.initSystemButtonStates();
         this.selectSystemButton(MainSceneView.DEFAULT_SELECTED_INDEX);
-        this._playerProfile = this.getChild("playerProfile") as Laya.GBox;
+        this._playerProfile = this.playerProfile as TopPrefab;
         this.refreshPlayerProfile();
         PlayerMgr.instance.addListener(this.onPlayerChanged);
         WalletMgr.instance.addListener(this.onWalletChanged);
@@ -177,8 +178,6 @@ export class MainSceneView extends MainSceneViewBase {
         const avatarFrame = profile.getChild("avatarFrame") as Laya.GLoader;
         const avatar = profile.getChild("playerAvatar") as Laya.GLoader;
         const levelBadge = profile.getChild("levelBadge") as Laya.GLoader;
-        const name = profile.getChild("playerName") as Laya.GTextField;
-        const level = profile.getChild("playerLevel") as Laya.GTextField;
         const expTrack = profile.getChild("expTrack") as Laya.GLoader;
         const expFill = profile.getChild("expFill") as Laya.GLoader;
         const crystalIcon = profile.getChild("crystalIcon") as Laya.GLoader;
@@ -203,8 +202,7 @@ export class MainSceneView extends MainSceneViewBase {
         if (goldAdd) goldAdd.url = "ui/common/imgs/btn-add.png";
         if (staminaAdd) staminaAdd.url = "ui/common/imgs/btn-add.png";
         this.applyAvatarMask(avatar);
-        if (name) name.text = data?.name || "Player";
-        if (level) level.text = `${data?.level || 1}`;
+        profile.setPlayerIdentity(data?.name, data?.level);
         if (crystalAmount) crystalAmount.text = "0";
         if (goldAmount) goldAmount.text = this.formatCompactAmount(WalletMgr.instance.getBalance(MainSceneView.GOLD_CURRENCY_ITEM_ID));
         if (staminaAmount) staminaAmount.text = this.formatCompactAmount(data?.stamina || 0);

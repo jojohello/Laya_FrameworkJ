@@ -100,7 +100,7 @@ export class ManagerHub {
             const name = manager.constructor.name;
 
             try {
-                await manager.init();
+                await manager.init?.();
             } catch (error) {
                 console.error(`[ManagerHub] ❌ ${name}.init() 失败:`, error);
                 throw error;
@@ -122,7 +122,7 @@ export class ManagerHub {
     update(dt: number): void {
         for (let i = 0; i < this.managers.length; i++) {
             try {
-                this.managers[i].update(dt);
+                this.managers[i].update?.(dt);
             } catch (error) {
                 console.error(`[ManagerHub] ${this.managers[i].constructor.name}.update() 异常:`, error);
             }
@@ -145,7 +145,7 @@ export class ManagerHub {
         for (let i = 0; i < this.managers.length; i++) {
             const manager = this.managers[i];
             try {
-                manager.reset();
+                manager.reset?.();
             } catch (error) {
                 console.error(`[ManagerHub] ❌ ${manager.constructor.name}.reset() 失败:`, error);
             }
@@ -169,7 +169,7 @@ export class ManagerHub {
         for (let i = this.managers.length - 1; i >= 0; i--) {
             const manager = this.managers[i];
             try {
-                manager.release();
+                manager.release?.();
             } catch (error) {
                 console.error(`[ManagerHub] ❌ ${manager.constructor.name}.release() 失败:`, error);
             }

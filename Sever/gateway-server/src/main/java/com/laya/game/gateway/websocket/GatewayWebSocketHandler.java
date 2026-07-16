@@ -157,14 +157,16 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
             boolean isAllowed = waitingConnectionService.checkWaitingConnection(userId);
             if (!isAllowed) {
                 log.warn("User {} not in waiting list, rejecting connection", userId);
-                sendMessage(session, new WebSocketMessage(MessageIds.AUTH_FAILED, "User not in waiting connection list", Map.of("timestamp", System.currentTimeMillis())));
+                sendMessage(session, new WebSocketMessage(MessageIds.AUTH_FAILED, "User not in waiting connection list",
+                        Map.of("reason", "User not in waiting connection list", "timestamp", System.currentTimeMillis())));
                 return;
             }
             // 验证三要素（与中心数据服务器通信）
             boolean isValidated = centralServerClient.validateThreeFactors(userId, loginTimestamp, token);
             if (!isValidated) {
                 log.warn("Three factors validation failed for user {}", userId);
-                sendMessage(session, new WebSocketMessage(MessageIds.AUTH_FAILED, "Three factors validation failed", Map.of("timestamp", System.currentTimeMillis())));
+                sendMessage(session, new WebSocketMessage(MessageIds.AUTH_FAILED, "Three factors validation failed",
+                        Map.of("reason", "Three factors validation failed", "timestamp", System.currentTimeMillis())));
                 return;
             }
             // 认证成功

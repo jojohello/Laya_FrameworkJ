@@ -7,6 +7,7 @@ Establish a testable identity and connection lifecycle before adding more server
 ## Work Order
 
 - [ ] Add automated smoke coverage for login, three-factor Gateway authentication, Gateway-to-Game routing, heartbeat expiry, and graceful unregister.
+- [ ] Reconcile Gateway-to-Central lifecycle endpoints and cover allocation confirmation and disconnect with contract tests; current runtime logs have exposed `405` confirmation and `404` disconnect responses.
 - [ ] Define and persist the Account-to-Player model; add `playerId` to the authenticated game context while retaining `userId` for account and network routing.
 - [ ] Migrate game-owned Redis keys and gameplay handlers from ambiguous `userId` usage to explicit `playerId` usage.
 - [ ] Implement Gateway reconnect retention and duplicate-login conflict handling, including an explicit kick path and load accounting.

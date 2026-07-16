@@ -260,6 +260,10 @@ public class GameServerWebSocketClient {
      * 断线重连（指数退避算法）
      */
     private void scheduleReconnect() {
+        if (scheduledExecutor.isShutdown() || scheduledExecutor.isTerminated()) {
+            log.debug("Game Server {} 重连调度器已关闭，忽略重连请求", gameServerId);
+            return;
+        }
         int attempts = reconnectAttempts.incrementAndGet();
         if (attempts > MAX_RECONNECT_ATTEMPTS) {
             log.error("Game Server {} 重连次数超限 ({})，停止重连", gameServerId, MAX_RECONNECT_ATTEMPTS);
@@ -269,10 +273,15 @@ public class GameServerWebSocketClient {
         int delay = Math.min(1000 * (int) Math.pow(2, attempts - 1), 60000);
         log.info("将在 {}ms 后重连 Game Server {} (第{}次)", delay, gameServerId, attempts);
         // 保存重连任务Future，用于后续取消
-        reconnectFuture = scheduledExecutor.schedule(() -> {
-            log.info("[RETRY] 尝试重连 Game Server {} (第{}次)", gameServerId, attempts);
-            connect();
-        }, delay, TimeUnit.MILLISECONDS);
+        try {
+            reconnectFuture = scheduledExecutor.schedule(() -> {
+                log.info("[RETRY] 尝试重连 Game Server {} (第{}次)", gameServerId, attempts);
+                connect();
+            }, delay, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException ignored) {
+            // Shutdown can race with WebSocket afterConnectionClosed callbacks.
+            log.debug("Game Server {} 关闭期间忽略重连任务", gameServerId);
+        }
     }
 
     /**

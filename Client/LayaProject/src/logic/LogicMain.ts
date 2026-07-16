@@ -87,7 +87,7 @@ export class LogicMain {
     async startCoreFlow(): Promise<void> {
         try {
             // 1. 连接Gateway
-            const gatewayUrl = App.network.gatewayWsUrl || "ws://localhost:8081/ws/native";
+            const gatewayUrl = App.network.gatewayWsUrl || "ws://localhost:8082/ws/native";
 
             // ✅ 通过 App 访问 NetworkManager
             await App.networkManager.connect({
@@ -112,31 +112,24 @@ export class LogicMain {
             };
             if (App.networkManager.reconnectManager) {
                 App.networkManager.reconnectManager.onReconnected = () => {
-                    App.loginMgr.sendGameLogin(userId);
+                    void this.authenticateAndLogin(userId).catch((error: unknown) => {
+                        console.error("[LogicMain] Reconnect authentication/login failed:", error);
+                    });
                 };
             }
 
-            // ✅ 通过 App 访问 LoginMgr
-            App.loginMgr.sendGameLogin(userId);
-
-            // 等待登录响应（简单实现：等待 3 秒）
-            await new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    reject(new Error("登录超时"));
-                }, 3000);
-
-                // 注意：实际应该监听 LoginMgr 的登录成功事件
-                // 这里简化处理，等待固定时间
-                setTimeout(() => {
-                    clearTimeout(timeout);
-                    resolve(null);
-                }, 2000);
-            });
+            // Gateway 鉴权成功后才允许发送 Game Server 登录。
+            await this.authenticateAndLogin(userId);
 
         } catch (error: any) {
             console.error("[LogicMain] ❌ 核心流程失败:", error);
             throw error;
         }
+    }
+
+    private async authenticateAndLogin(userId: string): Promise<void> {
+        await App.systemProtocol.authenticate(userId, App.network.loginTimestamp, App.network.token);
+        await App.loginMgr.loginToGame(userId);
     }
 
     /**

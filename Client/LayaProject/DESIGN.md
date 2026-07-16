@@ -35,7 +35,7 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 - `src/logic/` 负责游戏主体能力。逻辑层运行时不得反向静态导入 Start 实现，以免破坏分包边界；共享服务通过 `App`、窗口桥接或明确的类型契约取得。
 - `src/logic/LogicMain.ts` 是逻辑层组合根：先初始化配置，再向 `ManagerHub` 注册需要统一生命周期的 Manager，随后统一初始化并驱动更新。
 - `src/logic/App.ts` 是跨层服务访问入口，不负责注册 Manager。
-- `ManagerHub` 负责 `init/update/reset/release`；新增有生命周期的 Manager 时必须在组合根注册，并确认释放顺序。
+- `ManagerHub` 只注册需要统一生命周期协调的 Manager：需要统一 `init`、`reset`、`release` 或逐帧 `update` 中任一能力即可注册，各生命周期方法均为可选。无状态工具、纯算法和自行管理生命周期的服务不注册；不能为了满足接口保留空 `update`。新增注册时必须确认初始化依赖与反向释放顺序。
 
 ## 数据命名
 

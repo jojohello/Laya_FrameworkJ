@@ -22,13 +22,19 @@ public class GuideRepository {
                 + "status VARCHAR(32) NOT NULL, "
                 + "current_step_id INT NOT NULL, "
                 + "script_version INT NOT NULL, "
+                + "activated_at BIGINT NOT NULL, "
                 + "started_at BIGINT NOT NULL, "
                 + "completed_at BIGINT NULL, "
                 + "PRIMARY KEY (player_id, guide_id))");
+        if (!columnExists("player_guide_state", "activated_at")) {
+            jdbcTemplate.execute("ALTER TABLE player_guide_state ADD COLUMN activated_at BIGINT NULL AFTER script_version");
+            jdbcTemplate.update("UPDATE player_guide_state SET activated_at = started_at WHERE activated_at IS NULL");
+            jdbcTemplate.execute("ALTER TABLE player_guide_state MODIFY COLUMN activated_at BIGINT NOT NULL");
+        }
         if (tableExists("player_guide_progress") && tableExists("player_state")
                 && !migrationApplied("legacy-guide-to-player-v1")) {
-            jdbcTemplate.update("INSERT IGNORE INTO player_guide_state (player_id, guide_id, status, current_step_id, script_version, started_at, completed_at) "
-                    + "SELECT role.player_id, progress.guide_id, progress.status, progress.current_step_id, progress.script_version, progress.started_at, progress.completed_at "
+            jdbcTemplate.update("INSERT IGNORE INTO player_guide_state (player_id, guide_id, status, current_step_id, script_version, activated_at, started_at, completed_at) "
+                    + "SELECT role.player_id, progress.guide_id, progress.status, progress.current_step_id, progress.script_version, progress.started_at, progress.started_at, progress.completed_at "
                     + "FROM player_guide_progress progress JOIN player_state legacy ON legacy.player_id = progress.player_id "
                     + "JOIN (SELECT user_id, MIN(player_id) player_id FROM player_role GROUP BY user_id HAVING COUNT(*) = 1) role ON role.user_id = legacy.user_id");
             markMigrationApplied("legacy-guide-to-player-v1");
@@ -37,13 +43,27 @@ public class GuideRepository {
 
     public List<GuideProgress> findAll(long playerId) {
         return jdbcTemplate.query(
-                "SELECT guide_id, status, current_step_id, script_version FROM player_guide_state WHERE player_id = ?",
+                "SELECT guide_id, status, current_step_id, script_version FROM player_guide_state WHERE player_id = ? ORDER BY activated_at, guide_id",
                 (rs, rowNum) -> new GuideProgress(
                         rs.getInt("guide_id"),
                         rs.getString("status"),
                         rs.getInt("current_step_id"),
                         rs.getInt("script_version")),
                 playerId);
+    }
+
+    public void enqueueIfAbsent(long playerId, int guideId, int version, long activatedAt) {
+        jdbcTemplate.update(
+                "INSERT IGNORE INTO player_guide_state "
+                        + "(player_id, guide_id, status, current_step_id, script_version, activated_at, started_at, completed_at) "
+                        + "VALUES (?, ?, 'queued', 0, ?, ?, ?, NULL)",
+                playerId, guideId, version, activatedAt, activatedAt);
+    }
+
+    public List<Integer> findQueuedIds(long playerId) {
+        return jdbcTemplate.queryForList(
+                "SELECT guide_id FROM player_guide_state WHERE player_id = ? AND status <> 'completed' ORDER BY activated_at, guide_id",
+                Integer.class, playerId);
     }
 
     public GuideProgress find(long playerId, int guideId) {
@@ -63,19 +83,26 @@ public class GuideRepository {
         Long completedAt = "completed".equals(status) ? now : null;
         jdbcTemplate.update(
                 "INSERT INTO player_guide_state "
-                        + "(player_id, guide_id, status, current_step_id, script_version, started_at, completed_at) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                        + "(player_id, guide_id, status, current_step_id, script_version, activated_at, started_at, completed_at) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                         + "ON DUPLICATE KEY UPDATE "
                         + "status = IF(status = 'completed', status, VALUES(status)), "
                         + "current_step_id = GREATEST(current_step_id, VALUES(current_step_id)), "
                         + "script_version = VALUES(script_version), "
                         + "completed_at = IF(status = 'completed', COALESCE(completed_at, VALUES(completed_at)), completed_at)",
-                playerId, guideId, status, stepId, version, now, completedAt);
+                playerId, guideId, status, stepId, version, now, now, completedAt);
         return find(playerId, guideId);
     }
 
     private boolean tableExists(String tableName) {
         Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", Integer.class, tableName);
+        return count != null && count > 0;
+    }
+
+    private boolean columnExists(String tableName, String columnName) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?",
+                Integer.class, tableName, columnName);
         return count != null && count > 0;
     }
 

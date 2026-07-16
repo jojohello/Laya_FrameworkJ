@@ -1,6 +1,7 @@
 package com.laya.game.game.gateway;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.laya.game.game.handler.MessageContext;
 import com.laya.game.game.handler.MessageRouter;
 import com.laya.game.game.protocol.BroadcastRequest;
@@ -58,6 +59,10 @@ public class GatewayWebSocketHandler extends TextWebSocketHandler {
      * 消息路由器（注入）
      */
     private final MessageRouter messageRouter;
+    /**
+     * 出站协议统一使用 Spring 的 Jackson 配置，避免预检和真实传输使用不同序列化器。
+     */
+    private final ObjectMapper objectMapper;
 
     /**
      * 构造函数
@@ -66,10 +71,14 @@ public class GatewayWebSocketHandler extends TextWebSocketHandler {
      * @param businessExecutor 业务线程池
      * @param messageRouter 消息路由器
      */
-    public GatewayWebSocketHandler(GatewayRouteManager routeManager, @Qualifier("businessExecutor") ExecutorService businessExecutor, MessageRouter messageRouter) {
+    public GatewayWebSocketHandler(GatewayRouteManager routeManager,
+                                   @Qualifier("businessExecutor") ExecutorService businessExecutor,
+                                   MessageRouter messageRouter,
+                                   ObjectMapper objectMapper) {
         this.routeManager = routeManager;
         this.businessExecutor = businessExecutor;
         this.messageRouter = messageRouter;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -269,13 +278,17 @@ public class GatewayWebSocketHandler extends TextWebSocketHandler {
             return false;
         }
         try {
-            String json = JSON.toJSONString(request);
+            String json = serializeOutbound(request);
             session.sendMessage(new TextMessage(json));
             return true;
         } catch (IOException e) {
             log.error("发送消息到Gateway失败: gatewayId={}, error={}", gatewayId, e.getMessage(), e);
             return false;
         }
+    }
+
+    String serializeOutbound(BroadcastRequest request) throws IOException {
+        return objectMapper.writeValueAsString(request);
     }
 
     /**

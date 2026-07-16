@@ -51,7 +51,9 @@ public class LoginService {
             // 4. 生成JWT Token
             String token = jwtUtil.generateToken(user.getUserId(), loginTimestamp);
             // 5. 存储登录记录到数据库
-            storeLoginRecord(user, token, loginTimestamp, request);
+            if (!storeLoginRecord(user, token, loginTimestamp, request)) {
+                return LoginResponse.failure("CENTRAL_SESSION_FAILED", "登录会话注册失败，请重试");
+            }
             // 6. 向中心服务器发送账号验证信息和获取网关分配
             Map<String, Object> gatewayInfo = handleCentralServerCommunication(user, token, authResult.getSessionKey());
             log.info("登录成功，userId: {}, loginTimestamp: {}", user.getUserId(), loginTimestamp);
@@ -136,7 +138,7 @@ public class LoginService {
      * 存储登录记录
      */
     @Transactional
-    private void storeLoginRecord(User user, String token, long loginTimestamp, LoginRequest request) {
+    private boolean storeLoginRecord(User user, String token, long loginTimestamp, LoginRequest request) {
         LoginRecord loginRecord =  // 简化处理，实际应该提取设备ID
         // Token 24小时过期
         LoginRecord.builder().userId(user.getUserId()).token(token).loginTimestamp(loginTimestamp).loginTime(LocalDateTime.now()).thirdPartyType(user.getThirdPartyType()).deviceId(request.getDeviceInfo()).clientIp(request.getClientIp()).deviceInfo(request.getDeviceInfo()).platform(request.getPlatform()).version(request.getVersion()).isActive(true).expireTime(LocalDateTime.now().plusHours(24)).build();
@@ -150,8 +152,10 @@ public class LoginService {
             } else {
                 log.warn("登录记录同步到中心服务器失败: userId={}", user.getUserId());
             }
+            return success;
         } catch (Exception e) {
             log.error("同步登录记录到中心服务器异常: userId={}, error={}", user.getUserId(), e.getMessage());
+            return false;
         }
     }
 
@@ -160,14 +164,7 @@ public class LoginService {
      */
     private Map<String, Object> handleCentralServerCommunication(User user, String token, String sessionKey) {
         try {
-            // 向中心服务器发送账号验证信息
-            boolean authSuccess = centralDataService.sendAccountVerification(user.getUserId(), token, sessionKey != null ? sessionKey : "");
-            if (authSuccess) {
-                log.info("账号验证信息已发送到中心服务器: userId={}", user.getUserId());
-            } else {
-                log.warn("账号验证信息发送失败: userId={}", user.getUserId());
-            }
-            // 获取网关分配信息
+            // 正式会话已通过 HTTP 注册到 Central；这里只执行一次 Gateway 分配。
             Map<String, Object> gatewayInfo = centralDataService.getGatewayAssignment(user.getUserId());
             log.info("网关分配信息: userId={}, gateway={}", user.getUserId(), gatewayInfo);
             return gatewayInfo;

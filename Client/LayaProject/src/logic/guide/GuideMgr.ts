@@ -23,6 +23,7 @@ export class GuideMgr implements IManager {
     private _ready = false;
     private _generation = 0;
     private _nextCheckAt = 0;
+    private _lastBlockedGuideId: number | null = null;
     private constructor() {}
 
     init(): void {
@@ -41,6 +42,7 @@ export class GuideMgr implements IManager {
         this._availableIds.length = 0;
         this._progress.clear();
         this._ready = false;
+        this._lastBlockedGuideId = null;
     }
 
     release(): void {
@@ -66,6 +68,10 @@ export class GuideMgr implements IManager {
         }
         this._ready = true;
         this._nextCheckAt = 0;
+        this._lastBlockedGuideId = null;
+        console.info(
+            `[Guide] Init applied: queue=[${this._availableIds.join(",")}], progress=${JSON.stringify(Array.from(this._progress.values()))}`
+        );
     }
 
     get isRunning(): boolean {
@@ -82,8 +88,15 @@ export class GuideMgr implements IManager {
             if (!flow || flow.flowId !== candidate.flowId) throw new Error(`[Guide] Invalid flow ${candidate.flowId}`);
             const current = this._progress.get(candidate.ID);
             const currentStepId = current?.currentStepId || 0;
-            if (!current && !this._conditions.evaluate(candidate.triggerType, candidate.triggerArgs)) return;
-            if (!this._runner.canStart(flow, currentStepId)) return;
+            if (!this._runner.canStart(flow, currentStepId)) {
+                if (this._lastBlockedGuideId !== candidate.ID) {
+                    this._lastBlockedGuideId = candidate.ID;
+                    console.info(`[Guide] Queue head is waiting for restrictions: guideId=${candidate.ID}, stepId=${currentStepId}`);
+                }
+                return;
+            }
+            this._lastBlockedGuideId = null;
+            console.info(`[Guide] Starting flow: guideId=${candidate.ID}, flowId=${candidate.flowId}, stepId=${currentStepId}`);
             if (!await this.report(candidate, "inProgress", currentStepId)) {
                 throw new Error(`[Guide] Server rejected guide ${candidate.ID}`);
             }
@@ -98,6 +111,7 @@ export class GuideMgr implements IManager {
             }
             const index = this._availableIds.indexOf(candidate.ID);
             if (index >= 0) this._availableIds.splice(index, 1);
+            console.info(`[Guide] Flow completed: guideId=${candidate.ID}, stepId=${lastStepId}`);
         } catch (error) {
             if (generation === this._generation) console.error("[Guide] Flow execution failed:", error);
         } finally {
@@ -108,10 +122,10 @@ export class GuideMgr implements IManager {
     private findCandidate(): GuideConfig | null {
         for (const id of this._availableIds) {
             const config = ConfigMgr.instance.getConfig<GuideConfig>("Guide", id);
-            if (!config?.enabled) continue;
+            if (!config?.enabled) return null;
             const progress = this._progress.get(id);
             if (progress?.status === "completed") continue;
-            if (progress || this._conditions.evaluate(config.triggerType, config.triggerArgs)) return config;
+            return config;
         }
         return null;
     }

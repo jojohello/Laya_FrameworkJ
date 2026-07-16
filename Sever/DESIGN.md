@@ -65,6 +65,14 @@ WebSocket callbacks, scheduled heartbeats, and message executors run concurrentl
 
 - Confirm ports and endpoints from `application.yml` and handler registration before documenting them.
 - Distinguish SockJS endpoints from native WebSocket endpoints; game clients use `/ws/native` on Gateway.
+- A cross-service protocol change is complete only after the producer, every forwarding boundary, the consumer, and the client handler use the same message ID, scope, envelope, field types, and error semantics.
+- Gateway authentication is an explicit state transition. Business messages must not be forwarded before three-factor validation succeeds, and clients must not replace the acknowledgement with a fixed delay.
+- Use one JSON serializer configuration for protocol preflight and the actual WebSocket write. Validate the exact final envelope; Java maps with numeric keys must become legal JSON object keys or be represented as an entry list.
+- Error responses must retain actionable fields across forwarding layers. Do not discard `code`, `message/reason`, or the original message ID while adapting an envelope.
+- Verify endpoint paths and HTTP methods at both caller and controller. A `405` confirm or `404` disconnect is a contract defect even when login currently appears successful.
+- Build affected Maven modules with `-am` from the aggregate project. Before accepting a result, run a clean compile at least once so stale `target/classes` cannot hide missing dependencies or source errors.
+- Do not run `mvn clean` underneath a live IDE debug process that loads classes from `target/classes`; stop and fully restart the service after a clean build to avoid partial DevTools classloaders.
+- Redis/cache DTOs must survive a serialize-deserialize round trip. Computed boolean getters are ignored unless they are intentional persisted fields, and unknown-field behavior must be explicit.
 - Never infer completion from an old checklist. Confirm classes, wiring, runtime behavior, and tests.
 - Do not claim production readiness while test coverage is absent or secrets have insecure defaults.
 - Keep source comments and documentation in UTF-8 without BOM and LF; do not bulk-rewrite generated artifacts.

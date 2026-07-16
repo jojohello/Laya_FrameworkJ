@@ -50,6 +50,24 @@ public class SessionController {
     }
 
     /**
+     * 注册 Login Server 已签发的会话。
+     */
+    @PostMapping("/register")
+    @Operation(summary = "注册外部会话", description = "注册由 Login Server 签发的正式登录会话")
+    public ResponseEntity<ApiResponse<SessionDto>> registerSession(@Valid @RequestBody RegisterSessionRequest request) {
+        try {
+            UserSession session = sessionService.registerExternalSession(
+                    request.getUserId(), request.getToken(), request.getLoginTimestamp(),
+                    request.getLoginIp(), request.getPlatform(),
+                    request.getClientVersion(), request.getUserAgent());
+            return ResponseEntity.ok(ApiResponse.success(convertToDto(session)));
+        } catch (Exception e) {
+            log.error("Failed to register Login Server session for user {}: {}", request.getUserId(), e.getMessage());
+            return ResponseEntity.ok(ApiResponse.error("注册登录会话失败: " + e.getMessage()));
+        }
+    }
+
+    /**
      * 三要素验证
      */
     @PostMapping("/validate")
@@ -380,6 +398,34 @@ public class SessionController {
         public void setUserAgent(String userAgent) {
             this.userAgent = userAgent;
         }
+    }
+
+    public static class RegisterSessionRequest {
+        @NotNull(message = "用户ID不能为空")
+        private String userId;
+        @NotBlank(message = "Token不能为空")
+        private String token;
+        @NotNull(message = "登录时间戳不能为空")
+        private Long loginTimestamp;
+        private String loginIp;
+        private String platform;
+        private String clientVersion;
+        private String userAgent;
+
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+        public Long getLoginTimestamp() { return loginTimestamp; }
+        public void setLoginTimestamp(Long loginTimestamp) { this.loginTimestamp = loginTimestamp; }
+        public String getLoginIp() { return loginIp; }
+        public void setLoginIp(String loginIp) { this.loginIp = loginIp; }
+        public String getPlatform() { return platform; }
+        public void setPlatform(String platform) { this.platform = platform; }
+        public String getClientVersion() { return clientVersion; }
+        public void setClientVersion(String clientVersion) { this.clientVersion = clientVersion; }
+        public String getUserAgent() { return userAgent; }
+        public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
     }
 
 

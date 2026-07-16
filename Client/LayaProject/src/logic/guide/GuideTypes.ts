@@ -10,12 +10,13 @@ export interface GuideConfig {
 
 export interface GuideProgress {
     guideId: number;
-    status: "inProgress" | "completed";
+    status: "queued" | "inProgress" | "completed";
     currentStepId: number;
     scriptVersion: number;
 }
 
 export interface GuideInitData {
+    /** Server-authoritative FIFO queue; only the first unfinished ID may start. */
     availableIds: number[];
     progress: GuideProgress[];
 }

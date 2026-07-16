@@ -111,9 +111,11 @@ NetworkManager.instance.disconnect();
 第 5 次：延迟 16 秒（最大延迟）
 ```
 
-### SystemProtocol - 全局服务器错误
+### SystemProtocol - Gateway 鉴权与全局服务器错误
 
-`SystemProtocol` 在 WebSocket 连接前注册 `ERROR=9001`，统一记录 Gateway 或 Game Server 返回的 `reason/code`，并通过全局 `eventDispatcher` 派发 `serverError` 事件。业务 UI 可以订阅该事件展示提示，不应重复注册 9001。
+`SystemProtocol` 在 WebSocket 连接前注册 `AUTH_SUCCESS/AUTH_FAILED/ERROR`。连接建立后必须先使用 Login Server 返回的 `userId + loginTimestamp + token` 完成 `AUTH=1001`，成功后才允许发送 game-server 业务协议。它同时统一记录 `ERROR=9001` 的 `reason/code` 并派发 `serverError` 事件；业务 UI 不应重复注册这些消息。
+
+首次连接与断线重连都必须遵守：`WebSocket connected → Gateway AUTH 成功 → Game LOGIN 成功 → 请求统一初始化`。不得使用固定延时假定登录成功。
 
 ## 快速开始
 

@@ -12,6 +12,11 @@ export class LoginMgr {
     private _isLoggedIn: boolean = false;
     private _loginInfo: LoginResponse | null = null;
     private _protocol: LoginProtocol | null = null;
+    private _pendingGameLogin: {
+        resolve: () => void;
+        reject: (error: Error) => void;
+        timer: ReturnType<typeof setTimeout>;
+    } | null = null;
 
     public static get instance(): LoginMgr {
         if (!LoginMgr._instance) {
@@ -93,6 +98,11 @@ export class LoginMgr {
      * 清除本地登录信息
      */
     private clearLocalLoginInfo(): void {
+        if (this._pendingGameLogin) {
+            clearTimeout(this._pendingGameLogin.timer);
+            this._pendingGameLogin.reject(new Error("Game login cancelled"));
+            this._pendingGameLogin = null;
+        }
         Laya.LocalStorage.removeItem("lastLoginAccount");
         this._isLoggedIn = false;
         this._loginInfo = null;
@@ -206,6 +216,12 @@ export class LoginMgr {
      */
     public async handleLoginSuccess(data: any): Promise<void> {
         this._isLoggedIn = true;
+        const pending = this._pendingGameLogin;
+        if (pending) {
+            clearTimeout(pending.timer);
+            this._pendingGameLogin = null;
+            pending.resolve();
+        }
         this.onGameLoginSuccess?.();
     }
 
@@ -215,6 +231,12 @@ export class LoginMgr {
      * @param data 服务器返回的数据（包含 reason）
      */
     public handleLoginFailed(data: any): void {
+        const pending = this._pendingGameLogin;
+        if (pending) {
+            clearTimeout(pending.timer);
+            this._pendingGameLogin = null;
+            pending.reject(new Error(String(data?.reason || "Unknown game login error")));
+        }
         console.error("[LoginMgr] 处理登录失败:", data);
 
         const reason = data?.reason || "未知错误";
@@ -240,5 +262,22 @@ export class LoginMgr {
 
         const timestamp = Date.now();
         this._protocol.sendLogin(userId, timestamp);
+    }
+
+    public loginToGame(userId: string): Promise<void> {
+        if (this._pendingGameLogin) {
+            clearTimeout(this._pendingGameLogin.timer);
+            this._pendingGameLogin.reject(new Error("Game login superseded"));
+            this._pendingGameLogin = null;
+        }
+        return new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                if (!this._pendingGameLogin) return;
+                this._pendingGameLogin = null;
+                reject(new Error("Game login timed out"));
+            }, 10000);
+            this._pendingGameLogin = { resolve, reject, timer };
+            this.sendGameLogin(userId);
+        });
     }
 }

@@ -227,7 +227,7 @@ public class CentralWebSocketHandler implements WebSocketHandler {
         try {
             Map<String, Object> data = (Map<String, Object>) message.getData();
             String userId = data.get("userId").toString();
-            log.info("Processing account verification for user {}: {}", userId, data);
+            log.info("Processing account verification for user {}", userId);
             // [HOT] 补充：调用网关分配逻辑
             Optional<GatewayAllocation> allocationOpt = gatewayService.allocateGateway(userId, null, null);
             if (allocationOpt.isPresent()) {
