@@ -51,3 +51,7 @@ nul
 
 # ==================== 依赖缓存 ====================
 **/node_modules/
+
+# Vendored toolchains - install via manifests, do not commit binaries
+Public/Python_env/
+Public/Tools/node-v*/
