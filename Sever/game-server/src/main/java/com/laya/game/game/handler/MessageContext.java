@@ -66,6 +66,7 @@ public class MessageContext {
      *   - playerId: 角色维度（背包、装备、战斗、社交）
      *   - sessionId: 连接维度（消息路由、断线重连）
      */
+    private Long playerId;
     /**
      * Gateway ID
      *
@@ -153,6 +154,10 @@ public class MessageContext {
         return this.sessionId;
     }
 
+    public Long getPlayerId() {
+        return this.playerId;
+    }
+
     /**
      * Gateway ID
      *
@@ -214,6 +219,10 @@ public class MessageContext {
     @java.lang.SuppressWarnings("all")
     public void setSessionId(final String sessionId) {
         this.sessionId = sessionId;
+    }
+
+    public void setPlayerId(final Long playerId) {
+        this.playerId = playerId;
     }
 
     /**
@@ -284,7 +293,9 @@ public class MessageContext {
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     public java.lang.String toString() {
-        return "MessageContext(userId=" + this.getUserId() + ", sessionId=" + this.getSessionId() + ", gatewayId=" + this.getGatewayId() + ", gatewayHandler=" + this.getGatewayHandler() + ")";
+        return "MessageContext(userId=" + this.getUserId() + ", sessionId=" + this.getSessionId()
+                + ", playerId=" + this.getPlayerId() + ", gatewayId=" + this.getGatewayId()
+                + ", gatewayHandler=" + this.getGatewayHandler() + ")";
     }
 
     @java.lang.SuppressWarnings("all")

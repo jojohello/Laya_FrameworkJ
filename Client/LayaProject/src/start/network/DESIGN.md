@@ -218,7 +218,7 @@ await NetworkManager.instance.connect({
     url: "ws://localhost:8082/ws",
     connectTimeout: 10000,
     heartbeat: {
-        interval: 20000,
+        interval: 5000,
         autoStart: true
     },
     reconnect: {
@@ -248,7 +248,7 @@ await NetworkManager.instance.connect({
 
 ```typescript
 export interface HeartbeatConfig {
-    interval?: number;          // 心跳间隔（默认：20000ms）
+    interval?: number;          // 心跳间隔（默认：5000ms；必须小于 Gateway 超时）
     messageType?: string;       // 心跳消息类型（默认：'HEARTBEAT'）
     autoStart?: boolean;        // 是否自动启动（默认：true）
 }
@@ -257,24 +257,25 @@ export interface HeartbeatConfig {
 ### 心跳策略
 
 **客户端策略**：
-- 心跳间隔：20 秒
-- 心跳消息：`{ type: 'HEARTBEAT', data: { timestamp: 当前时间戳 } }`
+- 心跳间隔：5 秒
+- 发送：`msgId=2001`，当前使用 JSON envelope
+- 接收：Gateway 返回 `msgId=2002`，由 `NetworkManager` 在业务 Dispatcher 之前消费
 
-**服务器配置**：
-- heartbeat-interval = 30 秒
-- 超时判定 = 60 秒（heartbeat-interval × 2）
+**Gateway 配置**：
+- `laya.heartbeat-timeout = 15000ms`
+- 收到已认证客户端的 `2001` 后本地返回 `2002/pong`，不转发 Game Server
 
 **余量分析**：
-- 客户端每 20 秒发送一次
-- 服务器 60 秒未收到消息才判定超时
-- 留有 40 秒的安全余量
+- 客户端每 5 秒发送一次
+- Gateway 15 秒未收到消息才判定超时
+- 正常情况下至少有两次发送机会；修改参数时必须重新核对两端
 
 ### 实现示例
 
 ```typescript
 const socket = new WebSocketImpl();
 const heartbeatMgr = new HeartbeatManager(socket, {
-    interval: 20000,
+    interval: 5000,
     messageType: 'HEARTBEAT',
     autoStart: true
 });
@@ -353,7 +354,7 @@ await networkMgr.connect({
     url: "ws://localhost:8082/ws",
     connectTimeout: 10000,
     heartbeat: {
-        interval: 20000,
+        interval: 5000,
         autoStart: true
     },
     reconnect: {
@@ -395,7 +396,7 @@ export class LoginView extends Laya.Scene {
             // 阻塞式：必须连接成功
             await NetworkManager.instance.connect({
                 url: loginResult.gatewayWsUrl,
-                heartbeat: { interval: 20000 },
+                heartbeat: { interval: 5000 },
                 reconnect: { autoReconnect: true, maxRetries: 5 }
             });
 
@@ -529,7 +530,7 @@ enum LogLevel {
 
 2. **心跳状态**
    ```typescript
-   console.log("[HeartbeatManager] ❤️ 心跳已启动（间隔: 20000ms）");
+   console.log("[HeartbeatManager] ❤️ 心跳已启动（间隔: 5000ms）");
    console.log("[HeartbeatManager] 💔 心跳已停止");
    ```
 
@@ -543,6 +544,16 @@ enum LogLevel {
 ---
 
 ## 已知问题和坑点
+
+### 心跳协议必须由网络基础层闭环
+
+- `HEARTBEAT=2001` 与 `HEARTBEAT_RESPONSE=2002` 属于网络基础协议，不进入业务 `MessageDispatcher`。
+- 客户端收到 `2002` 后由 `NetworkManager` 转给 `HeartbeatManager`，用于记录最近响应时间和往返耗时。
+- 心跳发送间隔必须严格小于 Gateway 的断线超时。当前 Gateway 超时为 15 秒，客户端统一使用 5 秒；修改任一端参数时必须同步核对另一端。
+- 业务层不为 `2002` 注册空处理器来压制告警，否则会掩盖心跳链路没有真正闭环的问题。
+- Gateway 收到并认证客户端的 `2001` 后本地处理，返回 JSON envelope 的 `2002/pong`，不转发 Game Server；普通业务 MessageID 才按作用域转发。
+- Gateway 的 `heartbeat-interval`（当前 WebSocket 配置可能仍有 30 秒的其他内部参数）不能替代客户端保活策略；真正约束客户端断线判断的是 `laya.heartbeat-timeout=15000`。
+- 客户端、Gateway、Game Server 的心跳 ID、响应方向和超时参数必须作为同一份协议契约维护。任何一端改动后，至少核对 `MessageIds`、Gateway WebSocket handler、客户端 `MessageIds/HeartbeatManager/NetworkManager` 和 `application.yml`。
 
 ### 0. 登录、鉴权与业务初始化必须形成可等待的状态链
 

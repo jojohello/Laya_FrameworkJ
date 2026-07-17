@@ -4,6 +4,8 @@
 
 Login Server translates a platform credential into an account-level login result. It owns platform authentication adapters and login records; Central Data Server remains authoritative for shared user/session state and Gateway allocation.
 
+Login Server owns a platform/environment-level database, default development name `laya_login`. It stores account identities, third-party bindings, and login records only. Gameplay roles and progression must never be written to this database.
+
 ## Boundaries
 
 - `LoginController` adapts HTTP requests and responses.

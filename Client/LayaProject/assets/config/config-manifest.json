@@ -2,6 +2,12 @@
   "version": 1,
   "tables": [
     {
+      "name": "BattleStage",
+      "file": "BattleStage.json",
+      "path": "config/BattleStage.json",
+      "rows": 6
+    },
+    {
       "name": "Buff",
       "file": "Buff.json",
       "path": "config/Buff.json",
@@ -30,6 +36,12 @@
       "file": "Item.json",
       "path": "config/Item.json",
       "rows": 4
+    },
+    {
+      "name": "MainNav",
+      "file": "MainNav.json",
+      "path": "config/MainNav.json",
+      "rows": 5
     },
     {
       "name": "SceneObjConfig",

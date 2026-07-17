@@ -6,6 +6,7 @@ import com.laya.game.game.handler.MessageContext;
 import com.laya.game.game.handler.MessageRouter;
 import com.laya.game.game.protocol.BroadcastRequest;
 import com.laya.game.game.protocol.GameMessage;
+import com.laya.game.game.session.GameSessionRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -63,6 +64,7 @@ public class GatewayWebSocketHandler extends TextWebSocketHandler {
      * 出站协议统一使用 Spring 的 Jackson 配置，避免预检和真实传输使用不同序列化器。
      */
     private final ObjectMapper objectMapper;
+    private final GameSessionRegistry gameSessionRegistry;
 
     /**
      * 构造函数
@@ -74,11 +76,13 @@ public class GatewayWebSocketHandler extends TextWebSocketHandler {
     public GatewayWebSocketHandler(GatewayRouteManager routeManager,
                                    @Qualifier("businessExecutor") ExecutorService businessExecutor,
                                    MessageRouter messageRouter,
-                                   ObjectMapper objectMapper) {
+                                   ObjectMapper objectMapper,
+                                   GameSessionRegistry gameSessionRegistry) {
         this.routeManager = routeManager;
         this.businessExecutor = businessExecutor;
         this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
+        this.gameSessionRegistry = gameSessionRegistry;
     }
 
     /**
@@ -159,6 +163,7 @@ public class GatewayWebSocketHandler extends TextWebSocketHandler {
         }
         // 创建消息上下文（包含 sessionId）
         MessageContext context = MessageContext.create(userId, sessionId, gatewayId, this);
+        context.setPlayerId(gameSessionRegistry.findPlayerId(sessionId, userId));
         // 使用MessageRouter路由消息到对应的Handler
         messageRouter.route(message, context);
     }

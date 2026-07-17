@@ -8,15 +8,33 @@ import { FunctionOpenMgr } from "../functionOpen/FunctionOpenMgr";
 import { SceneMgr } from "../scene/SceneMgr";
 import { SceneType } from "../scene/SceneType";
 import { WalletMgr } from "../wallet/WalletMgr";
+import { ExactIntegerInput, exactModuloRatio, formatCompactInteger } from "../common/ExactInteger";
 import { TopPrefab } from "./TopPrefab";
+import { ConfigMgr } from "../config/ConfigMgr";
+import { MainNavRouteRegistry } from "./MainNavRouteRegistry";
 
 const { regClass } = Laya;
+
+interface MainNavConfig {
+    ID: number;
+    functionId: number;
+    label: string;
+    icon: string;
+    routeKey: string;
+    routeArgs: readonly any[];
+    closedDisplay: "hidden" | "disabled" | "enabled";
+    closedClick: "ignore" | "tip" | "route";
+    order: number;
+}
+
+enum MainShellMode {
+    Main = "MainScene",
+    BattleStage = "BattleStageScene",
+}
 
 @regClass()
 export class MainSceneView extends MainSceneViewBase {
     private static readonly BATTLE_FUNCTION_ID = 1001;
-    private static readonly SYSTEM_NAMES = ["战斗地图", "背包", "任务", "商店", "设置"];
-    private static readonly SYSTEM_ICONS = ["ui/mainscene/imgs/icon-battle.png", "ui/mainscene/imgs/icon-box.png", "ui/mainscene/imgs/icon-flag.png", "ui/mainscene/imgs/icon-cup.png", "ui/mainscene/imgs/icon-world.png"];
     private static readonly DEFAULT_SELECTED_INDEX = 2;
     private static readonly GOLD_CURRENCY_ITEM_ID = 1001;
     private static readonly EXP_BAR_WIDTH = 106;
@@ -25,6 +43,8 @@ export class MainSceneView extends MainSceneViewBase {
     private _selectedButtonIndex: number = -1;
     private _playerProfile: TopPrefab | null = null;
     private _avatarMask: Laya.Sprite | null = null;
+    private _shellMode: MainShellMode = MainShellMode.Main;
+    private _navConfigs: readonly MainNavConfig[] = [];
 
     constructor() {
         super();
@@ -37,9 +57,21 @@ export class MainSceneView extends MainSceneViewBase {
      * @param param 打开参数
      */
     onOpened(param?: any): void {
+        this.clearButtonListEvents();
+        PlayerMgr.instance.removeListener(this.onPlayerChanged);
+        WalletMgr.instance.removeListener(this.onWalletChanged);
+        FunctionOpenMgr.instance.removeListener(this.onFunctionOpened);
         this.initButtonList();
         this.initSystemButtonStates();
-        this.selectSystemButton(MainSceneView.DEFAULT_SELECTED_INDEX);
+        this.applyShellMode(param?.fromScene);
+        const requestedIndex = Number.isInteger(param?.mainNavIndex) ? param.mainNavIndex : -1;
+        this.selectSystemButton(
+            requestedIndex >= 0
+                ? requestedIndex
+                : this._shellMode === MainShellMode.BattleStage
+                    ? 0
+                    : MainSceneView.DEFAULT_SELECTED_INDEX
+        );
         this._playerProfile = this.playerProfile as TopPrefab;
         this.refreshPlayerProfile();
         PlayerMgr.instance.addListener(this.onPlayerChanged);
@@ -131,23 +163,65 @@ export class MainSceneView extends MainSceneViewBase {
             if (!FunctionOpenMgr.instance.isOpen(MainSceneView.BATTLE_FUNCTION_ID) && (PlayerMgr.instance.data?.level || 0) < 2) {
                 return;
             }
-            SceneMgr.instance.switchScene(SceneType.BattleScene);
+            this.selectSystemButton(itemIndex);
+            void SceneMgr.instance.switchScene(SceneType.BattleStageScene);
             return;
         }
         this.selectSystemButton(itemIndex);
+        const navConfig = this._navConfigs[itemIndex];
+        if (this._shellMode === MainShellMode.BattleStage) {
+            void SceneMgr.instance
+                .switchScene(SceneType.MainScene, { mainNavIndex: itemIndex })
+                .then(() => MainNavRouteRegistry.open(navConfig?.routeKey || "", navConfig?.routeArgs || []));
+            return;
+        }
+        if (navConfig) {
+            void MainNavRouteRegistry.open(navConfig.routeKey, navConfig.routeArgs);
+        }
+    }
+
+    /**
+     * 主界面资源是跨场景复用的 UI 壳层。Controller 只适合表现状态，
+     * 场景模式仍由代码确定，避免编辑器状态成为业务真相。
+     */
+    private applyShellMode(fromScene?: string): void {
+        // MainUI 是跨场景壳层，根节点的空白区域不能拦截场景对象点击；
+        // GList、按钮等子控件仍会按照自身命中区域接收点击。
+        (this as any).mouseThrough = true;
+        if (Laya.GRoot.inst) {
+            (Laya.GRoot.inst as any).mouseThrough = true;
+        }
+        this._shellMode = fromScene === MainShellMode.BattleStage
+            ? MainShellMode.BattleStage
+            : MainShellMode.Main;
+
+        this.setNamedGroupVisible("playerProfile", true);
+        this.setNamedGroupVisible("buttom", true);
+        const showMainActivities = this._shellMode === MainShellMode.Main;
+        this.setNamedGroupVisible("leftActivities", showMainActivities);
+        this.setNamedGroupVisible("rightActivities", showMainActivities);
+    }
+
+    private setNamedGroupVisible(name: string, visible: boolean): void {
+        const child = this.getChildByName(name) as Laya.Node | null;
+        if (child) child.active = visible;
     }
 
     private initSystemButtonStates(): void {
         if (!this.btn_list) return;
 
+        this._navConfigs = this.loadNavConfigs();
+
         for (let i = 0; i < this.btn_list.numChildren; i++) {
             const button = this.getSystemButtonAt(i);
             if (!button) continue;
 
+            const config = this._navConfigs[i];
+
             const name = button.getChild("name_1") as Laya.GTextField;
             const loader = button.getChild("loader_1") as Laya.GLoader;
-            if (name) name.text = MainSceneView.SYSTEM_NAMES[i] || `系统${i + 1}`;
-            if (loader) loader.url = MainSceneView.SYSTEM_ICONS[i] || "";
+            if (name) name.text = config?.label || `系统${i + 1}`;
+            if (loader) loader.url = config?.icon || "";
             button.selected = false;
         }
         this.refreshSystemButtonStates();
@@ -155,9 +229,25 @@ export class MainSceneView extends MainSceneViewBase {
 
     private refreshSystemButtonStates(): void {
         if (!this.btn_list) return;
-        const battleOpen = FunctionOpenMgr.instance.isOpen(MainSceneView.BATTLE_FUNCTION_ID) || (PlayerMgr.instance.data?.level || 0) >= 2;
-        const battle = this.getSystemButtonAt(0);
-        if (battle) { battle.enabled = battleOpen; battle.grayed = !battleOpen; }
+        for (let i = 0; i < this.btn_list.numChildren; i++) {
+            const button = this.getSystemButtonAt(i);
+            const config = this._navConfigs[i];
+            if (!button || !config) continue;
+
+            const open = config.functionId <= 0
+                || FunctionOpenMgr.instance.isOpen(config.functionId)
+                || (config.functionId === MainSceneView.BATTLE_FUNCTION_ID && (PlayerMgr.instance.data?.level || 0) >= 2);
+            const shouldHide = !open && config.closedDisplay === "hidden";
+            button.active = !shouldHide;
+            button.enabled = open || config.closedDisplay !== "disabled";
+            button.grayed = !open && config.closedDisplay === "disabled";
+        }
+    }
+
+    private loadNavConfigs(): readonly MainNavConfig[] {
+        const configs = [...ConfigMgr.instance.getAll<MainNavConfig>("MainNav")];
+        configs.sort((a, b) => a.order - b.order);
+        return configs;
     }
 
     private onPlayerChanged = (data: { level: number }): void => {
@@ -207,8 +297,7 @@ export class MainSceneView extends MainSceneViewBase {
         if (goldAmount) goldAmount.text = this.formatCompactAmount(WalletMgr.instance.getBalance(MainSceneView.GOLD_CURRENCY_ITEM_ID));
         if (staminaAmount) staminaAmount.text = this.formatCompactAmount(data?.stamina || 0);
         if (expFill) {
-            const exp = Math.max(0, Number(data?.exp) || 0);
-            const progress = (exp % MainSceneView.DISPLAY_EXP_PER_LEVEL) / MainSceneView.DISPLAY_EXP_PER_LEVEL;
+            const progress = exactModuloRatio(data?.exp, MainSceneView.DISPLAY_EXP_PER_LEVEL);
             expFill.width = MainSceneView.EXP_BAR_WIDTH * progress;
             expFill.visible = progress > 0;
         }
@@ -226,11 +315,8 @@ export class MainSceneView extends MainSceneViewBase {
         displayObject.mask = this._avatarMask;
     }
 
-    private formatCompactAmount(value: number): string {
-        const amount = Math.max(0, Math.floor(Number(value) || 0));
-        if (amount < 1000) return `${amount}`;
-        if (amount < 1000000) return `${Math.floor(amount / 100) / 10}K`;
-        return `${Math.floor(amount / 100000) / 10}M`;
+    private formatCompactAmount(value: ExactIntegerInput): string {
+        return formatCompactInteger(value);
     }
 
     private selectSystemButton(index: number): void {

@@ -12,12 +12,12 @@ export enum SceneLayerType {
     Debug = 60,
 }
 
-export const SceneLayerNames: Record<SceneLayerType, "BelowScene" | "Scene" | "AboveScene"> = {
-    [SceneLayerType.Background]: "BelowScene",
-    [SceneLayerType.Ground]: "Scene",
-    [SceneLayerType.Object]: "Scene",
-    [SceneLayerType.Bullet]: "Scene",
-    [SceneLayerType.Effect]: "Scene",
-    [SceneLayerType.Hud]: "AboveScene",
-    [SceneLayerType.Debug]: "AboveScene",
+export const SceneLayerNames: Record<SceneLayerType, "Background" | "Ground" | "Object" | "Bullet" | "Effect" | "Hud" | "Debug"> = {
+    [SceneLayerType.Background]: "Background",
+    [SceneLayerType.Ground]: "Ground",
+    [SceneLayerType.Object]: "Object",
+    [SceneLayerType.Bullet]: "Bullet",
+    [SceneLayerType.Effect]: "Effect",
+    [SceneLayerType.Hud]: "Hud",
+    [SceneLayerType.Debug]: "Debug",
 };

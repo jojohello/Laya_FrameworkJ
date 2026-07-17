@@ -20,27 +20,27 @@ class GatewayWebSocketHandlerTest {
     void outboundGameInitUsesValidJsonForNumericCurrencyIds() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         GatewayWebSocketHandler handler =
-                new GatewayWebSocketHandler(null, null, null, objectMapper);
+                new GatewayWebSocketHandler(null, null, null, objectMapper, null);
 
         GameMessage message = new GameMessage();
         message.setMsgId(MessageIds.GAME_INIT_RESPONSE);
         message.setUserId("user-1");
         message.setData(Map.of(
                 "sections", Map.of(
-                        "wallet", new WalletInitData(Map.of(1001, 0L))
+                        "wallet", new WalletInitData(Map.of(1001, "0"))
                 )
         ));
 
         String json = handler.serializeOutbound(BroadcastRequest.toUser("user-1", message));
         JsonNode root = objectMapper.readTree(json);
 
-        assertEquals(0L, root.path("message")
+        assertEquals("0", root.path("message")
                 .path("data")
                 .path("sections")
                 .path("wallet")
                 .path("balances")
                 .path("1001")
-                .asLong());
+                .asText());
         assertFalse(json.contains("{1001:"));
     }
 }

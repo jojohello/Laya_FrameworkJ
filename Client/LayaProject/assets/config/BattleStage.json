@@ -1,9 +1,8 @@
 [
-  {
-    "ID": 1,
-    "stageName": "\u7b2c\u4e00\u5173",
-    "mapObjectName": "tower_1",
-    "enterText": "\u8fdb\u5165\u6218\u6597",
-    "battleText": "\u6218\u6597\u8fdb\u884c\u4e2d"
-  }
+  { "ID": 1001, "stageName": "第一关", "copyType": "normal", "battleId": 1, "canEnter": true },
+  { "ID": 1002, "stageName": "第二关", "copyType": "normal", "battleId": 2, "canEnter": true },
+  { "ID": 1003, "stageName": "第三关", "copyType": "normal", "battleId": 3, "canEnter": true },
+  { "ID": 1004, "stageName": "第四关", "copyType": "normal", "battleId": 4, "canEnter": true },
+  { "ID": 1005, "stageName": "第五关", "copyType": "normal", "battleId": 5, "canEnter": true },
+  { "ID": 1006, "stageName": "Boss关", "copyType": "boss", "battleId": 6, "canEnter": true }
 ]

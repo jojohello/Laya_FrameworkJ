@@ -81,7 +81,7 @@
 - 已增加 `PLAYER_LEVEL_UP_REQUEST=3012` / `PLAYER_LEVEL_UP_RESPONSE=3013`。服务端只允许数据库中当前等级为 1 的角色原子升至 2 级；MySQL 成功后更新 Redis，Redis 失败不覆盖 MySQL 结果。
 - 升级成功后服务端按第一版 Condition 事件 `testEvent=open` 开启 FunctionOpen `1001`，并通过 `FUNCTION_OPEN_PUSH=4002` 增量通知客户端。
 - 主界面在玩家 1 级时弹出确认窗口；确认后等待服务端响应，2 级及 FunctionOpen 1001 开启后解除“战斗地图”按钮置灰。
-- 点击“战斗地图”切换到已有 `BattleScene`，地图资源继续使用 `map/map002/fightmap.json`；BattleScene 当前提供第一关入口按钮，点击后进入“战斗进行中”状态，作为后续战斗玩法接入点。
+- 点击“战斗地图”先切换到 `BattleStageScene` 关卡选择界面，再由第一关节点切换到加载 `map/map002/fightmap.json` 的 `BattleScene`。
 - 验证：客户端 `npx.cmd tsc -p tsconfig.json --noEmit --pretty false` 通过；`Sever/game-server` 执行 `mvn test -DskipTests` 通过。尚未进行真实 MySQL/Redis/WebSocket 联调和 LayaAir IDE 运行验收。
 
 ## 本轮后续工作

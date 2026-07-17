@@ -577,6 +577,11 @@ export class BaseScene {
     private loadSceneMap(): void {
         const mapConfig = this.createSceneMapConfig();
         if (!mapConfig) {
+            const configuredWidth = this.toPositiveNumber(this._sceneConfig?.mapWidth);
+            const configuredHeight = this.toPositiveNumber(this._sceneConfig?.mapHeight);
+            if (configuredWidth && configuredHeight) {
+                this.setSpaceMapSize(configuredWidth, configuredHeight, this._spaceMapScale);
+            }
             console.warn(`[${this.constructor.name}] No map config, scene ready without map`);
             this._isReady = true;
             this.refreshCameraBounds();
@@ -700,13 +705,13 @@ export class BaseScene {
         if (this._layerRoot) return;
 
         const layerMgr = (Laya.Browser.window as any).LayerMgr;
-        const sceneLayer = layerMgr?.layers?.Scene as Laya.Sprite | undefined;
-        if (!layerMgr?.layers || !sceneLayer) {
+        const sceneRoot = layerMgr?.scene as Laya.Sprite | undefined;
+        if (!layerMgr?.layers || !sceneRoot) {
             console.error(`[${this.constructor.name}] Scene layers not found, cannot bind scene layers`);
             return;
         }
 
-        this._layerRoot = sceneLayer;
+        this._layerRoot = sceneRoot;
 
         this._layers.clear();
         const layerTypes: SceneLayerType[] = [
@@ -726,25 +731,14 @@ export class BaseScene {
                 console.error(`[${this.constructor.name}] Scene layer not found: ${layerName}`);
                 continue;
             }
-            const logicLayer = this.getOrCreateLogicLayer(layer, layerType);
-            this._layers.set(layerType, logicLayer);
-        }
-    }
-
-    private getOrCreateLogicLayer(parent: Laya.Sprite, layerType: SceneLayerType): Laya.Sprite {
-        const layerName = `SceneLayer_${SceneLayerType[layerType]}`;
-        let layer = parent.getChildByName(layerName) as Laya.Sprite;
-        if (!layer) {
-            layer = new Laya.Sprite();
-            layer.name = layerName;
+            layer.visible = true;
             layer.zOrder = layerType;
-            layer.width = Laya.stage.width;
-            layer.height = Laya.stage.height;
-            parent.addChild(layer);
+            if (layerType === SceneLayerType.Hud) {
+                layer.mouseEnabled = false;
+                layer.mouseThrough = true;
+            }
+            this._layers.set(layerType, layer);
         }
-        layer.visible = true;
-        layer.zOrder = layerType;
-        return layer;
     }
 
     private destroySceneLayers(): void {

@@ -96,8 +96,8 @@ Use this before producing assets for one screen.
 | Main visual focus | What should draw attention | current battle node |
 | UI density | low / medium / high | medium |
 | Text rendering | image / Laya text | Laya text |
-| Existing references | Existing assets or screenshots | reference screenshot, `assets/ui/battle/*` |
-| Output folders | Where files should go | map to `assets/bigImg`, icons to `assets/ui/battle` |
+| Existing references | Existing assets or screenshots | reference screenshot, `assets/ui/battleScene/*` |
+| Output folders | Where files should go | map to `assets/bigImg`, icons to `assets/ui/battleScene` |
 
 ## 3. Asset List Table
 
@@ -198,7 +198,7 @@ Do not ask if the answer is obvious from context:
 分辨率：750x1400
 资源放置：
 - 地图：assets/bigImg
-- 图标：assets/ui/battle
+- 图标：assets/ui/battleScene
 资源列表：
 - stage_node_normal，普通关卡节点，约160x120，透明PNG
 - stage_node_current，当前关卡节点，约180x180，透明PNG
@@ -297,17 +297,17 @@ Use this table for today's first workflow test.
 | Asset ID | Type | Purpose | State | Target Size | Format | Alpha | Output Path | Laya Usage | Text | Number | Style Notes | Avoid | Priority | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | battle_stage_map_forest | background | stage map background | normal | 750x1400 or larger portrait | PNG/JPG | no | `assets/bigImg/battle_stage_map_forest.png` | background | no | no | winding fantasy forest path | UI buttons, text, numbers | P0 | review |
-| stage_node_normal | icon | normal stage node | normal | ~160x120 | PNG | yes | `assets/ui/battle/stage_node_normal.png` | independent image | no | no | stone pedestal | text, numbers | P0 | review |
-| stage_node_clear | icon | cleared stage node | cleared | ~160x160 | PNG | yes | `assets/ui/battle/stage_node_clear.png` | independent image | no | no | golden star reward feeling | text, numbers | P0 | review |
-| stage_node_current | icon | current selectable stage | selected | ~180x180 | PNG | yes | `assets/ui/battle/stage_node_current.png` | independent image | no | no | blue glow and crossed swords | text, numbers | P0 | review |
-| stage_node_boss | icon | boss stage node | boss | ~180x180 | PNG | yes | `assets/ui/battle/stage_node_boss.png` | independent image | no | no | red boss marker | text, numbers | P0 | review |
-| stage_reward_chest | icon | reward chest | reward | ~160x160 | PNG | yes | `assets/ui/battle/stage_reward_chest.png` | independent image | no | no | gold chest with gem | text, numbers | P0 | review |
-| stage_route_flag | icon | route/progress marker | marker | ~140x180 | PNG | yes | `assets/ui/battle/stage_route_flag.png` | independent image | no | no | blue flag with gold accent | text, numbers | P1 | review |
-| stage_lock | icon | locked stage mark | locked | ~96x96 | PNG | yes | `assets/ui/battle/stage_lock.png` | independent image | no | no | gold lock, readable at small size | text, numbers | P1 | review |
-| stage_star_small | icon | star rating | reward | ~64x64 | PNG | yes | `assets/ui/battle/stage_star_small.png` | independent image | no | no | gold star, simple shape | text, numbers | P1 | review |
-| btn_battle_start | button | enter battle button background | normal | ~260x100 | PNG | yes | `assets/ui/battle/btn_battle_start.png` | independent image or 9-slice | no | no | orange/gold glossy button | baked text | P0 | review |
-| btn_battle_start_disabled | button | disabled enter battle button | disabled | ~260x100 | PNG | yes | `assets/ui/battle/btn_battle_start_disabled.png` | independent image or 9-slice | no | no | desaturated version | baked text | P1 | review |
-| battle_title_plate | panel | title plate background | normal | ~420x110 | PNG | yes | `assets/ui/battle/battle_title_plate.png` | independent image | no | no | blue inner plate, gold border | baked text | P1 | review |
+| stage_node_normal | icon | normal stage node | normal | ~160x120 | PNG | yes | `assets/ui/battleScene/stage_node_normal.png` | independent image | no | no | stone pedestal | text, numbers | P0 | review |
+| stage_node_clear | icon | cleared stage node | cleared | ~160x160 | PNG | yes | `assets/ui/battleScene/stage_node_clear.png` | independent image | no | no | golden star reward feeling | text, numbers | P0 | review |
+| stage_node_current | icon | current selectable stage | selected | ~180x180 | PNG | yes | `assets/ui/battleScene/stage_node_current.png` | independent image | no | no | blue glow and crossed swords | text, numbers | P0 | review |
+| stage_node_boss | icon | boss stage node | boss | ~180x180 | PNG | yes | `assets/ui/battleScene/stage_node_boss.png` | independent image | no | no | red boss marker | text, numbers | P0 | review |
+| stage_reward_chest | icon | reward chest | reward | ~160x160 | PNG | yes | `assets/ui/battleScene/stage_reward_chest.png` | independent image | no | no | gold chest with gem | text, numbers | P0 | review |
+| stage_route_flag | icon | route/progress marker | marker | ~140x180 | PNG | yes | `assets/ui/battleScene/stage_route_flag.png` | independent image | no | no | blue flag with gold accent | text, numbers | P1 | review |
+| stage_lock | icon | locked stage mark | locked | ~96x96 | PNG | yes | `assets/ui/battleScene/stage_lock.png` | independent image | no | no | gold lock, readable at small size | text, numbers | P1 | review |
+| stage_star_small | icon | star rating | reward | ~64x64 | PNG | yes | `assets/ui/battleScene/stage_star_small.png` | independent image | no | no | gold star, simple shape | text, numbers | P1 | review |
+| btn_battle_start | button | enter battle button background | normal | ~260x100 | PNG | yes | `assets/ui/battleScene/btn_battle_start.png` | independent image or 9-slice | no | no | orange/gold glossy button | baked text | P0 | review |
+| btn_battle_start_disabled | button | disabled enter battle button | disabled | ~260x100 | PNG | yes | `assets/ui/battleScene/btn_battle_start_disabled.png` | independent image or 9-slice | no | no | desaturated version | baked text | P1 | review |
+| battle_title_plate | panel | title plate background | normal | ~420x110 | PNG | yes | `assets/ui/battleScene/battle_title_plate.png` | independent image | no | no | blue inner plate, gold border | baked text | P1 | review |
 
 ## 8. Common Magic UI Final Assets
 

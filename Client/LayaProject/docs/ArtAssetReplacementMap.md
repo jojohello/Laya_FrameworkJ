@@ -86,17 +86,17 @@ Rules:
 
 | Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `assets/ui/battle/stage_node_normal.png` | Normal stage node | generated v4 stage node | 368x270 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battle/stage_node_clear.png` | Cleared stage node | generated v4 cleared node | 344x342 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battle/stage_node_current.png` | Current selectable stage node | generated v4 current node | 355x363 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battle/stage_node_boss.png` | Boss stage node | generated v4 boss node | 363x411 | independent icon | replaced | Red remains reserved for danger/boss. |
-| `assets/ui/battle/stage_reward_chest.png` | Stage reward chest | generated v4 reward chest | 350x326 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battle/battle_title_plate.png` | Battle title plate | existing v4-style formal asset | 502x296 | title bg | ready | Looks consistent with current style. Use Laya text for labels. |
-| `assets/ui/battle/btn_battle_start.png` | Battle start button | existing v4-style formal asset | 505x227 | button bg | ready | Center clean for Laya text. |
-| `assets/ui/battle/btn_battle_start_disabled.png` | Disabled battle start button | existing v4-style formal asset | 485x220 | button bg | ready | Center clean for Laya text. |
-| `assets/ui/battle/stage_lock.png` | Stage lock icon | existing v4-style formal asset | 268x327 | independent icon | ready | Consistent enough; no current replacement needed. |
-| `assets/ui/battle/stage_route_flag.png` | Stage route/marker flag | existing v4-style formal asset | 317x389 | independent icon | ready | Consistent enough; no current replacement needed. |
-| `assets/ui/battle/stage_star_small.png` | Stage star/reward star | existing v4-style formal asset | 292x280 | independent icon | ready | Consistent enough; no current replacement needed. |
+| `assets/ui/battleScene/stage_node_normal.png` | Normal stage node | generated v4 stage node | 368x270 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battleScene/stage_node_clear.png` | Cleared stage node | generated v4 cleared node | 344x342 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battleScene/stage_node_current.png` | Current selectable stage node | generated v4 current node | 355x363 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battleScene/stage_node_boss.png` | Boss stage node | generated v4 boss node | 363x411 | independent icon | replaced | Red remains reserved for danger/boss. |
+| `assets/ui/battleScene/stage_reward_chest.png` | Stage reward chest | generated v4 reward chest | 350x326 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battleScene/battle_title_plate.png` | Battle title plate | existing v4-style formal asset | 502x296 | title bg | ready | Looks consistent with current style. Use Laya text for labels. |
+| `assets/ui/battleScene/btn_battle_start.png` | Battle start button | existing v4-style formal asset | 505x227 | button bg | ready | Center clean for Laya text. |
+| `assets/ui/battleScene/btn_battle_start_disabled.png` | Disabled battle start button | existing v4-style formal asset | 485x220 | button bg | ready | Center clean for Laya text. |
+| `assets/ui/battleScene/stage_lock.png` | Stage lock icon | existing v4-style formal asset | 268x327 | independent icon | ready | Consistent enough; no current replacement needed. |
+| `assets/ui/battleScene/stage_route_flag.png` | Stage route/marker flag | existing v4-style formal asset | 317x389 | independent icon | ready | Consistent enough; no current replacement needed. |
+| `assets/ui/battleScene/stage_star_small.png` | Stage star/reward star | existing v4-style formal asset | 292x280 | independent icon | ready | Consistent enough; no current replacement needed. |
 
 ## Cleanup Rule
 

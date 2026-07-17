@@ -10,6 +10,7 @@
   "name": "Scene2D",
   "width": 750,
   "height": 1334,
+  "mouseThrough": true,
   "_$child": [
     {
       "_$id": "player-profile-instance",

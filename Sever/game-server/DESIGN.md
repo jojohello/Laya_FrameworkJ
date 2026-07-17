@@ -24,6 +24,11 @@ The account-keyed development tables are migration sources only. Each migration 
 
 ## Data And Configuration
 
+- Each Game Server instance owns one private MySQL database, selected by `GAME_DB_NAME` and bound to its `GAME_SERVER_ID`. The development default for `game-server-1` is `laya_game_1`.
+- `playerId` auto-increment uniqueness is local to that database. Cross-server tools and records must carry both `gameServerId` and `playerId`.
+- Flyway under `classpath:db/migration` is the schema authority. New tables and columns must be migrations; repositories only read and write runtime data.
+- `playerId`, experience, and wallet balances use decimal strings on the JSON wire. Server storage remains `BIGINT` and Java `long` while checked arithmetic proves the configured domain fits signed 64-bit.
+- Bounded counts such as inventory stacks may remain JSON numbers only when the server enforces `0..Number.MAX_SAFE_INTEGER`.
 - `RedisService` is hot-state infrastructure; keys must encode ownership and identity type explicitly.
 - `GatewayRouteManager` caches user-to-Gateway routes in memory and Redis.
 - `ConfigManager` preloads JSON tables and fails fast on invalid required configuration.

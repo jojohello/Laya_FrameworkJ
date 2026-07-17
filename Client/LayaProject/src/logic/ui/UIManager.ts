@@ -59,6 +59,10 @@ export class UIManager implements IManager {
     // ========== 层级管理 ==========
 
     private createLayers(): void {
+        // GRoot 是 UI 容器，不应以整屏矩形拦截场景点击；子控件仍保留命中能力。
+        if (Laya.GRoot.inst) {
+            (Laya.GRoot.inst as any).mouseThrough = true;
+        }
         if (!Laya.GRoot.inst) {
             console.error("[UIManager] GRoot 未初始化，无法挂载 UI");
         }
@@ -277,6 +281,12 @@ export class UIManager implements IManager {
         // UI 直接挂到 GRoot，同 zOrder 下后添加的 UI 会覆盖先添加的 UI。
         uiRoot.addChild(scene);
 
+        // 允许特定 UI 的根节点在空白区域穿透鼠标事件。
+        // 子控件仍保留自己的命中能力，适用于 MainUI 这类跨场景壳层。
+        if (config.mouseThrough !== undefined) {
+            (scene as any).mouseThrough = config.mouseThrough;
+        }
+
         // 加入已打开列表
         this._openedUIs.set(instance.name, instance);
 
@@ -329,5 +339,3 @@ export class UIManager implements IManager {
         }
     }
 }
-
-

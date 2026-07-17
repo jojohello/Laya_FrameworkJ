@@ -1,13 +1,15 @@
+import { IntegerString } from "../common/ExactInteger";
+
 export interface PlayerInitData {
     playerId: string;
     name: string;
     level: number;
-    exp: number;
+    exp: IntegerString;
     stamina: number;
 }
 
 export interface WalletInitData {
-    balances: Record<string, number>;
+    balances: Record<string, IntegerString>;
 }
 
 export interface BagInitData {

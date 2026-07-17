@@ -163,6 +163,18 @@ applyOpened(state: FunctionOpenState): void;
 
 ## UI 绑定方案
 
+### 主界面导航配置边界
+
+`FunctionOpen` 与主界面导航不是同一张表：
+
+- `FunctionOpen` 只保存玩法是否开启、未开启时显示/点击策略和玩法条件；它是服务端权威状态的客户端镜像。
+- `MainNav` 保存导航入口的顺序、显示文字、图标、`routeKey` 和路由参数；它不保存角色开启状态。
+- 一个 FunctionOpen 可以绑定多个导航入口；一个导航入口最多绑定一个 `functionId`。`functionId=0` 表示当前入口不受 FunctionOpen 限制。
+- `routeKey` 必须是稳定的业务路由键，由客户端路由注册表解释，配置不得直接填写 TypeScript 类名、方法名或脚本。
+- 导航组件读取 `MainNav` 后再向 `FunctionOpenMgr` 查询状态。点击时必须再次检查开启状态，避免状态更新与点击之间产生竞态。
+
+当前客户端的 `MainNav.json` 是第一版实现，使用 `label` 作为临时文字字段；接入本地化后，将逐步替换为 `nameKey`，不改变入口 ID、图标和路由字段。
+
 推荐提供可挂载到 `GButton` 或其宿主节点的 `FunctionOpenEntry` 脚本组件，暴露：
 
 - `functionId`

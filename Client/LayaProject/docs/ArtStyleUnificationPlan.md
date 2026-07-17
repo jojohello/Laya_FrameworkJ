@@ -18,9 +18,9 @@ The target is not only "same prompt", but a repeatable art direction:
 
 Use the current better assets only as a structural reference, not as the final color/saturation target:
 
-- `assets/ui/battle/stage_node_*.png`
-- `assets/ui/battle/stage_reward_chest.png`
-- `assets/ui/battle/stage_route_flag.png`
+- `assets/ui/battleScene/stage_node_*.png`
+- `assets/ui/battleScene/stage_reward_chest.png`
+- `assets/ui/battleScene/stage_route_flag.png`
 - `assets/ui/common/imgs/btn-bg-yellow0.png`
 - `assets/ui/mainscene/imgs/icon-world.png`
 - `assets/ui/mainscene/imgs/icon-box.png`
@@ -193,7 +193,7 @@ Decision:
 
 - choose the target style from samples
 - lock palette and shape language
-- decide whether current `assets/ui/battle` becomes the first style baseline
+- decide whether current `assets/ui/battleScene` becomes the first style baseline
 
 User cooperation needed:
 
@@ -317,7 +317,7 @@ Unify world art direction while keeping functional map data compatible.
 
 Today should focus on Phase 0 and Phase 1:
 
-1. Confirm `assets/ui/battle` as the first target style baseline, or generate 1-2 alternate battle style sheets.
+1. Confirm `assets/ui/battleScene` as the first target style baseline, or generate 1-2 alternate battle style sheets.
 2. Complete the battle stage screen art set.
 3. Build the Laya pass screen using independent PNGs.
 4. Review the actual screen instead of judging assets in isolation.

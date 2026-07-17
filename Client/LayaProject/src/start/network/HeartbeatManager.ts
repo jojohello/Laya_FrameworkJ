@@ -2,6 +2,7 @@
 // 心跳管理器（事件驱动）
 
 import { ISocket, SocketEvent } from "./ISocket";
+import { HEARTBEAT } from "./MessageIds";
 
 /**
  * 心跳管理器配置
@@ -9,11 +10,11 @@ import { ISocket, SocketEvent } from "./ISocket";
 export interface HeartbeatConfig {
     /**
      * 心跳间隔（毫秒）
-     * 默认：20000（20秒）
+     * 默认：5000（5秒）
      *
      * 说明：
-     * - 服务器端配置：heartbeat-interval = 30秒，超时判定 = 60秒
-     * - 客户端策略：每20秒发送一次，留有40秒余量
+     * - Gateway 当前配置：heartbeat-timeout = 15秒
+     * - 客户端策略：每5秒发送一次，必须小于 Gateway 超时窗口
      */
     interval?: number;
 
@@ -47,7 +48,7 @@ export interface HeartbeatConfig {
  * ```typescript
  * const socket = new WebSocketImpl();
  * const heartbeatMgr = new HeartbeatManager(socket, {
- *     interval: 20000,
+ *     interval: 5000,
  *     messageType: 'HEARTBEAT'
  * });
  * heartbeatMgr.start(); // 开始监听（连接后自动发心跳）
@@ -62,6 +63,9 @@ export class HeartbeatManager {
     private _timer: any = null;
     private _enabled: boolean = false;
     private _active: boolean = false; // 心跳是否正在运行
+    private _lastSentAt: number = 0;
+    private _lastResponseAt: number = 0;
+    private _lastRoundTrip: number = 0;
 
     // 事件处理器（保存引用，用于解绑）
     private _onConnected: () => void;
@@ -78,7 +82,7 @@ export class HeartbeatManager {
 
         // 合并默认配置
         this._config = {
-            interval: config?.interval ?? 20000,
+            interval: config?.interval ?? 5000,
             messageType: config?.messageType ?? 'HEARTBEAT',
             autoStart: config?.autoStart ?? true
         };
@@ -205,12 +209,13 @@ export class HeartbeatManager {
 
         // 构造心跳消息（使用 msgId）
         const heartbeatMsg = {
-            msgId: 2001,  // MessageIds.HEARTBEAT
+            msgId: HEARTBEAT,
             data: { timestamp: Date.now() }
         };
 
         // 发送心跳
         try {
+            this._lastSentAt = Date.now();
             this._socket.send(JSON.stringify(heartbeatMsg));
         } catch (error) {
             console.error("[HeartbeatManager] 发送心跳失败:", error);
@@ -236,5 +241,24 @@ export class HeartbeatManager {
      */
     public get config(): Readonly<Required<HeartbeatConfig>> {
         return this._config;
+    }
+
+    /**
+     * 消费 Gateway 的 HEARTBEAT_RESPONSE。
+     * 心跳是传输层协议，不应继续交给业务 MessageDispatcher。
+     */
+    public handleResponse(_data?: any): void {
+        this._lastResponseAt = Date.now();
+        this._lastRoundTrip = this._lastSentAt > 0
+            ? Math.max(0, this._lastResponseAt - this._lastSentAt)
+            : 0;
+    }
+
+    public get lastResponseAt(): number {
+        return this._lastResponseAt;
+    }
+
+    public get lastRoundTrip(): number {
+        return this._lastRoundTrip;
     }
 }

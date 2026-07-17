@@ -27,7 +27,7 @@ class PlayerLevelEqualsGuideConditionTest {
 
     private GuideConditionContext context(int level) {
         return new GuideConditionContext(
-                new PlayerInitData("player-test", "Player", level, 0, 100),
+                new PlayerInitData("player-test", "Player", level, "0", 100),
                 Set.of());
     }
 }

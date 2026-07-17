@@ -34,9 +34,9 @@ spring:
 
   # MySQL配置 (持久化存储，可选)
   datasource:
-    url: jdbc:mysql://localhost:3306/laya_game?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:laya_user}
-    password: ${DB_PASSWORD:laya123456}
+    url: jdbc:mysql://${GAME_DB_HOST:localhost}:${GAME_DB_PORT:3306}/${GAME_DB_NAME:laya_game_1}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${GAME_DB_USERNAME:laya_user}
+    password: ${GAME_DB_PASSWORD:laya123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 20
@@ -44,6 +44,14 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_game_server_schema_history
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
 
   # Jackson配置
   jackson:
@@ -72,6 +80,11 @@ spring:
 
 # 自定义配置
 laya:
+  # 心跳机制配置 (2025-11-10 新增)
+  heartbeat-interval: 5000          # 5秒心跳间隔 (毫秒)
+  heartbeat-timeout: 15000          # 15秒超时（3次心跳未收到）(毫秒)
+  check-interval: 5000              # 每5秒检查超时 (毫秒)
+
   game:
     # 服务器标识
     server-id: ${GAME_SERVER_ID:game-server-1}
@@ -100,14 +113,15 @@ laya:
       # 心跳配置
       heartbeat:
         enabled: true
-        interval: 10000  # 心跳间隔 10秒 (毫秒)
-        timeout: 30000  # 心跳超时 30秒 (毫秒)
+        interval: 5000  # 心跳间隔 5秒 (毫秒) - 2025-11-10更新
+        timeout: 15000  # 心跳超时 15秒 (毫秒) - 2025-11-10更新
 
     # 配置表系统
     config:
       # 配置表路径（支持外部化）
       # 优先级：命令行参数 > 环境变量 > 相对路径 > classpath
-      tables-path: ${CONFIG_TABLES_PATH:file:../../config/tables}
+      # 运行目录: output/servers/game-server/ -> ../../config/tables/
+      tables-path: ${CONFIG_TABLES_PATH:file:../../config/tables/}
       # 热更新配置
       hot-reload:
         enabled: ${CONFIG_HOT_RELOAD:true}
@@ -135,9 +149,9 @@ laya:
       max-capacity: 200  # 最大背包容量
       max-stack-size: 999  # 最大堆叠数量
 
-    # 数据存储配置
+    # 数据存储配置：当前阶段 MySQL 同步权威，Redis 业务缓存后续单独实现
     storage:
-      strategy: redis-first  # 存储策略: redis-first, mysql-first, redis-only
+      strategy: mysql-first
       # Redis存储配置
       redis:
         key-prefix: "game:"
@@ -148,7 +162,7 @@ laya:
       mysql:
         enabled: true
         batch-size: 100  # 批量写入大小
-        async-write: true  # 异步写入
+        async-write: false
 
     # 性能配置
     performance:
@@ -186,6 +200,9 @@ management:
 
 # 日志配置
 logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
   level:
     root: INFO
     com.laya.game.game: INFO

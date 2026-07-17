@@ -32,6 +32,13 @@ Client ──WebSocket──> Gateway <──WebSocket──> Game Server
 
 在角色系统完成前，部分服务器代码仍以 `userId` 承载占位游戏数据。新增服务器权威玩法不得扩大这种混用，应先完成 Account 到 Player 的边界。
 
+## 精确整数边界
+
+- 不把多个身份字段通过十进制拼接、乘法或位移强行组成一个更大的业务 ID。跨游戏服角色身份使用结构化 `(gameServerId, playerId)`。
+- MySQL `BIGINT` 和 Java `long` 可以保存 64 位整数，但 JavaScript `number` 只能精确保存到 `2^53-1`。64 位 ID、经验、货币等可能超过该范围的字段必须以十进制字符串通过 JSON 传输。
+- 客户端需要计算精确整数时使用 `bigint`；只允许把已经证明处于安全范围内的局部值、比例或余数转换为 `number`。
+- 服务端对 `long` 加减使用溢出检查并拒绝负数或越界结果。若策划明确需要超过有符号 64 位，字段单独迁移为 Java `BigInteger`、MySQL `DECIMAL(65,0)`，协议继续使用十进制字符串。
+
 ## 唯一来源与生成物
 
 - 配置表唯一源数据是 `Config/csv/*.csv`。

@@ -26,6 +26,8 @@ export interface SceneConfig {
 
     /** 地图类型：image / tilemap */
     mapType?: string;
+    /** 关卡选择场景使用的完整大关 prefab（底图与节点） */
+    stagePrefab?: string;
 
     /** 单图地图宽度或 TileMap 逻辑宽度（像素） */
     mapWidth?: number;

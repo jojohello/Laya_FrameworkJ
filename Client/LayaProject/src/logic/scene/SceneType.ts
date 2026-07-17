@@ -14,6 +14,9 @@ export enum SceneType {
     /** 主场景（ID=1） */
     MainScene = 1,
 
-    /** 战斗场景（ID=2） */
-    BattleScene = 2,
+    /** 征战关卡选择场景（ID=2） */
+    BattleStageScene = 2,
+
+    /** 第一关实际战斗场景（ID=3） */
+    BattleScene = 3,
 }

@@ -36,7 +36,12 @@ public class GuideProgressHandler implements MessageHandler {
         int version = number(data, "version");
         Object statusValue = data.get("status");
         String status = statusValue == null ? "" : String.valueOf(statusValue);
-        PlayerRole player = playerRepository.resolveOrCreate(userId);
+        Long playerId = context.getPlayerId();
+        PlayerRole player = playerId == null ? null : playerRepository.find(playerId);
+        if (player == null || !userId.equals(player.userId())) {
+            sendError(context, "player_not_selected");
+            return;
+        }
         GuideProgress progress = guideService.reportProgress(player, guideId, status, stepId, version);
 
         Map<String, Object> responseData = new LinkedHashMap<>();
@@ -55,5 +60,12 @@ public class GuideProgressHandler implements MessageHandler {
     private int number(Map<?, ?> data, String key) {
         Object value = data.get(key);
         return value instanceof Number number ? number.intValue() : 0;
+    }
+
+    private void sendError(MessageContext context, String reason) {
+        GameMessage response = new GameMessage();
+        response.setMsgId(MessageIds.ERROR);
+        response.setData(Map.of("reason", reason));
+        context.sendResponse(response);
     }
 }

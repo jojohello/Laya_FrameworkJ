@@ -117,7 +117,7 @@ Current project conventions:
 | Large backgrounds/loading/map images | `assets/bigImg` or `assets/map` |
 | Common UI | `assets/ui/common/imgs` |
 | Main scene UI | `assets/ui/mainscene/imgs` |
-| Battle UI | `assets/ui/battle` |
+| Battle UI | `assets/ui/battleScene` |
 | Login/loading/startup UI | `assets/startupUI/.../imgs` |
 
 ## Standard Prompt Block
@@ -159,7 +159,7 @@ Important accepted examples:
 - `assets/ui/mainscene/imgs/btn-bg-yellow.png`
   - Accepted warm button treatment.
   - Needs stronger edge and soft grounding over bright scenes.
-- `assets/ui/battle/stage_node_*.png`
+- `assets/ui/battleScene/stage_node_*.png`
   - Accepted battle stage node direction.
   - Independent icon assets with clear silhouettes.
 

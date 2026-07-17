@@ -22,7 +22,7 @@ import { GuideCommandRegistry } from "./guide/GuideCommandRegistry";
 
 // 导入场景类并注册到 window（供 SceneMgr 动态创建）
 import { MainScene } from "./mainScene/MainScene";
-import { BattleScene } from "./battleScene/BattleScene";
+import { BattleScene, BattleStageScene } from "./battleScene/BattleScene";
 
 
 
@@ -50,6 +50,7 @@ export class LogicMain {
 
         // 1.5 注册场景类到 window（供 SceneMgr 动态创建）
         (Laya.Browser.window as any).MainScene = MainScene;
+        (Laya.Browser.window as any).BattleStageScene = BattleStageScene;
         (Laya.Browser.window as any).BattleScene = BattleScene;
 
         // 2. 初始化配置管理器（必须在其他 Manager 之前完成）
@@ -94,7 +95,7 @@ export class LogicMain {
                 url: gatewayUrl,
                 connectTimeout: 10000,
                 heartbeat: {
-                    interval: 20000,
+                    interval: 5000,
                     autoStart: true
                 },
                 reconnect: {

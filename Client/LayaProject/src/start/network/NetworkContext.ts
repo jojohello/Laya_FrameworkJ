@@ -38,7 +38,7 @@ export class NetworkContext {
      *
      * 新架构说明：
      * - 使用 NetworkManager 统一入口
-     * - 自动配置心跳（20秒间隔）
+     * - 自动配置心跳（5秒间隔）
      * - 自动配置重连（指数退避，最多5次）
      * - 事件驱动，通过 on() 注册监听器
      *
@@ -70,7 +70,7 @@ export class NetworkContext {
                 url: url,
                 connectTimeout: timeout,
                 heartbeat: {
-                    interval: 20000,        // 20秒心跳
+                    interval: 5000,         // 5秒心跳；必须小于 Gateway 的15秒超时
                     messageType: 'HEARTBEAT',
                     autoStart: true         // 自动启动心跳
                 },

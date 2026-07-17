@@ -43,6 +43,12 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 - 含数组、嵌套对象、引擎对象或业务方法的数据结构使用 `XXXInfo` 或更准确的领域名称。
 - 不为满足命名格式创建无意义的 Data/Info 类。
 
+## 精确整数
+
+- `playerId`、经验、货币以及其他可能超过 `Number.MAX_SAFE_INTEGER` 的协议字段使用十进制字符串，不得直接声明为 `number`。
+- 精确计算统一使用 `src/logic/common/ExactInteger.ts` 的规范化与 `bigint` 能力。UI 仅将安全的小余数、比例或已格式化文本转换为普通数字。
+- 数量被业务上限明确限制在安全整数范围内时可以使用 `number`，但服务端必须执行同一上限校验。
+
 ## LayaAir 3.3 约束
 
 - 运行时资源路径相对 `assets/` 根，例如 `startupUI/login/Login.lh`，不得写成 `assets/startupUI/login/Login.lh`。

@@ -47,6 +47,13 @@ Gateway and Game Server report to Central every 5 seconds. Central treats 15 sec
 
 Central pushes Game Server status changes to Gateways. Polling the registry is a recovery path, not the primary discovery mechanism.
 
+## Client Gateway Heartbeat Contract
+
+- `2001 (HEARTBEAT)` and `2002 (HEARTBEAT_RESPONSE)` are Gateway-scoped transport messages, not gameplay messages.
+- After the three-factor authentication succeeds, the client sends `2001` every 5 seconds. Gateway handles it locally and returns a JSON envelope with `msgId=2002`, `data="pong"`, and a server timestamp; neither message is forwarded to Game Server.
+- Gateway's client disconnect boundary is `laya.heartbeat-timeout=15000ms`; the client interval must remain strictly below this value. The separate internal service heartbeat settings do not replace this public client contract.
+- The client consumes `2002` in its network layer before business dispatch. A new business MessageID must not add a Gateway handler unless its scope is explicitly `gateway`.
+
 ## Module Boundaries
 
 - `common` contains code genuinely shared by multiple modules; it must not depend on a concrete service.
@@ -57,7 +64,18 @@ Central pushes Game Server status changes to Gateways. Polling the registry is a
 
 ## Data And Concurrency
 
-Central owns durable account/session/allocation data. Game Server owns gameplay state and may use Redis for hot state and routing. In-memory maps are instance-local caches and must not be treated as cluster-wide truth.
+Database ownership is split by service boundary:
+
+- Login Server owns one platform/environment-level Login database containing platform identities and login records. It is shared by all Game Server instances only through Login APIs, never by direct gameplay queries.
+- Central owns a separate Central database for sessions, Gateway allocation, and the durable Game Server registry.
+- Each Game Server instance owns one private gameplay database. The database name and credentials are deployment configuration bound to `gameServerId`; two Game Server instances must not write the same gameplay database.
+- A `playerId` is unique inside its Game Server database. Any cross-server reference must use `(gameServerId, playerId)`.
+
+Game Server may use Redis for hot state and routing, but MySQL remains authoritative in the current phase. In-memory maps are instance-local caches and must not be treated as cluster-wide truth.
+
+Schema changes use versioned migrations. A new Game Server database starts empty and is brought to the application version by Flyway. Runtime repositories must not become an independent schema-definition source. Deployment tooling must create the database and least-privilege account, inject connection settings, run migrations, and verify the Flyway history plus required tables.
+
+Exact numeric fields have a transport boundary. Service-local IDs remain local and are never arithmetically concatenated with `gameServerId`. Java `long` and MySQL `BIGINT` fields use checked arithmetic; values that may exceed JavaScript's safe integer range are serialized as decimal strings. A field moves to `BigInteger` plus `DECIMAL(65,0)` only when an explicit gameplay requirement exceeds signed 64-bit range.
 
 WebSocket callbacks, scheduled heartbeats, and message executors run concurrently. Shared mutable state requires concurrent collections or explicit synchronization, and blocking I/O must not run on connection callback threads.
 

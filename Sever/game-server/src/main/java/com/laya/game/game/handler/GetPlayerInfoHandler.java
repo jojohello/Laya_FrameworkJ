@@ -27,7 +27,12 @@ public class GetPlayerInfoHandler implements MessageHandler {
             sendError(context, "account_not_authenticated");
             return;
         }
-        PlayerRole player = playerRepository.resolveOrCreate(userId);
+        Long playerId = context.getPlayerId();
+        PlayerRole player = playerId == null ? null : playerRepository.find(playerId);
+        if (player == null || !userId.equals(player.userId())) {
+            sendError(context, "player_not_selected");
+            return;
+        }
         GameMessage response = new GameMessage();
         response.setMsgId(MessageIds.PLAYER_INFO);
         response.setUserId(userId);

@@ -36,7 +36,7 @@ export class HealthBarView extends Laya.Sprite {
         super();
         this._widthValue = options.width ?? 54;
         this._heightValue = options.height ?? 8;
-        this._prefabUrl = options.prefabUrl ?? "ui/battlescene/HealthBar.lh";
+        this._prefabUrl = options.prefabUrl ?? "ui/battleScene/HealthBar.lh";
         this._bgUrl = options.bgUrl ?? "ui/common/imgs/blood-bg.png";
         this._barUrl = options.barUrl ?? "ui/common/imgs/blood-red.png";
         this._bgColor = options.bgColor ?? "#2b2b2b";

@@ -3,7 +3,7 @@
 | Resource | Type | Purpose | Reuse notes |
 |---|---|---|---|
 | `ui/mainscene/systemBtn.lh` | `.lh` prefab | Main scene system entry button | Used by `MainSceneView.ls` GList; contains `loader_1` and `name_1` |
-| `ui/battlescene/HealthBar.lh` | `.lh` prefab | Battle health bar | Reusable battle HUD component |
+| `ui/battleScene/HealthBar.lh` | `.lh` prefab | Battle health bar | Reusable battle HUD component |
 | `ui/dialog/commonDialog.ls` | `.ls` modal layer | Full-screen modal mask and dialog panel | Open through `DialogMgr`; supports confirm-only and confirm/cancel callbacks |
 | `ui/common/imgs/panel-bg.png` | PNG | Western magic parchment panel | Reusable panel background; UUID must be read from `.meta` |
 | `ui/common/imgs/title-bg.png` | PNG | Dialog/title bar | Reusable title decoration; labels remain runtime text |

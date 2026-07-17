@@ -117,7 +117,7 @@ export class SceneMgr implements IManager {
 
         // 3. 退出当前场景
         if (this._curScene) {
-            await this.exitCurScene(config.cache);
+            await this.exitCurScene(config.cache, config.uiName || "");
         }
 
         // 4. 尝试从缓存恢复
@@ -129,7 +129,7 @@ export class SceneMgr implements IManager {
             this._curScene.scene.onEnter(param);
             
             // 打开关联 UI
-            await this.openSceneUI(config);
+            await this.openSceneUI(config, param);
             
             return this._curScene.scene;
         }
@@ -154,7 +154,7 @@ export class SceneMgr implements IManager {
             scene.onEnter(param);
 
             // 7. 打开关联 UI
-            await this.openSceneUI(config);
+            await this.openSceneUI(config, param);
 
             return scene;
         } catch (error) {
@@ -166,13 +166,14 @@ export class SceneMgr implements IManager {
     /**
      * 退出当前场景
      * @param cache 是否缓存场景
+     * @param preserveUIName 新旧场景共用的 UI；共用时保留实例，只刷新场景模式
      */
-    private async exitCurScene(cache: boolean = false): Promise<void> {
+    private async exitCurScene(cache: boolean = false, preserveUIName: string = ""): Promise<void> {
         if (!this._curScene) return;
 
         // 关闭关联 UI
         const uiName = this._curScene.config.uiName;
-        if (uiName) {
+        if (uiName && uiName !== preserveUIName) {
             UIManager.instance.close(uiName);
         }
 
@@ -221,13 +222,16 @@ export class SceneMgr implements IManager {
     /**
      * 打开场景关联的 UI
      */
-    private async openSceneUI(config: any): Promise<void> {
+    private async openSceneUI(config: any, param?: any): Promise<void> {
         const uiName = config.uiName;
         if (!uiName) {
             return;
         }
 
-        await UIManager.instance.open(uiName, { fromScene: this._curScene?.name });
+        await UIManager.instance.open(uiName, {
+            ...(param || {}),
+            fromScene: this._curScene?.name,
+        });
     }
 
     /**
@@ -264,6 +268,7 @@ export class SceneMgr implements IManager {
             sceneClass: config.sceneClass,
             map: config.map || "",
             mapType: config.mapType || "",
+            stagePrefab: config.stagePrefab || "",
             mapWidth: config.mapWidth,
             mapHeight: config.mapHeight,
             tileWidth: config.tileWidth,

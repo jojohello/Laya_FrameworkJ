@@ -18,6 +18,9 @@ export const UIConfigTable: { [name: string]: any } = {
         path: "ui/mainscene/MainSceneView.ls",
         layerName: "MainUI",
         zOrder: UILayer.MainUI,
+        // MainUI 是跨场景壳层。根节点空白区域必须让点击穿透到场景，
+        // 但其内部的 GList、按钮等子组件仍然可以正常响应。
+        mouseThrough: true,
         singleton: true,
         autoDestroy: false,
     },

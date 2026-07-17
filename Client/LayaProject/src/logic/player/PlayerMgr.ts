@@ -1,6 +1,7 @@
 import { IManager } from "../core/IManager";
 import { PlayerInitData } from "../init/GameInitData";
 import { PlayerProtocol } from "./PlayerProtocol";
+import { normalizeNonNegativeInteger } from "../common/ExactInteger";
 
 export class PlayerMgr implements IManager {
     private static _instance: PlayerMgr;
@@ -23,7 +24,7 @@ export class PlayerMgr implements IManager {
     release(): void { this._protocol?.release(); this._protocol = null; this._data = null; this._listeners.clear(); }
     applyInit(data: PlayerInitData): void {
         if (!data?.playerId) return;
-        this._data = { ...data };
+        this._data = { ...data, playerId: String(data.playerId), exp: normalizeNonNegativeInteger(data.exp) };
         this.notifyChanged();
     }
     levelUp(): void { this._protocol?.requestLevelUp(); }

@@ -1,5 +1,6 @@
 import { IManager } from "../core/IManager";
 import { WalletInitData } from "../init/GameInitData";
+import { normalizeNonNegativeInteger, toNonNegativeBigInt } from "../common/ExactInteger";
 
 export class WalletMgr implements IManager {
     private static _instance: WalletMgr;
@@ -7,7 +8,7 @@ export class WalletMgr implements IManager {
         if (!this._instance) this._instance = new WalletMgr();
         return this._instance;
     }
-    private readonly _balances = new Map<number, number>();
+    private readonly _balances = new Map<number, bigint>();
     private readonly _listeners = new Set<() => void>();
     private constructor() {}
     init(): void {}
@@ -18,12 +19,14 @@ export class WalletMgr implements IManager {
         this._balances.clear();
         for (const [id, balance] of Object.entries(data?.balances || {})) {
             const currencyId = Number(id);
-            if (Number.isInteger(currencyId) && currencyId > 0) this._balances.set(currencyId, Number(balance) || 0);
+            if (Number.isInteger(currencyId) && currencyId > 0) {
+                this._balances.set(currencyId, toNonNegativeBigInt(normalizeNonNegativeInteger(balance)));
+            }
         }
         this.notifyChanged();
     }
     addListener(listener: () => void): void { this._listeners.add(listener); }
     removeListener(listener: () => void): void { this._listeners.delete(listener); }
-    getBalance(currencyItemId: number): number { return this._balances.get(currencyItemId) || 0; }
+    getBalance(currencyItemId: number): bigint { return this._balances.get(currencyItemId) || 0n; }
     private notifyChanged(): void { for (const listener of this._listeners) listener(); }
 }

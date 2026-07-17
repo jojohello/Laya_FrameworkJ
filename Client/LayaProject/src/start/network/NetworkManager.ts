@@ -6,7 +6,7 @@ import { WebSocketImpl } from "./WebSocketImpl";
 import { HeartbeatManager, HeartbeatConfig } from "./HeartbeatManager";
 import { ReconnectManager, ReconnectConfig } from "./ReconnectManager";
 import { MessageDispatcher } from "./MessageDispatcher";
-import { getMessageId } from "./MessageIds";
+import { getMessageId, HEARTBEAT_RESPONSE } from "./MessageIds";
 
 /**
  * 网络管理器配置
@@ -68,7 +68,7 @@ export interface NetworkConfig {
  * await networkMgr.connect({
  *     url: "ws://localhost:8082/ws",
  *     heartbeat: {
- *         interval: 20000,
+ *         interval: 5000,
  *         autoStart: true
  *     },
  *     reconnect: {
@@ -459,6 +459,13 @@ export class NetworkManager {
                 }
 
                 const msgIdNum: number = msgId;
+
+                // 传输层心跳响应由 HeartbeatManager 消费，不进入业务消息分发器。
+                if (msgIdNum === HEARTBEAT_RESPONSE) {
+                    this._heartbeatMgr?.handleResponse(message.data);
+                    processed++;
+                    continue;
+                }
 
                 // 分发到 MessageDispatcher
                 MessageDispatcher.dispatch(msgIdNum, message.data);

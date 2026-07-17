@@ -18,9 +18,9 @@ The project is being unified into the locked v4 western magic cute style. Interm
 
 Examples:
 
-- `assets/ui/battle/stage_node_*.png`
-- `assets/ui/battle/stage_reward_chest.png`
-- `assets/ui/battle/stage_route_flag.png`
+- `assets/ui/battleScene/stage_node_*.png`
+- `assets/ui/battleScene/stage_reward_chest.png`
+- `assets/ui/battleScene/stage_route_flag.png`
 - `assets/ui/common/imgs/btn-bg-yellow0.png`
 - `assets/ui/common/imgs/btn-setting.png`
 - `assets/ui/mainscene/imgs/icon-box.png`

@@ -41,7 +41,7 @@ NetworkManager（统一入口）
 // 连接服务器
 await NetworkManager.instance.connect({
     url: "ws://localhost:8082/ws",
-    heartbeat: { interval: 20000 },
+    heartbeat: { interval: 5000 },
     reconnect: { autoReconnect: true, maxRetries: 5 }
 });
 
@@ -90,9 +90,9 @@ NetworkManager.instance.disconnect();
 3. 定时发送心跳消息，保持连接活跃
 
 **心跳策略**：
-- 客户端间隔：20 秒
-- 服务器超时：60 秒
-- 安全余量：40 秒
+- 客户端间隔：5 秒
+- Gateway 超时：15 秒
+- 客户端必须消费 `2002` 响应；不能只发送 `2001` 而不处理返回
 
 ### ReconnectManager - 重连管理器
 
@@ -131,7 +131,7 @@ await NetworkManager.instance.connect({
     url: loginResult.gatewayWsUrl,
     connectTimeout: 10000,
     heartbeat: {
-        interval: 20000,        // 心跳间隔 20 秒
+        interval: 5000,         // 心跳间隔 5 秒；必须小于 Gateway 的 15 秒超时
         autoStart: true         // 自动启动心跳
     },
     reconnect: {
@@ -314,7 +314,7 @@ export interface NetworkConfig {
 
 ```typescript
 export interface HeartbeatConfig {
-    interval?: number;          // 心跳间隔（默认：20000ms）
+    interval?: number;          // 心跳间隔（默认：5000ms；必须小于 Gateway 超时）
     messageType?: string;       // 心跳消息类型（默认：'HEARTBEAT'）
     autoStart?: boolean;        // 是否自动启动（默认：true）
 }

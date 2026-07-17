@@ -12,4 +12,3 @@ export class TopPrefabBase extends Laya.GBox {
     public goldAmount!: Laya.GTextField;
     public staminaAmount!: Laya.GTextField;
 }
-

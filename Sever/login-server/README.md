@@ -19,3 +19,5 @@ Main endpoints:
 - `GET /api/gameserver/gateway/{userId}`
 
 Configuration is in `src/main/resources/application.yml`. Real platform credentials and JWT secrets must be supplied outside source for production.
+
+The Login database defaults to `laya_login` and is configured with `LOGIN_DB_HOST`, `LOGIN_DB_PORT`, `LOGIN_DB_NAME`, `LOGIN_DB_USERNAME`, and `LOGIN_DB_PASSWORD`.

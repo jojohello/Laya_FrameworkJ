@@ -5,5 +5,22 @@
     "mapType": "image",
     "map": "map/map001/map001.png",
     "uiName": "MainUI"
+  },
+  {
+    "ID": 2,
+    "sceneClass": "BattleStageScene",
+    "stagePrefab": "ui/battlescene/stage001.lh",
+    "mapWidth": 750,
+    "mapHeight": 1400,
+    "uiName": "MainUI",
+    "cache": 0
+  },
+  {
+    "ID": 3,
+    "sceneClass": "BattleScene",
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json",
+    "uiName": "",
+    "cache": 0
   }
 ]

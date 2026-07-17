@@ -7,14 +7,22 @@
 ## 当前起点
 
 - 主流程当前通过 `StartMain.enterGame()` 调用 `SceneMgr.switchScene(1)` 进入 `MainScene`。
-- 主界面已经通过 FunctionOpen `1001` 控制战斗地图入口；玩家升至 2 级后可以进入 `BattleScene(ID=2)`。
-- `BattleScene` 已关联 `map/map002/fightmap.json`，提供配置驱动的第一关入口和返回主城按钮，尚未完成连续切换的运行验收。
+- 主界面已经通过 FunctionOpen `1001` 控制征战入口；玩家升至 2 级后可以进入 `BattleStageScene(ID=2)`。
+- `BattleStageScene` 使用 `bigImg/battle_stage_map_forest.png` 并支持竖向拖拽；第一关点击后进入 `BattleScene(ID=3)`，加载 `map/map002/fightmap.json`，尚未完成运行验收。
+- `MainUI` 已作为跨场景壳层供 `MainScene` 与 `BattleStageScene` 共用：顶部玩家信息和底部导航保留，未来的左右活动栏仅在 `MainScene` 显示；进入真实 `BattleScene` 时关闭整套壳层。
+- 底部导航已拆出 `MainNav.json`：导航文字、图标、顺序和 routeKey 由导航表管理，开启条件仍由 FunctionOpen 管理；默认第 3 项显示为“主世界”。
+- `BattleStageScene` 已改为按 `SceneType.stagePrefab` 加载完整大关 prefab；`stage001.lh` 的底图和 `stage1001`～`stage1006` 节点整体缩放到配置尺寸并水平居中，节点图标和点击战斗由 `BattleStage.json` 驱动。
+- 已记录统一的世界交互与 UI 分层方案：见 `src/logic/interaction/DESIGN.md`；后续 Sprite 点击、世界对象 popup、UnderMainUI 和 DialogMgr 需求先按该文档分类和验收。
 
 ## 执行顺序
 
 - [ ] 在真实服务端连接下完成“登录 → 1级确认升级 → FunctionOpen 1001 开启 → 进入战斗 → 点击第一关 → 返回主城”的首次运行验收。
 - [ ] 连续执行至少 3 次“进入战斗 → 返回主城 → 再次进入”，验证 Manager、地图、相机、场景对象、按钮、事件和 UI 不重复、不残留。
-- [ ] 在真实战斗场景验证 Map 信息读取及 Camera2D 拖拽、跟随和边界。
+- [ ] 在真实场景验证征战底图的竖向拖拽边界、第一关点击和 TiledMap 加载。
+- [ ] 在 LayaAir IDE 验证 `MainScene → BattleStageScene → BattleScene` 三种状态下，顶部、底栏、左右活动栏的显示规则和底栏选中态均正确。
+- [ ] 在 LayaAir IDE 验证从征战界面点击背包、主世界、商店、设置后，回到主界面时选中态与点击项一致。
+- [ ] 将征战地图关卡节点改为可复用 `BattleStageNode.lh` + Runtime Controller，由 `BattleStage.json` 驱动节点类型、世界坐标、开放条件和战斗路由。
+- [ ] 在 `BattleStageScene` 中按场景对象层实例化普通、Boss、未开放、已通关节点，修正 `battlescene/imgs` 资源运行时路径，并完成节点点击进入 `BattleScene`。
 - [ ] 将 `HealthBarView` 接入正式 HUD 资源与对象回收流程。
 - [ ] 在真实场景完成碰撞、Skill/Buff 最小闭环和性能验证。
 

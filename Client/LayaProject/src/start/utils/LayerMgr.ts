@@ -3,8 +3,13 @@
 
 export type LayerName =
     | "BelowScene"
-    | "Scene"
-    | "AboveScene"
+    | "Background"
+    | "Ground"
+    | "Object"
+    | "Bullet"
+    | "Effect"
+    | "Hud"
+    | "Debug"
     | "MainUI"
     | "UIWindow"
     | "TipWindow"
@@ -14,8 +19,13 @@ export type LayerName =
 
 export class LayerMgr {
     static readonly BelowScene = 1;
-    static readonly Scene = 10;
-    static readonly AboveScene = 30;
+    static readonly Background = 3;
+    static readonly Ground = 10;
+    static readonly Object = 20;
+    static readonly Bullet = 30;
+    static readonly Effect = 40;
+    static readonly Hud = 50;
+    static readonly Debug = 60;
 
     static readonly MainUI = 100;
     static readonly UIWindow = 200;
@@ -26,8 +36,13 @@ export class LayerMgr {
 
     private static readonly SCENE_LAYER_NAMES: LayerName[] = [
         "BelowScene",
-        "Scene",
-        "AboveScene",
+        "Background",
+        "Ground",
+        "Object",
+        "Bullet",
+        "Effect",
+        "Hud",
+        "Debug",
     ];
 
     private static readonly UI_LAYER_NAMES: LayerName[] = [
@@ -47,6 +62,12 @@ export class LayerMgr {
     public static init(): void {
         LayerMgr.uiRoot = Laya.GRoot.inst;
 
+        // GRoot 只负责承载各级 UI。它的空白区域不能阻断 SceneRoot 的鼠标命中，
+        // 否则场景里的 Sprite/SceneObj 无法收到点击；具体 UI 子节点仍会正常命中。
+        if (LayerMgr.uiRoot) {
+            (LayerMgr.uiRoot as any).mouseThrough = true;
+        }
+
         if (LayerMgr.scene && !LayerMgr.scene.destroyed) {
             LayerMgr.refreshLayerSizes();
             return;
@@ -56,6 +77,7 @@ export class LayerMgr {
 
         LayerMgr.scene = new Laya.Sprite();
         LayerMgr.scene.name = "SceneRoot";
+        LayerMgr.scene.mouseThrough = true;
         Laya.stage.addChild(LayerMgr.scene);
 
         if (!LayerMgr.uiRoot) {
@@ -76,6 +98,8 @@ export class LayerMgr {
         const layer = new Laya.Sprite();
         layer.name = layerName;
         layer.zOrder = LayerMgr.getLayerZOrder(layerName);
+        layer.mouseThrough = true;
+        if (layerName === "Hud") layer.mouseEnabled = false;
         return layer;
     }
 

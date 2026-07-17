@@ -5,6 +5,7 @@ import com.laya.game.game.protocol.MessageIds;
 import com.laya.game.game.gateway.GatewayRouteManager;
 import com.laya.game.game.player.PlayerRepository;
 import com.laya.game.game.player.PlayerRole;
+import com.laya.game.game.session.GameSessionRegistry;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class LoginHandler implements MessageHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoginHandler.class);
     private final GatewayRouteManager routeManager;
     private final PlayerRepository playerRepository;
+    private final GameSessionRegistry gameSessionRegistry;
 
     @Override
     public Short getMessageId() {
@@ -76,7 +78,8 @@ public class LoginHandler implements MessageHandler {
                 // 返回登录成功响应
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("userId", userId);
-                attachPlayerSelection(userId, responseData);
+                PlayerRole selectedPlayer = attachPlayerSelection(userId, responseData);
+                bindSelectedPlayer(context, userId, selectedPlayer);
                 responseData.put("sessionToken", sessionToken);
                 responseData.put("loginTime", System.currentTimeMillis());
                 GameMessage response = new GameMessage();
@@ -105,7 +108,8 @@ public class LoginHandler implements MessageHandler {
             // 返回登录成功响应
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("userId", generatedUserId);
-            attachPlayerSelection(generatedUserId, responseData);
+            PlayerRole selectedPlayer = attachPlayerSelection(generatedUserId, responseData);
+            bindSelectedPlayer(context, generatedUserId, selectedPlayer);
             responseData.put("username", username);
             responseData.put("sessionToken", sessionToken);
             responseData.put("loginTime", System.currentTimeMillis());
@@ -155,20 +159,31 @@ public class LoginHandler implements MessageHandler {
         return UUID.randomUUID().toString();
     }
 
-    private void attachPlayerSelection(String userId, Map<String, Object> responseData) {
+    private PlayerRole attachPlayerSelection(String userId, Map<String, Object> responseData) {
         java.util.List<PlayerRole> roles = playerRepository.findByUserId(userId);
         if (roles.isEmpty()) roles = java.util.List.of(playerRepository.resolveOrCreate(userId));
         if (roles.size() == 1) {
             responseData.put("playerId", Long.toString(roles.get(0).playerId()));
             responseData.put("playerSelectionRequired", false);
+            return roles.get(0);
         } else {
             responseData.put("playerSelectionRequired", true);
+            return null;
         }
     }
 
+    private void bindSelectedPlayer(MessageContext context, String userId, PlayerRole selectedPlayer) {
+        context.setUserId(userId);
+        if (selectedPlayer == null) return;
+        gameSessionRegistry.bind(context.getSessionId(), userId, selectedPlayer.playerId());
+        context.setPlayerId(selectedPlayer.playerId());
+    }
+
     @java.lang.SuppressWarnings("all")
-    public LoginHandler(final GatewayRouteManager routeManager, final PlayerRepository playerRepository) {
+    public LoginHandler(final GatewayRouteManager routeManager, final PlayerRepository playerRepository,
+                        final GameSessionRegistry gameSessionRegistry) {
         this.routeManager = routeManager;
         this.playerRepository = playerRepository;
+        this.gameSessionRegistry = gameSessionRegistry;
     }
 }

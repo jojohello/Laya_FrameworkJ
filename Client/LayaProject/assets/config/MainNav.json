@@ -1,0 +1,57 @@
+[
+  {
+    "ID": 1,
+    "functionId": 1001,
+    "label": "战斗地图",
+    "icon": "ui/mainscene/imgs/icon-battle.png",
+    "routeKey": "battle.stage",
+    "routeArgs": [],
+    "closedDisplay": "disabled",
+    "closedClick": "ignore",
+    "order": 1
+  },
+  {
+    "ID": 2,
+    "functionId": 0,
+    "label": "背包",
+    "icon": "ui/mainscene/imgs/icon-box.png",
+    "routeKey": "main.bag",
+    "routeArgs": [],
+    "closedDisplay": "enabled",
+    "closedClick": "route",
+    "order": 2
+  },
+  {
+    "ID": 3,
+    "functionId": 0,
+    "label": "主世界",
+    "icon": "ui/mainscene/imgs/icon-flag.png",
+    "routeKey": "main.world",
+    "routeArgs": [],
+    "closedDisplay": "enabled",
+    "closedClick": "route",
+    "order": 3
+  },
+  {
+    "ID": 4,
+    "functionId": 0,
+    "label": "商店",
+    "icon": "ui/mainscene/imgs/icon-cup.png",
+    "routeKey": "main.shop",
+    "routeArgs": [],
+    "closedDisplay": "enabled",
+    "closedClick": "route",
+    "order": 4
+  },
+  {
+    "ID": 5,
+    "functionId": 0,
+    "label": "设置",
+    "icon": "ui/mainscene/imgs/icon-world.png",
+    "routeKey": "main.settings",
+    "routeArgs": [],
+    "closedDisplay": "enabled",
+    "closedClick": "route",
+    "order": 5
+  }
+]

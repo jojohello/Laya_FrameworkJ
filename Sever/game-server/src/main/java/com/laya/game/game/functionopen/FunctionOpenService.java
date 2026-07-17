@@ -5,7 +5,6 @@ import com.laya.game.game.configStruct.FunctionOpenConfig;
 import com.laya.game.game.handler.MessageContext;
 import com.laya.game.game.protocol.GameMessage;
 import com.laya.game.game.protocol.MessageIds;
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +21,6 @@ public class FunctionOpenService {
         this.repository = repository;
     }
 
-    @PostConstruct
-    public void initialize() {
-        repository.initializeSchema();
-    }
-
     public List<FunctionOpenState> getStates(long playerId) {
         return repository.findOpened(playerId);
     }
@@ -40,15 +34,17 @@ public class FunctionOpenService {
     public boolean evaluateAndOpen(String userId, long playerId, int functionId, Map<String, Object> eventData,
                                    MessageContext context) {
         boolean opened = evaluateAndOpen(playerId, functionId, eventData);
-        if (opened && context != null) {
-            GameMessage push = new GameMessage();
-            push.setMsgId(MessageIds.FUNCTION_OPEN_PUSH);
-            push.setUserId(userId);
-            push.setData(Map.of("state", new FunctionOpenState(functionId, true,
-                    System.currentTimeMillis(), 1)));
-            context.sendResponse(push);
-        }
+        if (opened && context != null) sendOpenedPush(userId, functionId, context);
         return opened;
+    }
+
+    public void sendOpenedPush(String userId, int functionId, MessageContext context) {
+        GameMessage push = new GameMessage();
+        push.setMsgId(MessageIds.FUNCTION_OPEN_PUSH);
+        push.setUserId(userId);
+        push.setData(Map.of("state", new FunctionOpenState(functionId, true,
+                System.currentTimeMillis(), 1)));
+        context.sendResponse(push);
     }
 
     public void sendFullState(String userId, long playerId, MessageContext context) {

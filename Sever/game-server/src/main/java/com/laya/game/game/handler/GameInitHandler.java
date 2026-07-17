@@ -41,7 +41,16 @@ public class GameInitHandler implements MessageHandler {
         String userId = context.getUserId() != null ? context.getUserId() : message.getUserId();
         if (userId == null || userId.isBlank()) return;
 
-        PlayerRole player = playerRepository.resolveOrCreate(userId);
+        Long playerId = context.getPlayerId();
+        if (playerId == null) {
+            sendError(context, "player_not_selected");
+            return;
+        }
+        PlayerRole player = playerRepository.find(playerId);
+        if (player == null || !userId.equals(player.userId())) {
+            sendError(context, "selected_player_not_found");
+            return;
+        }
         GamePlayerContext playerContext = new GamePlayerContext(userId, player);
         Map<String, Object> sections = new LinkedHashMap<>();
         List<String> errors = new ArrayList<>();
@@ -79,6 +88,13 @@ public class GameInitHandler implements MessageHandler {
         response.setMsgId(MessageIds.GAME_INIT_RESPONSE);
         response.setUserId(userId);
         response.setData(data);
+        context.sendResponse(response);
+    }
+
+    private void sendError(MessageContext context, String reason) {
+        GameMessage response = new GameMessage();
+        response.setMsgId(MessageIds.ERROR);
+        response.setData(Map.of("reason", reason));
         context.sendResponse(response);
     }
 }

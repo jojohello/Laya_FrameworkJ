@@ -28,3 +28,10 @@ Message scope comes from `Protocol/message-ids.yaml`. Gateway handles only `gate
 ## Lifecycle
 
 Gateway heartbeats Central every 5 seconds and actively unregisters during graceful shutdown. Central timeout detection is the fallback. Registry-change callbacks should update Game Server connections; polling is recovery behavior.
+
+## Client Heartbeat Contract
+
+- `2001 (HEARTBEAT)` and `2002 (HEARTBEAT_RESPONSE)` are Gateway-scoped transport messages.
+- After authentication, Gateway handles `2001` locally and returns a JSON envelope containing `msgId=2002`, `data="pong"`, and a server timestamp; it must not forward either message to Game Server.
+- The public client currently sends `2001` every 5 seconds. `laya.heartbeat-timeout=15000ms` is the disconnect boundary, so the client interval must remain strictly below that value.
+- Adding or changing business MessageIDs does not require Gateway changes unless the scope is explicitly `gateway`; heartbeat changes require checking Gateway `MessageIds`, `GatewayWebSocketHandler`, client `MessageIds`, `HeartbeatManager`, and `NetworkManager` together.
