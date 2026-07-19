@@ -14,6 +14,7 @@
 |------|------|------|
 | 显示类 | `DisplaySceneObj` | 静态图片、动画、Spine 展示对象 |
 | 生物类 | `CreatureSceneObj` | 有模型、属性、血条、碰撞、技能入口的对象 |
+| 战斗角色 | `CharacterSceneObj` | 从 `Character` 表加载原图与局部队伍色蒙版，通过 2D Shader 替换蒙版像素并保留原始肤色和装备色调 |
 | 特效类 | `EffectSceneObj` | 播放后自动释放，不参与碰撞 |
 | 子弹类 | `BulletSceneObj` | 直线/追踪移动，轨迹碰撞，命中目标 |
 
@@ -37,11 +38,23 @@ export class MonsterObj extends CreatureSceneObj {
 }
 ```
 
+如果通过 `BaseScene.addObjectToScene("MonsterObj", ...)` 的短名称创建，还必须在逻辑组合根显式注册运行时查找键：
+
+```typescript
+Laya.ClassUtils.regClass("MonsterObj", MonsterObj);
+```
+
+`@regClass()` 负责编辑器资源身份，不能替代 `ClassUtils.getClass(shortName)` 所需的稳定短名称注册。
+
 ### 2. 创建对象
 
 ```typescript
 const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 ```
+
+战斗角色的静态回退资源为 `assets/character/{cfgId}/idle.png` 和同尺寸的 `team_mask.png`。正式帧动画采用 LayaAir 标准的“单张 PNG + `.atlas`”资源；基础帧和对应队伍色蒙版帧可位于同一大图，由 `CharacterAnimation` 表配置 `idle`、`walk`、`attack` 的子纹理前缀、帧数、间隔、循环和后继动作。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色通过 `CharacterSceneObj.setTeamColor(r, g, b)` 的三个 `0~255` RGB 参数设置，同一职业不复制红蓝两套完整资源。未配置帧动画的角色继续显示静态回退图。
+
+角色模型、兵种、缩放、技能列表和 AI 模板引用统一配置在 `Config/csv/Character.csv`，动作资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔，`aiTemplateId=0` 表示尚未分配正式模板；当前三名角色的显示缩放均为 `0.666667`。
 
 参数含义：
 

@@ -102,6 +102,7 @@ export class SceneMgr implements IManager {
      */
     async switchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
         const sceneName = SceneType[sceneType];
+        console.log(`[SceneMgr] 开始切换场景: from=${this.curSceneName || "none"}, to=${sceneName || sceneType}, id=${sceneType}`);
 
         // 1. 从 ConfigMgr 获取 SceneType 配置
         const config = this.getSceneConfig(sceneType);
@@ -109,6 +110,7 @@ export class SceneMgr implements IManager {
             console.error(`[SceneMgr] 场景配置不存在: ID=${sceneType}`);
             return null;
         }
+        console.log(`[SceneMgr] 场景配置: class=${config.sceneClass}, map=${config.map || "none"}, prefab=${config.stagePrefab || "none"}, ui=${config.uiName || "none"}`);
 
         // 2. 检查是否是当前场景
         if (this._curScene && this._curScene.sceneType === sceneType) {
@@ -130,7 +132,7 @@ export class SceneMgr implements IManager {
             
             // 打开关联 UI
             await this.openSceneUI(config, param);
-            
+            console.log(`[SceneMgr] 场景切换完成（缓存）: ${sceneName}`);
             return this._curScene.scene;
         }
 
@@ -155,7 +157,7 @@ export class SceneMgr implements IManager {
 
             // 7. 打开关联 UI
             await this.openSceneUI(config, param);
-
+            console.log(`[SceneMgr] 场景切换完成: ${sceneName}`);
             return scene;
         } catch (error) {
             console.error(`[SceneMgr] 切换场景异常: ${sceneName}`, error);
@@ -231,6 +233,8 @@ export class SceneMgr implements IManager {
         await UIManager.instance.open(uiName, {
             ...(param || {}),
             fromScene: this._curScene?.name,
+            scene: this._curScene?.scene,
+            switchScene: (sceneType: SceneType, sceneParam?: any) => this.switchScene(sceneType, sceneParam),
         });
     }
 

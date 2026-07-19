@@ -69,6 +69,8 @@ Config\exportAll.bat
 
 客户端 `ConfigMgr` 先读取 `config/config-manifest.json`，再加载表；支持按 ID、整表和字段索引查询。
 
+`Character.csv` 保存战斗角色的兵种、基础场景对象 ID、模型与局部队伍色蒙版路径、显示缩放、技能 ID 列表和 AI 模板 ID。`skillIds` 使用分号分隔，`aiTemplateId=0` 表示尚未分配模板。
+
 服务器 `ConfigManager` 扫描 JSON 目录和 `configStruct` 类；已有字段数值可以通过 reload 重载，新增表或字段结构变化需要重新导出、编译并重启。
 
 稳定设计与热更边界见 [DESIGN.md](DESIGN.md)，当前未完成工作见 [PlanAndStatus.md](PlanAndStatus.md)。

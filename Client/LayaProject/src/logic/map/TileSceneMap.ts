@@ -11,7 +11,14 @@ export class TileSceneMap extends BaseSceneMap {
 
     load(container: Laya.Sprite): Promise<void> {
         this._container = container;
-        this._tiledMap = new Laya.TiledMap();
+        const TiledMapClass = Laya.TiledMap;
+        if (typeof TiledMapClass !== "function") {
+            return Promise.reject(new Error(
+                "Laya.TiledMap 模块未加载，请在 PlayerSettings 中启用 laya.tiledmap_discarded"
+            ));
+        }
+
+        this._tiledMap = new TiledMapClass();
         this._viewRect = new Laya.Rectangle(0, 0, Laya.stage.width, Laya.stage.height);
 
         return new Promise<void>((resolve) => {

@@ -23,6 +23,7 @@ import { GuideCommandRegistry } from "./guide/GuideCommandRegistry";
 // 导入场景类并注册到 window（供 SceneMgr 动态创建）
 import { MainScene } from "./mainScene/MainScene";
 import { BattleScene, BattleStageScene } from "./battleScene/BattleScene";
+import { CharacterSceneObj } from "./sceneObj/CharacterSceneObj";
 
 
 
@@ -52,6 +53,9 @@ export class LogicMain {
         (Laya.Browser.window as any).MainScene = MainScene;
         (Laya.Browser.window as any).BattleStageScene = BattleStageScene;
         (Laya.Browser.window as any).BattleScene = BattleScene;
+        // SceneObj is created by the stable short name stored in battle code/config.
+        // @regClass binds the editor resource identity, so register the runtime lookup key explicitly.
+        Laya.ClassUtils.regClass("CharacterSceneObj", CharacterSceneObj);
 
         // 2. 初始化配置管理器（必须在其他 Manager 之前完成）
         await ConfigMgr.instance.init();

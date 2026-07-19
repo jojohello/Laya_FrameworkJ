@@ -1,0 +1,4 @@
+interface:
+  display_name: "Laya Frame Animation Builder"
+  short_description: "Build and integrate LayaAir 3.3 atlas animations"
+  default_prompt: "Use $laya-frame-animation-builder to create and integrate a LayaAir 3.3 atlas frame animation."

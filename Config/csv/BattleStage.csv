@@ -1,0 +1,10 @@
+Title,ID,stageName,copyType,battleId,canEnter
+Type,int,str,str,int,bool
+Description,关卡ID,关卡名称,副本类型,战斗ID,是否可进入
+UsedSize,c,c,c,cs,cs
+,1001,第一关,normal,1,true
+,1002,第二关,normal,2,true
+,1003,第三关,normal,3,true
+,1004,第四关,normal,4,true
+,1005,第五关,normal,5,true
+,1006,Boss关,boss,6,true

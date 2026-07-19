@@ -13,7 +13,7 @@
     "defaultFont": "res://562d5d5c-585b-4379-9a0f-65091e0d0d4e"
   },
   "modules": {
-    "laya.tiledmap": true,
+    "laya.tiledmap_discarded": true,
     "laya.spine": true,
     "laya.ui": true
   },

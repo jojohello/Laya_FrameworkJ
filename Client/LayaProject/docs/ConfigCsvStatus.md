@@ -1,12 +1,6 @@
 # Config CSV Status
 
-Updated: 2026-07-03
-
-Source path:
-
-```txt
-E:\Laya_FrameworkJ_laya3\Config\csv
-```
+配置唯一源位于仓库根目录的 `Config/csv`。
 
 The CSV `UsedSize` row marks export ownership:
 
@@ -16,6 +10,10 @@ The CSV `UsedSize` row marks export ownership:
 
 ## Current Tables
 
+- `MainNav.csv`: main-shell bottom navigation label, icon, order, function-open
+  gate and stable route key. `routeArgs` is a JSON array string at runtime.
+- `BattleStage.csv`: battle-stage name, normal/Boss presentation, battle ID and
+  enterability used by `BattleStageScene`.
 - `Skill.csv`: skill identity and level runtime values. Server needs `ID`,
   `SkillID`, `Level`, `MaxLevel`, `SkillType`, `TargetType`, `CD`,
   `CostType`, `CostValue` and `Action`. Client-only fields are `Name` and
@@ -30,6 +28,9 @@ The CSV `UsedSize` row marks export ownership:
   `Quality`, `MaxStack` and `UseAction`. `Name` and `Desc` are client-only.
 - `SceneObjConfig.csv`: scene object base attributes. `CreatureSceneObj` reads
   this table on init and applies `hp`, `speed`, `attack` and `defense`.
+- `Character.csv`: battle character display and behavior references, including
+  soldier type, base scene-object ID, model and team-mask paths, display scale,
+  skill IDs and AI template ID.
 - `SceneType.csv`: scene class and map config.
 
 ## Skill Table Direction

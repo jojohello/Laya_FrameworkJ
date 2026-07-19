@@ -1,0 +1,13 @@
+Title,ID,characterId,action,atlasPath,framePrefix,maskFramePrefix,frameCount,interval,loop,nextAction
+Type,int,int,str,str,str,str,int,int,bool,str
+Description,Animation config ID,Character config ID,Action name,Laya atlas resource,Base subtexture prefix,Team mask subtexture prefix,Frame count,Milliseconds per frame,Whether action loops,Action played after completion
+UsedSize,c,c,c,c,c,c,c,c,c,c
+,100101,1001,idle,character/1001/character-animation.atlas,character/1001/animation/idle_,character/1001/animation/idle_mask_,6,167,true,
+,100102,1001,walk,character/1001/character-animation.atlas,character/1001/animation/walk_,character/1001/animation/walk_mask_,6,100,true,
+,100103,1001,attack,character/1001/character-animation.atlas,character/1001/animation/attack_,character/1001/animation/attack_mask_,6,83,false,idle
+,100201,1002,idle,character/1002/character-animation.atlas,character/1002/animation/idle_,character/1002/animation/idle_mask_,6,167,true,
+,100202,1002,walk,character/1002/character-animation.atlas,character/1002/animation/walk_,character/1002/animation/walk_mask_,6,100,true,
+,100203,1002,attack,character/1002/character-animation.atlas,character/1002/animation/attack_,character/1002/animation/attack_mask_,6,100,false,idle
+,100301,1003,idle,character/1003/character-animation.atlas,character/1003/animation/idle_,character/1003/animation/idle_mask_,6,167,true,
+,100302,1003,walk,character/1003/character-animation.atlas,character/1003/animation/walk_,character/1003/animation/walk_mask_,6,100,true,
+,100303,1003,attack,character/1003/character-animation.atlas,character/1003/animation/attack_,character/1003/animation/attack_mask_,6,100,false,idle

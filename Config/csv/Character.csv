@@ -1,0 +1,7 @@
+Title,ID,name,soldierType,sceneObjConfigId,modelPath,teamMaskPath,modelScale,skillIds,aiTemplateId,description
+Type,int,str,str,int,str,str,float,str,int,str
+Description,Character config ID,Client display name,Soldier class,Base scene object config ID,Client model texture,Client selective team color mask,Display scale,Semicolon separated skill IDs,AI template ID,Client description
+UsedSize,cs,c,cs,cs,c,c,c,cs,cs,c
+,1001,Warrior,warrior,1001,character/1001/idle.png,character/1001/team_mask.png,0.666667,,0,Melee frontline soldier
+,1002,Mage,mage,1002,character/1002/idle.png,character/1002/team_mask.png,0.666667,,0,Ranged magic soldier
+,1003,Priest,priest,1003,character/1003/idle.png,character/1003/team_mask.png,0.666667,,0,Healing support soldier

@@ -21,7 +21,8 @@ interface MainNavConfig {
     label: string;
     icon: string;
     routeKey: string;
-    routeArgs: readonly any[];
+    /** JSON array string exported from MainNav.csv. */
+    routeArgs: string;
     closedDisplay: "hidden" | "disabled" | "enabled";
     closedClick: "ignore" | "tip" | "route";
     order: number;
@@ -84,6 +85,7 @@ export class MainSceneView extends MainSceneViewBase {
      * UI 关闭时调用
      */
     onClosed(): void {
+        Laya.timer.clear(this, this.syncSystemButtonSelectedStates);
         this.clearButtonListEvents();
         PlayerMgr.instance.removeListener(this.onPlayerChanged);
         WalletMgr.instance.removeListener(this.onWalletChanged);
@@ -150,6 +152,7 @@ export class MainSceneView extends MainSceneViewBase {
     }
 
     private onButtonListSelectChanged(): void {
+        console.log(`[MainSceneView] 导航 selection 变化: selectedIndex=${this.btn_list.selectedIndex}`);
         this.selectSystemButton(this.btn_list.selectedIndex);
     }
 
@@ -159,24 +162,29 @@ export class MainSceneView extends MainSceneViewBase {
 
         const childIndex = this.btn_list.getChildIndex(clickItem);
         const itemIndex = this.btn_list.childIndexToItemIndex(childIndex);
+        const navConfig = this._navConfigs[itemIndex];
+        console.log(`[MainSceneView] 点击导航: index=${itemIndex}, route=${navConfig?.routeKey || "missing"}, shell=${this._shellMode}`);
         if (itemIndex === 0) {
             if (!FunctionOpenMgr.instance.isOpen(MainSceneView.BATTLE_FUNCTION_ID) && (PlayerMgr.instance.data?.level || 0) < 2) {
+                console.warn(`[MainSceneView] 战斗入口未开放: functionId=${MainSceneView.BATTLE_FUNCTION_ID}, level=${PlayerMgr.instance.data?.level || 0}`);
                 return;
             }
             this.selectSystemButton(itemIndex);
-            void SceneMgr.instance.switchScene(SceneType.BattleStageScene);
+            void SceneMgr.instance.switchScene(SceneType.BattleStageScene).then(scene => {
+                console.log(`[MainSceneView] 战斗场景切换结果: success=${!!scene}, current=${SceneMgr.instance.curSceneName || "none"}`);
+            });
             return;
         }
         this.selectSystemButton(itemIndex);
-        const navConfig = this._navConfigs[itemIndex];
+        const routeArgs = this.parseRouteArgs(navConfig?.routeArgs);
         if (this._shellMode === MainShellMode.BattleStage) {
             void SceneMgr.instance
                 .switchScene(SceneType.MainScene, { mainNavIndex: itemIndex })
-                .then(() => MainNavRouteRegistry.open(navConfig?.routeKey || "", navConfig?.routeArgs || []));
+                .then(() => MainNavRouteRegistry.open(navConfig?.routeKey || "", routeArgs));
             return;
         }
         if (navConfig) {
-            void MainNavRouteRegistry.open(navConfig.routeKey, navConfig.routeArgs);
+            void MainNavRouteRegistry.open(navConfig.routeKey, routeArgs);
         }
     }
 
@@ -333,6 +341,9 @@ export class MainSceneView extends MainSceneViewBase {
             this.btn_list.selection.add(index);
         }
         this.syncSystemButtonSelectedStates();
+        // GList/GButton update their controller state during the same pointer event.
+        // Re-apply once after that event so the selected gear cannot be overwritten.
+        Laya.timer.callLater(this, this.syncSystemButtonSelectedStates);
     }
 
     private restoreSelectedIndex(): void {
@@ -342,6 +353,7 @@ export class MainSceneView extends MainSceneViewBase {
             this.btn_list.selection.add(this._selectedButtonIndex);
         }
         this.syncSystemButtonSelectedStates();
+        Laya.timer.callLater(this, this.syncSystemButtonSelectedStates);
     }
 
     private syncSystemButtonSelectedStates(): void {
@@ -352,6 +364,18 @@ export class MainSceneView extends MainSceneViewBase {
             if (!button) continue;
 
             button.selected = i === this._selectedButtonIndex;
+        }
+        console.log(`[MainSceneView] 导航选中态已同步: index=${this._selectedButtonIndex}, selection=${this.btn_list.selection.index}`);
+    }
+
+    private parseRouteArgs(raw?: string): readonly any[] {
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            console.warn(`[MainSceneView] routeArgs 不是合法 JSON 数组: ${raw}`, error);
+            return [];
         }
     }
 

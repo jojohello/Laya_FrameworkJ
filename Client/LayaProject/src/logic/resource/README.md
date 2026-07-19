@@ -25,5 +25,6 @@ ResourceMgr.instance.releaseRef(url);
 
 新增可池化资源类型时继承 `ResBase`，实现 `buildRes()`、`onRecycle()` 和 `onDispose()`；特殊加载或卸载方式通过 `ResBaseProxy` 扩展。
 
-内部生命周期和并发规则见 [DESIGN.md](DESIGN.md)。
+`ResFrameAnimation` 用于 LayaAir 标准图集帧动画。正式资源是单张 PNG 加同名 `.atlas`，动作只引用 atlas 内的子纹理 URL；该包装类负责播放、逐帧回调、事件清理和对象池复用，底层 atlas 仍由默认 Proxy 加载。
 
+内部生命周期和并发规则见 [DESIGN.md](DESIGN.md)。

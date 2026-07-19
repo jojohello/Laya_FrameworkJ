@@ -1,0 +1,9 @@
+Title,ID,functionId,label,icon,routeKey,routeArgs,closedDisplay,closedClick,order
+Type,int,int,str,str,str,str,str,str,int
+Description,导航ID,功能开放ID,显示名称,图标路径,稳定路由键,JSON路由参数,关闭时显示策略,关闭时点击策略,排序
+UsedSize,c,c,c,c,c,c,c,c,c
+,1,1001,战斗地图,ui/mainscene/imgs/icon-battle.png,battle.stage,,disabled,ignore,1
+,2,0,背包,ui/mainscene/imgs/icon-box.png,main.bag,,enabled,route,2
+,3,0,主世界,ui/mainscene/imgs/icon-flag.png,main.world,,enabled,route,3
+,4,0,商店,ui/mainscene/imgs/icon-cup.png,main.shop,,enabled,route,4
+,5,0,设置,ui/mainscene/imgs/icon-world.png,main.settings,,enabled,route,5

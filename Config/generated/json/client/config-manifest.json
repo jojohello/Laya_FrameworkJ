@@ -2,6 +2,12 @@
   "version": 1,
   "tables": [
     {
+      "name": "BattleStage",
+      "file": "BattleStage.json",
+      "path": "config/BattleStage.json",
+      "rows": 6
+    },
+    {
       "name": "Buff",
       "file": "Buff.json",
       "path": "config/Buff.json",
@@ -12,6 +18,18 @@
       "file": "Bullet.json",
       "path": "config/Bullet.json",
       "rows": 2
+    },
+    {
+      "name": "Character",
+      "file": "Character.json",
+      "path": "config/Character.json",
+      "rows": 3
+    },
+    {
+      "name": "CharacterAnimation",
+      "file": "CharacterAnimation.json",
+      "path": "config/CharacterAnimation.json",
+      "rows": 9
     },
     {
       "name": "Damage",
@@ -32,6 +50,12 @@
       "rows": 4
     },
     {
+      "name": "MainNav",
+      "file": "MainNav.json",
+      "path": "config/MainNav.json",
+      "rows": 5
+    },
+    {
       "name": "SceneObjConfig",
       "file": "SceneObjConfig.json",
       "path": "config/SceneObjConfig.json",
@@ -41,7 +65,7 @@
       "name": "SceneType",
       "file": "SceneType.json",
       "path": "config/SceneType.json",
-      "rows": 1
+      "rows": 3
     },
     {
       "name": "Skill",

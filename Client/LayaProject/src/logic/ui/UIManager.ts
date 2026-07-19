@@ -128,8 +128,10 @@ export class UIManager implements IManager {
         }
 
         // 7. 获取脚本组件（假设 Runtime Class 已通过 IDE 绑定）
-        let uiScript: any = null;
-        if (config.runtimeClass) {
+        let uiScript: any = config.controllerClass
+            ? new config.controllerClass(sceneNode)
+            : null;
+        if (!uiScript && config.runtimeClass) {
             uiScript = sceneNode.getComponent(config.runtimeClass);
         }
 

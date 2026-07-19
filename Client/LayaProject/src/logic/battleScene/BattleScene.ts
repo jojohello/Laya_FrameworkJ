@@ -5,6 +5,9 @@ import { SceneMgr } from "../scene/SceneMgr";
 import { SceneType } from "../scene/SceneType";
 import { SceneLayerType } from "../scene/SceneLayerType";
 import { ConfigMgr } from "../config/ConfigMgr";
+import { CharacterSceneObj } from "../sceneObj/CharacterSceneObj";
+import { CharacterConfigInfo } from "../sceneObj/CharacterConfigInfo";
+import { CharacterTeamColorMaterial } from "../sceneObj/CharacterTeamColorMaterial";
 
 const BATTLE_UI_PATH = "ui/battlescene/imgs/";
 const STAGE_PREFAB_FALLBACK = "ui/battlescene/stage001.lh";
@@ -254,12 +257,24 @@ export class BattleStageScene extends BaseScene {
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
 export class BattleScene extends BaseScene {
+    private _paused = false;
+    private _battleUnitsCreated = false;
+    private _battleUnitLoadToken = 0;
+
     onEnter(param?: any): void {
+        this._paused = false;
+        this._battleUnitsCreated = false;
+        this._battleUnitLoadToken++;
         super.onEnter(param);
     }
 
     protected onUpdate(curTime: number, dt: number): void {
+        if (this._paused) return;
         super.onUpdate(curTime, dt);
+        if (this.isReady && !this._battleUnitsCreated) {
+            this._battleUnitsCreated = true;
+            void this.createBattleUnits();
+        }
         // Hud layer does not carry runtime nodes; battle controls belong to the formal UI layer.
         return;
         /*
@@ -290,6 +305,72 @@ export class BattleScene extends BaseScene {
     }
 
     onExit(): void {
+        this._paused = false;
+        this._battleUnitLoadToken++;
+        this._battleUnitsCreated = false;
         super.onExit();
+    }
+
+    setPaused(paused: boolean): void {
+        this._paused = paused;
+    }
+
+    get isPaused(): boolean {
+        return this._paused;
+    }
+
+    private async createBattleUnits(): Promise<void> {
+        const token = this._battleUnitLoadToken;
+        const configIds = [1001, 1002, 1003];
+        const paths = configIds.flatMap(cfgId => {
+            const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", cfgId);
+            return config ? [config.modelPath, config.teamMaskPath].filter(Boolean) : [];
+        });
+
+        try {
+            const [shaderReady] = await Promise.all([
+                CharacterTeamColorMaterial.ensureShaderRegistered(),
+                Laya.loader.load(paths)
+            ]);
+            if (!shaderReady) {
+                console.error(`[BattleScene] 角色队伍色 Shader 显式解析失败: ${CharacterTeamColorMaterial.SHADER_PATH}`);
+                return;
+            }
+        } catch (error) {
+            console.error("[BattleScene] Failed to preload battle unit textures or shader", error);
+            return;
+        }
+        if (token !== this._battleUnitLoadToken || !this.isReady) return;
+        if (!Laya.Shader3D.find(CharacterTeamColorMaterial.SHADER_NAME)) {
+            console.error(`[BattleScene] 角色队伍色 Shader 加载后仍未注册: ${CharacterTeamColorMaterial.SHADER_PATH}`);
+            return;
+        }
+        console.log(`[BattleScene] 角色队伍色 Shader 已就绪: ${CharacterTeamColorMaterial.SHADER_NAME}`);
+
+        const columns = [220, 384, 548];
+        this.createTeamUnits(2, 220, columns, configIds, 220, 50, 55);
+        this.createTeamUnits(1, 1120, columns, configIds, 45, 110, 235);
+    }
+
+    private createTeamUnits(
+        team: number,
+        y: number,
+        columns: number[],
+        configIds: number[],
+        tintR: number,
+        tintG: number,
+        tintB: number
+    ): void {
+        for (let i = 0; i < configIds.length; i++) {
+            const unit = this.addObjectToScene(
+                "CharacterSceneObj",
+                configIds[i],
+                team,
+                columns[i],
+                y,
+                0
+            ) as CharacterSceneObj | null;
+            unit?.setTeamColor(tintR, tintG, tintB);
+        }
     }
 }

@@ -4,6 +4,9 @@
 |---|---|---|---|
 | `ui/mainscene/systemBtn.lh` | `.lh` prefab | Main scene system entry button | Used by `MainSceneView.ls` GList; contains `loader_1` and `name_1` |
 | `ui/battleScene/HealthBar.lh` | `.lh` prefab | Battle health bar | Reusable battle HUD component |
+| `ui/battlescene/BattleMainView.ls` | `.ls` scene | Full-screen battle HUD | Transparent screen UI; owns the top-right pause/back controls and pause overlay |
+| `ui/battlescene/imgs/btn_pause.png` | PNG | Battle pause button | Battle-specific silhouette and sizing; keep under the battle module |
+| `ui/battlescene/imgs/btn_battle_back.png` | PNG | Return from battle to stage selection | Battle-specific navigation control; keep under the battle module |
 | `ui/dialog/commonDialog.ls` | `.ls` modal layer | Full-screen modal mask and dialog panel | Open through `DialogMgr`; supports confirm-only and confirm/cancel callbacks |
 | `ui/common/imgs/panel-bg.png` | PNG | Western magic parchment panel | Reusable panel background; UUID must be read from `.meta` |
 | `ui/common/imgs/title-bg.png` | PNG | Dialog/title bar | Reusable title decoration; labels remain runtime text |

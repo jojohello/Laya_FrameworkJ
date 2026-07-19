@@ -1,0 +1,38 @@
+[
+  {
+    "ID": 1001,
+    "name": "Warrior",
+    "soldierType": "warrior",
+    "sceneObjConfigId": 1001,
+    "modelPath": "character/1001/idle.png",
+    "teamMaskPath": "character/1001/team_mask.png",
+    "modelScale": 0.666667,
+    "skillIds": "",
+    "aiTemplateId": 0,
+    "description": "Melee frontline soldier"
+  },
+  {
+    "ID": 1002,
+    "name": "Mage",
+    "soldierType": "mage",
+    "sceneObjConfigId": 1002,
+    "modelPath": "character/1002/idle.png",
+    "teamMaskPath": "character/1002/team_mask.png",
+    "modelScale": 0.666667,
+    "skillIds": "",
+    "aiTemplateId": 0,
+    "description": "Ranged magic soldier"
+  },
+  {
+    "ID": 1003,
+    "name": "Priest",
+    "soldierType": "priest",
+    "sceneObjConfigId": 1003,
+    "modelPath": "character/1003/idle.png",
+    "teamMaskPath": "character/1003/team_mask.png",
+    "modelScale": 0.666667,
+    "skillIds": "",
+    "aiTemplateId": 0,
+    "description": "Healing support soldier"
+  }
+]

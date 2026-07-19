@@ -23,5 +23,6 @@
 | `guide` | `GuideMgr`、双端条件、异步引导流程与服务器进度同步 |
 | `damage` | `DamageExecutor` |
 | `map` | `SceneMapFactory` |
+| `battleScene` | `BattleStageScene`、`BattleScene`、`BattleMainViewController`；战斗内 HUD 的暂停与返回流程 |
 
 ManagerHub 当前注册位置是 [LogicMain.ts](LogicMain.ts)。新增 Manager 时先确认它确实需要全局生命周期，再在组合根注册。

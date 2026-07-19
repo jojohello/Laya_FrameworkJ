@@ -30,4 +30,6 @@
 - 不要缓存已回收的 `ResBase` 引用并继续使用。
 - 不要只调用 `Laya.loader.clearRes()` 而遗漏池中实例，也不要只清实例而永久保留底层资源。
 - 运行时 URL 不带 `assets/` 前缀。
+- LayaAir 3.3 标准帧动画资源使用“一张 PNG + `.atlas`”；传给 `Laya.Animation.images` 的是 atlas 已缓存的子纹理 URL，不是未描述的大图网格坐标。
+- atlas 的帧键与运行时子纹理 URL 必须带 `.png` 等受支持后缀。`Loader.cacheRes()` 依赖后缀确定类型；无后缀帧不会进入缓存，并会连续触发 `unsupported suffix` 与 `DrawTextureCmd sourceWidth` 空引用。
 - 修改清理逻辑时验证：并发加载、池复用、超上限销毁、缓存到期卸载、Manager reset/release。

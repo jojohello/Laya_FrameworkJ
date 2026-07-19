@@ -53,6 +53,7 @@ UIManager.instance.close("MyUI");
 | `autoDestroy` | boolean | ✅ | 关闭时是否自动销毁（false=缓存复用）|
 | `mutex` | string[] | ⚪ | 互斥的 UI 列表（打开时自动关闭）|
 | `zOrder` | number | ⚪ | 同层级内的排序（默认按打开顺序）|
+| `controllerClass` | constructor | ⚪ | 为未绑定序列化 Runtime UUID 的 `.ls` 创建独立控制器；构造函数接收场景根节点 |
 | 其他字段 | any | ⚪ | 任意自定义字段（灵活扩展）|
 
 ---
@@ -342,6 +343,8 @@ if (bagUI) {
 ---
 
 ## ⚠️ 注意事项
+
+主界面底部导航来自 `Config/csv/MainNav.csv`，必须通过配置导出器进入 `config-manifest.json` 后才会被 `ConfigMgr` 加载。`routeArgs` 在 CSV 中保存为 JSON 数组字符串，由 `MainSceneView` 解析后传给路由。
 
 ### 1. 资源路径规范
 

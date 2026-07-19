@@ -20,6 +20,18 @@
       "rows": 2
     },
     {
+      "name": "Character",
+      "file": "Character.json",
+      "path": "config/Character.json",
+      "rows": 3
+    },
+    {
+      "name": "CharacterAnimation",
+      "file": "CharacterAnimation.json",
+      "path": "config/CharacterAnimation.json",
+      "rows": 9
+    },
+    {
       "name": "Damage",
       "file": "Damage.json",
       "path": "config/Damage.json",
@@ -53,7 +65,7 @@
       "name": "SceneType",
       "file": "SceneType.json",
       "path": "config/SceneType.json",
-      "rows": 1
+      "rows": 3
     },
     {
       "name": "Skill",

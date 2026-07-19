@@ -33,6 +33,14 @@ mvn -pl game-server spring-boot:run
 
 Runtime settings are in each module's `src/main/resources/application.yml`. The four ports above are the checked-in defaults.
 
+## Local Databases On Windows
+
+The repository-local development installation uses MySQL 8.0.46 and Memurai 4.1.7 (Redis API 7.2 compatible). They are registered as the `LayaMySQL` and `LayaRedis` Windows services with `Manual` startup, so neither starts with Windows.
+
+Double-click `start-databases.bat` before development and `stop-databases.bat` afterward. Both scripts request administrator permission to control the services. MySQL listens only on `127.0.0.1:3306`, and Redis listens only on `127.0.0.1:6379`.
+
+The checked-in development credentials are `root/root` and `laya_user/laya123456`. The local databases are `laya_login`, `laya_central_dev`, and `laya_game_1`. These credentials are development-only and must not be reused in a deployed environment.
+
 ## Main Entry Points
 
 - Login: `POST http://localhost:8081/api/login`

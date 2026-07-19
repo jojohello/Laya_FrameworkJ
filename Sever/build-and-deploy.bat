@@ -63,6 +63,7 @@ echo [4/5] 复制JAR文件到 output/servers/...
 :: Central Data Server
 if exist "central-data-server\target\central-data-server-1.0.0.jar" (
     echo       - central-data-server-1.0.0.jar
+    if not exist "%OUTPUT_DIR%\servers\central-data-server" mkdir "%OUTPUT_DIR%\servers\central-data-server"
     copy /y "central-data-server\target\central-data-server-1.0.0.jar" "%OUTPUT_DIR%\servers\central-data-server\" >nul
     if exist "central-data-server\src\main\resources\application.yml" (
         copy /y "central-data-server\src\main\resources\application.yml" "%OUTPUT_DIR%\servers\central-data-server\" >nul
@@ -74,6 +75,7 @@ if exist "central-data-server\target\central-data-server-1.0.0.jar" (
 :: Login Server
 if exist "login-server\target\login-server-1.0.0.jar" (
     echo       - login-server-1.0.0.jar
+    if not exist "%OUTPUT_DIR%\servers\login-server" mkdir "%OUTPUT_DIR%\servers\login-server"
     copy /y "login-server\target\login-server-1.0.0.jar" "%OUTPUT_DIR%\servers\login-server\" >nul
     if exist "login-server\src\main\resources\application.yml" (
         copy /y "login-server\src\main\resources\application.yml" "%OUTPUT_DIR%\servers\login-server\" >nul
@@ -85,6 +87,7 @@ if exist "login-server\target\login-server-1.0.0.jar" (
 :: Gateway Server
 if exist "gateway-server\target\gateway-server-1.0.0.jar" (
     echo       - gateway-server-1.0.0.jar
+    if not exist "%OUTPUT_DIR%\servers\gateway-server" mkdir "%OUTPUT_DIR%\servers\gateway-server"
     copy /y "gateway-server\target\gateway-server-1.0.0.jar" "%OUTPUT_DIR%\servers\gateway-server\" >nul
     if exist "gateway-server\src\main\resources\application.yml" (
         copy /y "gateway-server\src\main\resources\application.yml" "%OUTPUT_DIR%\servers\gateway-server\" >nul
@@ -96,6 +99,7 @@ if exist "gateway-server\target\gateway-server-1.0.0.jar" (
 :: Game Server
 if exist "game-server\target\game-server-1.0.0.jar" (
     echo       - game-server-1.0.0.jar
+    if not exist "%OUTPUT_DIR%\servers\game-server" mkdir "%OUTPUT_DIR%\servers\game-server"
     copy /y "game-server\target\game-server-1.0.0.jar" "%OUTPUT_DIR%\servers\game-server\" >nul
     if exist "game-server\src\main\resources\application.yml" (
         copy /y "game-server\src\main\resources\application.yml" "%OUTPUT_DIR%\servers\game-server\" >nul

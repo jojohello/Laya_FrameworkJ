@@ -98,6 +98,21 @@ Rules:
 | `assets/ui/battleScene/stage_route_flag.png` | Stage route/marker flag | existing v4-style formal asset | 317x389 | independent icon | ready | Consistent enough; no current replacement needed. |
 | `assets/ui/battleScene/stage_star_small.png` | Stage star/reward star | existing v4-style formal asset | 292x280 | independent icon | ready | Consistent enough; no current replacement needed. |
 
+## Battle HUD Assets
+
+| Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `assets/ui/battlescene/imgs/btn_pause.png` | Pause/resume battle | generated battle HUD production sheet | 96x108 | independent button icon | integrated | Dark teal-blue battle control with honey-gold rim and cyan magic accent; `BattleMainView.ls` uses the imported UUID. |
+| `assets/ui/battlescene/imgs/btn_battle_back.png` | Return to battle-stage selection | generated battle HUD production sheet | 96x108 | independent button icon | integrated | Matches the pause button; battle-only navigation semantics keep it out of common assets. |
+
+## Battle Character Assets
+
+| Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `assets/character/1001/idle.png` | Warrior static idle sprite | unified battle-character production sheet | 128x160 | foot-anchored character texture | ready | Neutral base palette supports runtime RGB team tint. |
+| `assets/character/1002/idle.png` | Mage static idle sprite | unified battle-character production sheet | 128x160 | foot-anchored character texture | ready | Staff and pointed hat preserve class readability after tint. |
+| `assets/character/1003/idle.png` | Priest static idle sprite | unified battle-character production sheet | 128x160 | foot-anchored character texture | ready | Cream robe and healing staff preserve class readability after tint. |
+
 ## Cleanup Rule
 
 Temporary trial, review, source, contact-sheet, and comparison PNGs are removed after the final integration asset is produced. Keep only final project assets under `assets/` and the text production rules in this document.

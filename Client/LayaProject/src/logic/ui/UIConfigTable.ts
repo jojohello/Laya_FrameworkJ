@@ -1,4 +1,5 @@
 import { UILayer } from "../core/LayerDef";
+import { BattleMainViewController } from "../battleScene/BattleMainViewController";
 
 /**
  * UI 配置表。
@@ -23,6 +24,16 @@ export const UIConfigTable: { [name: string]: any } = {
         mouseThrough: true,
         singleton: true,
         autoDestroy: false,
+    },
+
+    "BattleUI": {
+        path: "ui/battlescene/BattleMainView.ls",
+        layerName: "MainUI",
+        zOrder: UILayer.MainUI,
+        mouseThrough: true,
+        singleton: true,
+        autoDestroy: true,
+        controllerClass: BattleMainViewController,
     },
 
     "BagUI": {
