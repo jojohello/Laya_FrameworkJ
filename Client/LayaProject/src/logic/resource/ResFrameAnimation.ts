@@ -15,6 +15,8 @@ export type FrameAnimationChangedHandler = (
     frameIndex: number
 ) => void;
 
+export type FrameAnimationActionCompleteHandler = (actionName: string) => void;
+
 /** A pooled Laya.Animation backed by one atlas resource. */
 export class ResFrameAnimation extends ResBase {
     private _animation: Laya.Animation | null = null;
@@ -22,6 +24,7 @@ export class ResFrameAnimation extends ResBase {
     private _currentAction: FrameAnimationAction | null = null;
     private _lastFrameIndex = -1;
     private _frameChanged: FrameAnimationChangedHandler | null = null;
+    private _actionComplete: FrameAnimationActionCompleteHandler | null = null;
 
     async buildRes(): Promise<void> {
         if (!this._animation) {
@@ -42,6 +45,10 @@ export class ResFrameAnimation extends ResBase {
         this._frameChanged = handler;
         this._lastFrameIndex = -1;
         this.updateFrameTexture();
+    }
+
+    setActionCompleteHandler(handler: FrameAnimationActionCompleteHandler | null): void {
+        this._actionComplete = handler;
     }
 
     play(name: string, loop?: boolean, force = false): boolean {
@@ -78,6 +85,7 @@ export class ResFrameAnimation extends ResBase {
         this._actions.clear();
         this._currentAction = null;
         this._frameChanged = null;
+        this._actionComplete = null;
         if (this._animation) {
             this._animation.material = null;
             this._animation.visible = false;
@@ -112,7 +120,12 @@ export class ResFrameAnimation extends ResBase {
 
     private onComplete(): void {
         const action = this._currentAction;
-        if (action && !action.loop && action.nextAction) this.play(action.nextAction, undefined, true);
+        if (!action || action.loop) return;
+        if (this._actionComplete) {
+            this._actionComplete(action.name);
+        } else if (action.nextAction) {
+            this.play(action.nextAction, undefined, true);
+        }
     }
 
     private stopMonitoring(): void {

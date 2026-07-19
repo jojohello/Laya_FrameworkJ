@@ -54,7 +54,7 @@ const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 
 战斗角色的静态回退资源为 `assets/character/{cfgId}/idle.png` 和同尺寸的 `team_mask.png`。正式帧动画采用 LayaAir 标准的“单张 PNG + `.atlas`”资源；基础帧和对应队伍色蒙版帧可位于同一大图，由 `CharacterAnimation` 表配置 `idle`、`walk`、`attack` 的子纹理前缀、帧数、间隔、循环和后继动作。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色通过 `CharacterSceneObj.setTeamColor(r, g, b)` 的三个 `0~255` RGB 参数设置，同一职业不复制红蓝两套完整资源。未配置帧动画的角色继续显示静态回退图。
 
-角色模型、兵种、缩放、技能列表和 AI 模板引用统一配置在 `Config/csv/Character.csv`，动作资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔，`aiTemplateId=0` 表示尚未分配正式模板；当前三名角色的显示缩放均为 `0.666667`。
+角色模型、兵种、缩放和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔；技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`。
 
 参数含义：
 
@@ -128,6 +128,8 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | `castSkill(skillId, targetId, x, y, skillLevel)` | 技能入口，内部走 `SkillAgent` |
 | `canCastSkill(skillId)` | 检查技能 CD |
 | `getSkillCooldownRemain(skillId)` | 获取技能剩余 CD，单位毫秒 |
+| `runTo(x, y, stopDistance)` | 按 speed 属性跑向世界坐标，FSM 自动管理 Run/Idle 和 walk/idle 动画 |
+| `attack(skillId, targetId, x, y, skillLevel)` | 成功释放技能后进入 Attack，动画完成后自动回 Idle |
 | `addBuff(buffId, caster, stack, durationOverride, curTime)` | 添加 Buff，内部走 `BuffAgent` |
 | `removeBuff(buffId)` | 移除指定 Buff |
 | `hasBuff(buffId)` | 检查是否存在指定 Buff |

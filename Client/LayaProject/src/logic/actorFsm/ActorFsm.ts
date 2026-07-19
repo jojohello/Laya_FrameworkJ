@@ -50,9 +50,9 @@ export class StateMachine<TOwner extends FsmOwner = any> {
         return this;
     }
 
-    setState(stateName: string, owner: TOwner): void {
+    setState(stateName: string, owner: TOwner, force: boolean = false): void {
         const runtime = this.getRuntime(owner);
-        if (runtime.currentStateName === stateName) return;
+        if (!force && runtime.currentStateName === stateName) return;
 
         const currentState = this._stateMap.get(runtime.currentStateName);
         if (currentState) {

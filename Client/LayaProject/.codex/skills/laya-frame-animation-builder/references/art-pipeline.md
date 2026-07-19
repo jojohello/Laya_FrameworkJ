@@ -29,6 +29,8 @@ python tools/art/build_character_frame_atlas.py `
 
 The processor removes chroma, normalizes silhouettes, aligns feet, builds selective masks, composes the large PNG, and writes atlas metadata.
 
+If an otherwise acceptable idle source has one or two frames with a large visual-centroid jump, keep the source unchanged and pass a reproducible six-frame remap such as `--idle-sequence 0,1,2,1,0,1`. Measure first; do not use remapping to hide inconsistent scale or foot alignment across the whole action.
+
 ## Accept
 
 Inspect at original resolution: no spill or clipping; consistent scale and baseline; correct action order; acceptable loop endpoints; masks limited to intended regions; every base frame paired with matching mask geometry. Let LayaAir IDE generate `.meta` files.

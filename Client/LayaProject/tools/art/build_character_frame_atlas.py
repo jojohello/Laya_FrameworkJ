@@ -67,6 +67,9 @@ def mask_for_frame(frame: Image.Image, character_id: int, temp_dir: Path, index:
 
 def build(args: argparse.Namespace) -> None:
     source = Image.open(args.input).convert("RGB")
+    idle_sequence = [int(value) for value in args.idle_sequence.split(",")]
+    if len(idle_sequence) != args.columns or any(value < 0 or value >= args.columns for value in idle_sequence):
+        raise ValueError(f"idle sequence must contain {args.columns} source columns in range 0..{args.columns - 1}")
     output_rows = args.rows * 2
     sheet = Image.new("RGBA", (args.cell_width * args.columns, args.cell_height * output_rows))
     frames: dict[str, dict] = {}
@@ -74,12 +77,13 @@ def build(args: argparse.Namespace) -> None:
 
     for row, action in enumerate(ACTIONS):
         for column in range(args.columns):
+            source_column = idle_sequence[column] if action == "idle" else column
             # Image generators may add one or two edge pixels. Proportional
             # boundaries keep all source pixels without requiring exact division.
             source_box = (
-                round(column * source.width / args.columns),
+                round(source_column * source.width / args.columns),
                 round(row * source.height / args.rows),
-                round((column + 1) * source.width / args.columns),
+                round((source_column + 1) * source.width / args.columns),
                 round((row + 1) * source.height / args.rows),
             )
             frame = fit_to_cell(remove_green(source.crop(source_box)), args.cell_width, args.cell_height, args.padding)
@@ -126,6 +130,7 @@ def main() -> None:
     parser.add_argument("--cell-width", type=int, default=128)
     parser.add_argument("--cell-height", type=int, default=160)
     parser.add_argument("--padding", type=int, default=4)
+    parser.add_argument("--idle-sequence", default="0,1,2,3,4,5", help="comma-separated source columns for output idle frames")
     parser.add_argument("--temp-dir", type=Path, default=Path("tmp/frame-atlas"))
     args = parser.parse_args()
     if args.rows != len(ACTIONS):

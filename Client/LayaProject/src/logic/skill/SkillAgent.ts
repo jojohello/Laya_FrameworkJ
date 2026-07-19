@@ -28,8 +28,9 @@ export class SkillAgent implements ISceneObjModule {
         this._pendingActions.length = 0;
     }
 
-    onOwnerFixedUpdate(_owner: BaseSceneObj, curTime: number): void {
-        this.update(curTime);
+    onOwnerFixedUpdate(_owner: BaseSceneObj, _curTime: number): void {
+        // Skill CD and action delays are milliseconds; SceneObj fixed time is seconds.
+        this.update(this.getDefaultTime());
     }
 
     onRecycle(): void {

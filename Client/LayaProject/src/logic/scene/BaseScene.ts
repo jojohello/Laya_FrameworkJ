@@ -329,6 +329,24 @@ export class BaseScene {
         return this._objMap.get(uid) || null;
     }
 
+    /** Finds the nearest living object on another team without allocating a result list. */
+    findNearestEnemy(source: BaseSceneObj, targetObjType: number = source.getObjType()): BaseSceneObj | null {
+        let nearest: BaseSceneObj | null = null;
+        let nearestDistanceSq = Number.POSITIVE_INFINITY;
+        for (const candidate of this._objMap.values()) {
+            if (candidate === source || candidate.isRelease || candidate.isDead
+                || candidate.team === source.team || candidate.getObjType() !== targetObjType) continue;
+            const dx = candidate.x - source.x;
+            const dy = candidate.y - source.y;
+            const distanceSq = dx * dx + dy * dy;
+            if (distanceSq < nearestDistanceSq) {
+                nearest = candidate;
+                nearestDistanceSq = distanceSq;
+            }
+        }
+        return nearest;
+    }
+
     /**
      * 获取指定类型的对象数量
      * @param objType 对象类型

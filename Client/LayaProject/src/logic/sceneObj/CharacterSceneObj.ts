@@ -6,6 +6,9 @@ import { BaseScene } from "../scene/BaseScene";
 import { CharacterAnimationConfigInfo } from "./CharacterAnimationConfigInfo";
 import { FrameAnimationAction, ResFrameAnimation } from "../resource/ResFrameAnimation";
 import { ResourceMgr } from "../resource/ResourceMgr";
+import { FsmRuntime } from "../actorFsm/ActorFsm";
+import { CharacterActorFsm, CharacterStateName, CharacterStateNameValue } from "../actorFsm/CharacterActorFsm";
+import { CharacterAIRuntime, SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 
 const { regClass } = Laya;
 
@@ -18,12 +21,34 @@ export type CharacterAnimName = "idle" | "walk" | "attack";
  */
 @regClass()
 export class CharacterSceneObj extends CreatureSceneObj {
+    fsmRuntime?: FsmRuntime;
+    aiRuntime?: CharacterAIRuntime;
     private _animName: CharacterAnimName = "idle";
     private _baseLayer: Laya.Sprite | null = null;
     private _teamMaterial: Laya.Material | null = null;
     private _frameAnimation: ResFrameAnimation | null = null;
     private _animationLoadToken = 0;
     private _teamColor: [number, number, number] = [255, 0, 0];
+    private _runTargetX = 0;
+    private _runTargetY = 0;
+    private _runStopDistance = 1;
+    private _lastRunUpdateTime = 0;
+    private _hasRunTarget = false;
+    private _skillIds: number[] = [];
+
+    protected onInit(uid: number, cfgId: number, scene: BaseScene, team: number, x: number, y: number, angle: number): void {
+        super.onInit(uid, cfgId, scene, team, x, y, angle);
+        const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", cfgId);
+        this._skillIds = this.parseSkillIds(config?.skillIds || "");
+        SimpleCombatAIAgent.reset(this);
+        CharacterActorFsm.reset(this);
+        CharacterActorFsm.setState(CharacterStateName.Idle, this);
+    }
+
+    protected onUpdate(curTime: number): void {
+        CharacterActorFsm.update(this, curTime);
+        SimpleCombatAIAgent.update(this, curTime);
+    }
 
     protected loadRes(): void {
         const model = this.createModelContainer();
@@ -58,7 +83,6 @@ export class CharacterSceneObj extends CreatureSceneObj {
         }
         const scale = config.modelScale > 0 ? config.modelScale : 1;
         model.scale(scale, scale);
-        this.playAnim("idle");
         void this.loadFrameAnimation(model, config.ID, ++this._animationLoadToken);
     }
 
@@ -76,19 +100,145 @@ export class CharacterSceneObj extends CreatureSceneObj {
         if (this._baseLayer.parent !== model) model.addChild(this._baseLayer);
     }
 
-    playAnim(name: CharacterAnimName = "idle", loop?: boolean): void {
+    playAnim(name: CharacterAnimName = "idle", loop?: boolean, force: boolean = false): void {
         this._animName = name;
-        this._frameAnimation?.play(name, loop);
+        this._frameAnimation?.play(name, loop, force);
     }
 
     get animName(): CharacterAnimName {
         return this._animName;
     }
 
+    changeState(stateName: CharacterStateNameValue, force: boolean = false): void {
+        CharacterActorFsm.setState(stateName, this, force);
+    }
+
+    get stateName(): string {
+        return CharacterActorFsm.getCurStateName(this);
+    }
+
+    /** Run toward a world position using the entity's configured speed. */
+    runTo(x: number, y: number, stopDistance: number = 1): boolean {
+        if (this.isRelease || this.isDead || !Number.isFinite(x) || !Number.isFinite(y)) return false;
+        if (this.attrs.getFinal("speed", 0) <= 0) return false;
+
+        this._runTargetX = x;
+        this._runTargetY = y;
+        this._runStopDistance = Math.max(0, Number(stopDistance) || 0);
+        this._hasRunTarget = true;
+
+        const dx = x - this.x;
+        const dy = y - this.y;
+        if (dx * dx + dy * dy <= this._runStopDistance * this._runStopDistance) {
+            this._hasRunTarget = false;
+            this.changeState(CharacterStateName.Idle);
+            return true;
+        }
+
+        this.changeState(CharacterStateName.Run);
+        return true;
+    }
+
+    /** Cast a skill and enter Attack only when the cast request succeeds. */
+    attack(
+        skillId: number,
+        targetId: number = 0,
+        targetX: number = this.x,
+        targetY: number = this.y,
+        skillLevel: number = 1
+    ): boolean {
+        if (this.isRelease || this.isDead) return false;
+        const success = this.castSkill(skillId, targetId, targetX, targetY, skillLevel);
+        if (!success) return false;
+
+        this._hasRunTarget = false;
+        this.changeState(CharacterStateName.Attack, true);
+        return true;
+    }
+
+    /** Called by StateRun; external systems should use runTo(). */
+    beginRunState(): void {
+        this._lastRunUpdateTime = this.scene?.curTime ?? 0;
+    }
+
+    /** Called by StateRun; external systems should use runTo(). */
+    updateRunState(curTime: number): void {
+        if (!this._hasRunTarget) {
+            this.changeState(CharacterStateName.Idle);
+            return;
+        }
+
+        const dx = this._runTargetX - this.x;
+        const dy = this._runTargetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= this._runStopDistance) {
+            this._hasRunTarget = false;
+            this.changeState(CharacterStateName.Idle);
+            return;
+        }
+
+        const deltaTime = Math.max(0, Math.min(0.1, curTime - this._lastRunUpdateTime));
+        this._lastRunUpdateTime = curTime;
+        if (deltaTime <= 0) return;
+
+        const moveDistance = this.attrs.getFinal("speed", 0) * deltaTime;
+        const remainingDistance = Math.max(0, distance - this._runStopDistance);
+        if (moveDistance <= 0 || moveDistance >= remainingDistance) {
+            this.setPos(
+                this.x + dx / distance * remainingDistance,
+                this.y + dy / distance * remainingDistance
+            );
+            this._hasRunTarget = false;
+            this.changeState(CharacterStateName.Idle);
+            return;
+        }
+
+        this.setPos(
+            this.x + dx / distance * moveDistance,
+            this.y + dy / distance * moveDistance
+        );
+    }
+
+    /** Called by StateRun when another state interrupts movement. */
+    endRunState(): void {
+        this._lastRunUpdateTime = 0;
+        this._hasRunTarget = false;
+    }
+
+    get skillIds(): readonly number[] {
+        return this._skillIds;
+    }
+
+    get isRunning(): boolean {
+        return this.stateName === CharacterStateName.Run;
+    }
+
+    get isExecutingSkill(): boolean {
+        return this.stateName === CharacterStateName.Attack;
+    }
+
+    get isIdle(): boolean {
+        return this.stateName === CharacterStateName.Idle;
+    }
+
+    hasReachedRunTarget(): boolean {
+        if (!this._hasRunTarget) return true;
+        const dx = this._runTargetX - this.x;
+        const dy = this._runTargetY - this.y;
+        return dx * dx + dy * dy <= this._runStopDistance * this._runStopDistance;
+    }
+
     reset(): void {
         super.reset();
         this._animName = "idle";
+        CharacterActorFsm.reset(this);
         this._teamColor = [255, 0, 0];
+        this._runTargetX = 0;
+        this._runTargetY = 0;
+        this._runStopDistance = 1;
+        this._lastRunUpdateTime = 0;
+        this._hasRunTarget = false;
+        this._skillIds.length = 0;
         this.releaseFrameAnimation();
         if (this.model) {
             this.model.filters = [];
@@ -135,6 +285,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
             nextAction: config.nextAction || undefined,
         }));
         resource.configure(actions);
+        resource.setActionCompleteHandler(this.onAnimationActionComplete);
         resource.pos(-64, -160);
         resource.setParent(model);
         this._frameAnimation = resource;
@@ -167,6 +318,18 @@ export class CharacterSceneObj extends CreatureSceneObj {
     private makeFrameUrls(prefix: string, count: number): string[] {
         return Array.from({ length: count }, (_, index) => `${prefix}${String(index).padStart(2, "0")}.png`);
     }
+
+    private parseSkillIds(value: string): number[] {
+        return value.split(/[;,|]/)
+            .map(item => Number(item.trim()))
+            .filter(skillId => Number.isInteger(skillId) && skillId > 0);
+    }
+
+    private onAnimationActionComplete = (actionName: string): void => {
+        if (actionName === "attack" && this.stateName === CharacterStateName.Attack) {
+            this.changeState(CharacterStateName.Idle);
+        }
+    };
 
     private releaseFrameAnimation(): void {
         ++this._animationLoadToken;

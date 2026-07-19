@@ -34,6 +34,8 @@ monsterTree.execute(monsterB, curTime);
 - `stopped`
 - `nextThinkTime`
 
+思考时间与 `SceneTime` 一致使用秒；当前代码常量为 `0.1` 秒，不从配置读取。
+
 `AIScheduler` 负责把 AI 分组到不同帧：
 
 ```ts
@@ -51,3 +53,23 @@ scheduler.setFrameBudget(50, 1.5);
 ```
 
 含义是单帧最多处理 50 个 AI，或最多消耗约 1.5ms。预算不够时，调度器会保留当前组，下帧继续处理剩余实体。
+
+## 简单战斗 AI
+
+`SimpleCombatTree` 和 `SimpleCombatAIAgent` 都是模块级单例定义。所有使用该模式的角色共享同一棵树和同一个 Agent；每次执行将 `CharacterSceneObj` 作为参数传入。Entity 独立保存 `targetUid`、`selectedSkillId`、`selectedSkillRange`，共享节点不得保存这些数据。
+
+```text
+SimpleCombatBehaviorNode (Selector)
+├─ IsExecutingSkillNode
+├─ Sequence
+│  ├─ EnsureNearestTargetNode
+│  └─ Selector
+│     ├─ TryUseSkillNode (Sequence)
+│     │  ├─ SelectReadySkillNode
+│     │  ├─ IsSelectedSkillInRangeNode
+│     │  └─ CastSelectedSkillNode
+│     └─ ApproachTargetNode
+└─ EnterIdleNode
+```
+
+可复用条件节点包括 `IsRunningNode`、`HasReachedTargetNode`、`IsExecutingSkillNode`、`IsIdleNode`。技能按 `Character.skillIds` 顺序选择，CD 和 `CastRange` 来自 Skill 表；普通攻击也是技能。移动停止容差是代码常量 10 像素，不建立 AI JSON 或模板配置。

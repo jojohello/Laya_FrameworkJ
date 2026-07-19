@@ -8,6 +8,8 @@
 
 - [ ] 在战斗入口可重复进入后，增加示例对象注册与创建验证。
 - [ ] 在 LayaAir IDE 验证战法牧三套单图 atlas 的 `idle/walk/attack` 播放、攻击结束回 idle、逐帧红蓝染色和 `0.666667` 缩放，以及进入、退出、再次进入时动画、材质、对象表和空间索引无残留。
+- [ ] 在战斗驱动接入后验证角色 `Idle / Run / Attack` 状态切换：动画只由 FSM 状态进入触发，Run 映射 walk，Attack 动画完成后状态与动画同时恢复 Idle，回池复用后无旧状态残留。
+- [ ] 在 LayaAir IDE 验证共享 `SimpleCombatTree`：两队角色选择最近的同类敌方实体，按 `Skill.CastRange` 靠近，在 CD 可用时释放基础攻击，攻击期间不重复决策；死亡、切场和回池后目标、技能与 AI 时间状态无残留。
 - [ ] 验证 Camera2D 拖拽、跟随、地图边界、输入归属和场景切换。
 - [ ] 验证对象 release、回池、再次复用后无模型、事件、动画、坐标和空间 hash 残留。
 - [ ] 确认生物、子弹配置字段及 Spine 的 ResourceMgr 适配方式；图片和标准 atlas 帧动画已分别使用 `ResImage`、`ResFrameAnimation`。

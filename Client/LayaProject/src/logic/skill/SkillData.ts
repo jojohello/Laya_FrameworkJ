@@ -13,6 +13,7 @@ export interface SkillData {
     MaxLevel: number;
     SkillType: string;
     TargetType: string;
+    CastRange: number;
     CD: number;
     CostType: string;
     CostValue: number;

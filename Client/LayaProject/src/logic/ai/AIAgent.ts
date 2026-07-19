@@ -9,7 +9,8 @@ export interface AIOwner {
     aiRuntime?: AIRuntime;
 }
 
-const DEFAULT_AI_THINK_INTERVAL = 100;
+/** SceneTime uses seconds; 0.1s keeps decisions responsive while movement remains per-frame. */
+export const DEFAULT_AI_THINK_INTERVAL_SECONDS = 0.1;
 
 /**
  * Shared AI definition. Per-entity runtime lives on owner.aiRuntime.
@@ -18,7 +19,7 @@ export class AIAgent<TOwner extends AIOwner = any> {
     private readonly _aiTree: BBaseNode<TOwner>;
     private readonly _thinkInterval: number;
 
-    constructor(aiTree: BBaseNode<TOwner>, thinkInterval: number = DEFAULT_AI_THINK_INTERVAL) {
+    constructor(aiTree: BBaseNode<TOwner>, thinkInterval: number = DEFAULT_AI_THINK_INTERVAL_SECONDS) {
         this._aiTree = aiTree;
         this._thinkInterval = Math.max(0, thinkInterval);
     }

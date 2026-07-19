@@ -32,6 +32,7 @@
 - 纹理型 Sprite2D Shader 的 attributeMap 必须与同版本引擎 `Shader2D.graphicsAttribute` 一致，包含 `a_posuv`、`a_attribColor`、`a_attribFlags`、`a_customs`；顶点阶段应转发 `v_useClip/v_customs` 并调用 `getPosition(info.pos)`。`uniformMap` 会自动生成 GLSL uniform，片元块不得重复声明同名 uniform。
 - 角色动作名稳定为 `idle`、`walk`、`attack`。静态占位允许三个动作显示同一帧；正式序列帧适配器必须保持动作入口不变。
 - 帧动画的主图帧与队伍蒙版帧必须一一对应；每次帧索引变化都同步更新两张子纹理及各自图集 UV。攻击等非循环动作通过配置指定后继动作，不在战斗调用方散落定时切换逻辑。
+- AI 和战斗调用方通过角色实体的 `runTo()`、`attack()` 表达行为，不直接播放动画。Run 状态承载逐帧位移并在到达后回 Idle；Attack 只在技能释放成功后进入，并由动画完成事件回 Idle。状态被打断时必须清理旧移动目标，对象复用时清理全部行为运行态。
 
 ### Sprite2D Shader 错误诊断
 

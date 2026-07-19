@@ -24,6 +24,7 @@ import { GuideCommandRegistry } from "./guide/GuideCommandRegistry";
 import { MainScene } from "./mainScene/MainScene";
 import { BattleScene, BattleStageScene } from "./battleScene/BattleScene";
 import { CharacterSceneObj } from "./sceneObj/CharacterSceneObj";
+import { BulletSceneObj } from "./sceneObj/BulletSceneObj";
 
 
 
@@ -56,6 +57,7 @@ export class LogicMain {
         // SceneObj is created by the stable short name stored in battle code/config.
         // @regClass binds the editor resource identity, so register the runtime lookup key explicitly.
         Laya.ClassUtils.regClass("CharacterSceneObj", CharacterSceneObj);
+        Laya.ClassUtils.regClass("BulletSceneObj", BulletSceneObj);
 
         // 2. 初始化配置管理器（必须在其他 Manager 之前完成）
         await ConfigMgr.instance.init();
