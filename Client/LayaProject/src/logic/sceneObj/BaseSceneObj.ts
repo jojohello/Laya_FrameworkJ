@@ -323,6 +323,8 @@ export abstract class BaseSceneObj {
     /** 获取唯一 ID */
     get uid(): number { return this._uid; }
 
+    get configId(): number { return this._cfgId; }
+
     /** 获取是否已释放 */
     get isRelease(): boolean { return this._isRelease; }
 

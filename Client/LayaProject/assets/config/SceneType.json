@@ -24,8 +24,8 @@
   {
     "ID": 3,
     "sceneClass": "BattleScene",
-    "mapType": "tilemap",
-    "map": "map/map002/fightmap.json",
+    "mapType": "",
+    "map": "",
     "stagePrefab": "",
     "mapWidth": 0,
     "mapHeight": 0,

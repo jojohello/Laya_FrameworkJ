@@ -19,6 +19,7 @@ dist/
 # 依赖包
 node_modules/
 packages/
+tmp/
 
 # IDE和编辑器配置
 .vscode/

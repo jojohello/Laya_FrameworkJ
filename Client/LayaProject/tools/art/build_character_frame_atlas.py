@@ -40,7 +40,13 @@ def remove_green(image: Image.Image) -> Image.Image:
     return rgba
 
 
-def fit_to_cell(frame: Image.Image, cell_width: int, cell_height: int, padding: int) -> Image.Image:
+def fit_to_cell(
+    frame: Image.Image,
+    cell_width: int,
+    cell_height: int,
+    padding: int,
+    scale: float | None = None,
+) -> Image.Image:
     bbox = frame.getchannel("A").getbbox()
     result = Image.new("RGBA", (cell_width, cell_height))
     if not bbox:
@@ -48,7 +54,8 @@ def fit_to_cell(frame: Image.Image, cell_width: int, cell_height: int, padding: 
     subject = frame.crop(bbox)
     max_width = cell_width - padding * 2
     max_height = cell_height - padding * 2
-    scale = min(max_width / subject.width, max_height / subject.height)
+    if scale is None:
+        scale = min(max_width / subject.width, max_height / subject.height)
     target = (max(1, round(subject.width * scale)), max(1, round(subject.height * scale)))
     subject = subject.resize(target, Image.Resampling.LANCZOS)
     x = (cell_width - target[0]) // 2
@@ -75,6 +82,33 @@ def build(args: argparse.Namespace) -> None:
     frames: dict[str, dict] = {}
     args.temp_dir.mkdir(parents=True, exist_ok=True)
 
+    # The attack row contains slash/spell effects whose bounds are larger than
+    # the character. Derive the scale from idle + walk character frames only,
+    # then reuse it for every action so effects cannot make the character body
+    # zoom in/out from frame to frame or shrink relative to idle/walk.
+    reference_frames: list[Image.Image] = []
+    for row in (0, 1):
+        for column in range(args.columns):
+            source_box = (
+                round(column * source.width / args.columns),
+                round(row * source.height / args.rows),
+                round((column + 1) * source.width / args.columns),
+                round((row + 1) * source.height / args.rows),
+            )
+            reference_frames.append(remove_green(source.crop(source_box)))
+    reference_width = max(
+        (frame.getchannel("A").getbbox() or (0, 0, 0, 0))[2]
+        for frame in reference_frames
+    )
+    reference_height = max(
+        (frame.getchannel("A").getbbox() or (0, 0, 0, 0))[3]
+        for frame in reference_frames
+    )
+    action_scale = min(
+        (args.cell_width - args.padding * 2) / max(1, reference_width),
+        (args.cell_height - args.padding * 2) / max(1, reference_height),
+    )
+
     for row, action in enumerate(ACTIONS):
         for column in range(args.columns):
             source_column = idle_sequence[column] if action == "idle" else column
@@ -86,7 +120,13 @@ def build(args: argparse.Namespace) -> None:
                 round((source_column + 1) * source.width / args.columns),
                 round((row + 1) * source.height / args.rows),
             )
-            frame = fit_to_cell(remove_green(source.crop(source_box)), args.cell_width, args.cell_height, args.padding)
+            frame = fit_to_cell(
+                remove_green(source.crop(source_box)),
+                args.cell_width,
+                args.cell_height,
+                args.padding,
+                action_scale,
+            )
             mask = mask_for_frame(frame, args.character_id, args.temp_dir, row * args.columns + column)
             sheet.alpha_composite(frame, (column * args.cell_width, row * args.cell_height))
             sheet.alpha_composite(mask, (column * args.cell_width, (row + args.rows) * args.cell_height))

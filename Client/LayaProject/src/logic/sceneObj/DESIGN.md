@@ -67,3 +67,21 @@
 - 对象回池后模型、事件、动画、坐标、空间 hash 和模块运行态无残留。
 - 正式 HUD 资源的跟随、层级、遮挡和回收。
 - Spine 等真实模型通过 ResourceMgr 加载和回收的策略。
+## Frame animation planning rule
+
+- Decide and record the loop frame count before drawing or generating any animation source. The `CharacterAnimation.frameCount` value, atlas column count, source-sheet layout, and action timing must agree.
+- The project default for ordinary character loops is six frames at the current 128x160 cell size. Use eight frames only when a motion needs additional passing or anticipation poses and the atlas layout is intentionally changed.
+- A six-frame walk/run cycle must contain alternating left/right contact poses, passing poses, and a stable foot baseline. Do not solve missing leg alternation by scaling the whole frame.
+
+## Run-cycle lessons from the 1002 revision
+
+- Simplifying an eight-frame reference into six frames must preserve the motion beats, not merely keep six visually different poses. The minimum six-frame run layout is: contact A, down/recoil, passing with the feet close under the pelvis, compact push/air, contact B, and the opposite passing/down pose.
+- The passing poses are mandatory. If both middle frames keep a wide leg split, the result reads as two legs fanning open and closed instead of a run. One leg should support nearly below the hip while the other knee travels through close to it.
+- Readability priority is: alternating foot contacts, pelvis rotation, torso/shoulder counter-rotation, arm swing, then held-weapon swing. Keep vertical bounce subtle; use horizontal limb and torso changes to sell speed.
+- A held weapon must follow the hand and have a visible arc across the cycle. For a staff, use a rear-tilted contact, near-vertical passing pose, and forward-tilted opposite contact while keeping the same hand and facing direction.
+- AI-generated sheets need two separate validations: inspect the full source sheet, then inspect each final 128x160 atlas frame. Reject panel borders, adjacent-frame fragments, green spill, detached artifacts, mirrored direction, inconsistent baseline, or per-frame scale changes before copying the PNG and atlas into `assets/`.
+
+## Team-color lifecycle rule
+
+- Team color is derived from the character's `team` ID during initialization and stored on the character, not owned only by a scene-specific creation helper.
+- Every material creation, frame-animation bind, or pooled-object reuse must reapply the stored team color. The material default is only a fallback; it must never replace a valid team color during an async resource transition.

@@ -50,3 +50,7 @@ export class MainScene extends BaseScene {
         // 固定间隔更新（用于 AI、网络同步等）
     }
 }
+
+// 场景类 runtime lookup 注册：@regClass 绑定编辑器资源身份，
+// 此处显式注册运行时按名查找的 key，供 SceneMgr.createScene 使用。
+Laya.ClassUtils.regClass("MainScene", MainScene);

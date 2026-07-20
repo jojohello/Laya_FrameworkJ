@@ -4,41 +4,53 @@
     "stageName": "第一关",
     "copyType": "normal",
     "battleId": 1,
-    "canEnter": true
+    "canEnter": true,
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json"
   },
   {
     "ID": 1002,
     "stageName": "第二关",
     "copyType": "normal",
     "battleId": 2,
-    "canEnter": true
+    "canEnter": true,
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json"
   },
   {
     "ID": 1003,
     "stageName": "第三关",
     "copyType": "normal",
     "battleId": 3,
-    "canEnter": true
+    "canEnter": true,
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json"
   },
   {
     "ID": 1004,
     "stageName": "第四关",
     "copyType": "normal",
     "battleId": 4,
-    "canEnter": true
+    "canEnter": true,
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json"
   },
   {
     "ID": 1005,
     "stageName": "第五关",
     "copyType": "normal",
     "battleId": 5,
-    "canEnter": true
+    "canEnter": true,
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json"
   },
   {
     "ID": 1006,
     "stageName": "Boss关",
     "copyType": "boss",
     "battleId": 6,
-    "canEnter": true
+    "canEnter": true,
+    "mapType": "tilemap",
+    "map": "map/map002/fightmap.json"
   }
 ]

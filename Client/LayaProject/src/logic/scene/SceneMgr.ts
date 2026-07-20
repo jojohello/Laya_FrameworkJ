@@ -14,6 +14,11 @@ import { ConfigMgr } from "../config/ConfigMgr";
 import { SceneConfig } from "./SceneConfig";
 import { SceneType } from "./SceneType";
 
+// 场景类在各文件末尾用 Laya.ClassUtils.regClass 注册运行时查找 key。
+// 此处导入仅用于触发模块加载使注册执行，确保 createScene 能按 sceneClass 名取到场景类。
+import "../mainScene/MainScene";
+import "../battleScene/BattleScene";
+
 /**
  * 场景实例信息
  */
@@ -204,9 +209,8 @@ export class SceneMgr implements IManager {
             return null;
         }
 
-        // 动态获取场景类（需要通过 Laya.ClassUtils 或直接引用）
-        // 简化实现：假设场景类已注册到全局
-        const SceneConstructor = (window as any)[sceneClass] || Laya.ClassUtils.getClass(sceneClass);
+        // 通过 Laya.ClassUtils 获取场景类（场景类用 @regClass 装饰器在模块加载时注册）
+        const SceneConstructor = Laya.ClassUtils.getClass(sceneClass);
         if (!SceneConstructor) {
             console.error(`[SceneMgr] 场景类未注册: ${sceneClass}`);
             return null;

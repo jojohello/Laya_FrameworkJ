@@ -52,7 +52,7 @@ Laya.ClassUtils.regClass("MonsterObj", MonsterObj);
 const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 ```
 
-战斗角色的静态回退资源为 `assets/character/{cfgId}/idle.png` 和同尺寸的 `team_mask.png`。正式帧动画采用 LayaAir 标准的“单张 PNG + `.atlas`”资源；基础帧和对应队伍色蒙版帧可位于同一大图，由 `CharacterAnimation` 表配置 `idle`、`walk`、`attack` 的子纹理前缀、帧数、间隔、循环和后继动作。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色通过 `CharacterSceneObj.setTeamColor(r, g, b)` 的三个 `0~255` RGB 参数设置，同一职业不复制红蓝两套完整资源。未配置帧动画的角色继续显示静态回退图。
+战斗角色的静态回退资源为 `assets/character/{cfgId}/idle.png` 和同尺寸的 `team_mask.png`。正式帧动画采用 LayaAir 标准的“单张 PNG + `.atlas`”资源；基础帧和对应队伍色蒙版帧可位于同一大图，由 `CharacterAnimation` 表配置 `idle`、`walk`、`attack` 的子纹理前缀、帧数、间隔、循环和后继动作。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色默认由 `CharacterSceneObj` 根据 `team` ID 初始化，并在材质异步创建或重新绑定时重复应用；`setTeamColor(r, g, b)` 仅用于明确的运行时覆写。同一职业不复制红蓝两套完整资源。未配置帧动画的角色继续显示静态回退图。
 
 角色模型、兵种、缩放和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔；技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`。
 
@@ -176,3 +176,16 @@ collision = x / y / range
 - [../scene/SceneCamera2D.ts](../scene/SceneCamera2D.ts) - 场景相机封装
 
 ---
+## Character frame-animation defaults
+
+Plan the frame count before producing an animation source sheet. The current default is six frames for ordinary `idle` and `walk` loops; `walk` uses a 100 ms interval (10 FPS) and must visibly alternate left/right contact poses. The configured `frameCount` must match the source columns and atlas entries.
+
+### Run-cycle production checklist
+
+For a six-frame run, reserve the middle frames for passing/收腿 poses. The expected rhythm is `contact A -> down -> close passing -> compact push -> contact B -> close passing`. The two contact frames must have opposite leading feet, while the passing frames keep one foot close to the pelvis instead of leaving both legs extended.
+
+Keep the same facing direction, hand side, character scale, and foot baseline in every frame. Drive the motion from the pelvis into the torso, shoulders, arms, and held weapon; use only a small vertical bounce. Before replacing a project resource, inspect the sliced atlas frames at their real cell size and remove panel borders, neighboring-frame fragments, green spill, and detached artifacts. Preserve idle/attack rows when only walk is being replaced.
+
+### Team-color lifecycle rule
+
+`CharacterSceneObj` initializes its team palette from the immutable `team` ID during `onInit()`. Every material creation or frame-animation material rebind must reapply the stored team color. Callers may use `setTeamColor()` for an intentional override, but ordinary battle setup must not be the only place that assigns the color; otherwise an async reload or pooled-object reset can fall back to the default red material.

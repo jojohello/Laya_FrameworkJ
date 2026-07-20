@@ -20,9 +20,6 @@ import { DialogMgr } from "./ui/dialog/DialogMgr";
 import { GuideMgr } from "./guide/GuideMgr";
 import { GuideCommandRegistry } from "./guide/GuideCommandRegistry";
 
-// 导入场景类并注册到 window（供 SceneMgr 动态创建）
-import { MainScene } from "./mainScene/MainScene";
-import { BattleScene, BattleStageScene } from "./battleScene/BattleScene";
 import { CharacterSceneObj } from "./sceneObj/CharacterSceneObj";
 import { BulletSceneObj } from "./sceneObj/BulletSceneObj";
 
@@ -50,10 +47,6 @@ export class LogicMain {
         // 1. 初始化App（获取window上的共享对象）
         App.init();
 
-        // 1.5 注册场景类到 window（供 SceneMgr 动态创建）
-        (Laya.Browser.window as any).MainScene = MainScene;
-        (Laya.Browser.window as any).BattleStageScene = BattleStageScene;
-        (Laya.Browser.window as any).BattleScene = BattleScene;
         // SceneObj is created by the stable short name stored in battle code/config.
         // @regClass binds the editor resource identity, so register the runtime lookup key explicitly.
         Laya.ClassUtils.regClass("CharacterSceneObj", CharacterSceneObj);
