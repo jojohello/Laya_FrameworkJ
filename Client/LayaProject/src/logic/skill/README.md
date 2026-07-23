@@ -199,3 +199,4 @@ targets.
 - `DamageAction` is the main damage entry: `delay;Damage;damageId`.
 - `Effect` and `TrueDamage` remain compatibility aliases.
 - Bullet hit and Buff lifecycle effects use the same Action parser and executor.
+- Runtime combat time is measured in seconds from `SceneTime`. Config fields with `Ms` suffix (skill delays/CD, Buff duration/tick, bullet `FlyTime`) remain authored in milliseconds and are converted once at the runtime boundary. Public cooldown-remaining values remain milliseconds.

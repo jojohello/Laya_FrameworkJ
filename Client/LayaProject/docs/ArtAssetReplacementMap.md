@@ -44,12 +44,13 @@ Rules:
 | Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `assets/ui/mainscene/imgs/btn-bg-yellow.png` | Main scene feature button background | generated v4 square button, tone adjusted for scene separation | 289x284 | system button bg | replaced | Kept old meta/uuid. Added stronger warm edge and soft dark grounding so buttons read over bright scene backgrounds. |
-| `assets/ui/mainscene/imgs/bottom-panel.png` | Main scene bottom dock panel | generated v4 bottom panel, tone adjusted for scene separation | 750x279 | bottom dock bg | ready | New formal asset. Center shifted slightly toward pale cyan/cream for better separation from castle stone backgrounds. |
+| `assets/ui/mainscene/imgs/bottom-panel.png` | Main scene bottom dock panel | generated nine-slice source from current top-HUD feedback | 256x96 | 9-slice bottom dock bg displayed at 750x279 | integrated | IDE runtime result accepted. Existing UUID preserved; dark desaturated gray-blue center, `alpha=0.92`, and `sizeGrid=[24,24,8,24,0]` keep the foreground tabs readable without deforming the border. |
 | `assets/ui/mainscene/imgs/icon-world.png` | World/map feature icon | generated v4 magic orb map icon | 213x200 | system button icon | replaced | Kept old meta/uuid. Matches the reference screenshot direction. |
 | `assets/ui/mainscene/imgs/icon-box.png` | Reward/box feature icon | generated v4 magic reward chest icon | 182x192 | system button icon | replaced | Kept old meta/uuid. Slightly bright; acceptable for reward entry. |
 | `assets/ui/mainscene/imgs/icon-cup.png` | Ranking/cup feature icon | generated v4 trophy icon | 234x189 | system button icon | replaced | Kept old meta/uuid. Gold is bright; revisit only if it overpowers UI in screen. |
 | `assets/ui/mainscene/imgs/icon-flag.png` | Task/flag feature icon | generated v4 task flag icon | 235x244 | system button icon | replaced | Kept old meta/uuid. |
-| `assets/ui/mainscene/imgs/icon-battle.png` | Battle/arena entrance feature icon | generated v4 crossed swords arena icon | 220x210 | system button icon | ready | New formal asset for opening the battlefield screen. Let Laya generate `.meta`. |
+| `assets/ui/mainscene/imgs/icon-battle.png` | Battle/arena entrance feature icon | generated v4 crossed swords arena icon | 220x210 | system button icon | integrated | IDE-generated UUID `dfc34c75-760c-4f20-a69b-8778161828c7`; MainNav uses it for the battle-stage entrance. |
+| `assets/ui/mainscene/imgs/icon-shop.png` | Main-scene shop entrance icon | generated from the accepted main-navigation icon style | 240x240 | system button icon | integrated | IDE-generated UUID `7e5dd6d7-2bb1-4c11-a3a2-1a57475b9be0`; MainNav uses this dedicated storefront instead of the ranking trophy. |
 | `assets/ui/mainscene/imgs/player-profile-bg.png` | Compact top-HUD support strip | unified top-HUD production sheet | 520x54 | fixed horizontal background | replaced | Desaturated teal-blue center with shared honey-gold/cyan treatment; existing UUID preserved. |
 | `assets/ui/mainscene/imgs/player-level-badge.png` | Empty level badge | unified top-HUD production sheet | 36x36 | independent overlay | replaced | Level text is rendered by Laya. |
 
@@ -102,6 +103,7 @@ Rules:
 
 | Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+| `assets/ui/battlescene/imgs/btn_battle_speed.png` | Battle speed selector background | generated from the accepted battle HUD shield style | 96x108 | independent button background with runtime 1×/2× text | integrated | IDE-generated UUID `3b6045fd-fdd9-4783-bd8e-5ab994a6e4ac`; `BattleMainView.ls` renders the changing multiplier as Laya text. |
 | `assets/ui/battlescene/imgs/btn_pause.png` | Pause/resume battle | generated battle HUD production sheet | 96x108 | independent button icon | integrated | Dark teal-blue battle control with honey-gold rim and cyan magic accent; `BattleMainView.ls` uses the imported UUID. |
 | `assets/ui/battlescene/imgs/btn_battle_back.png` | Return to battle-stage selection | generated battle HUD production sheet | 96x108 | independent button icon | integrated | Matches the pause button; battle-only navigation semantics keep it out of common assets. |
 

@@ -116,6 +116,7 @@ export class BattleStageScene extends BaseScene {
             const child = root.getChildAt(i);
             if (/^stage\d+$/i.test(child?.name || "")) stageNodes.push(child);
         }
+        this.validateStageNodeCoverage(stageNodes);
         for (const node of stageNodes) {
             const stageId = Number((node.name || "").slice(5));
             const config = ConfigMgr.instance.getConfig<any>("BattleStage", stageId);
@@ -162,6 +163,28 @@ export class BattleStageScene extends BaseScene {
                 battleId: Number(config.battleId || stageId),
             });
             console.log(`[BattleStageScene] 关卡节点已绑定: stageId=${stageId}, copyType=${copyType}, icon=${iconPath}`);
+        }
+    }
+
+    private validateStageNodeCoverage(stageNodes: readonly Laya.Node[]): void {
+        const nodeNames = new Set(stageNodes.map(node => node.name));
+        const configuredStages = ConfigMgr.instance.getAll<any>("BattleStage");
+        for (const config of configuredStages) {
+            const nodeName = `stage${config.ID}`;
+            if (!nodeNames.has(nodeName)) {
+                console.warn(`[BattleStageScene] 关卡配置缺少 prefab 节点: ${nodeName}`);
+            }
+        }
+
+        const occupiedPositions = new Map<string, string>();
+        for (const node of stageNodes) {
+            const positionKey = `${Number((node as any).x) || 0}:${Number((node as any).y) || 0}`;
+            const previousNode = occupiedPositions.get(positionKey);
+            if (previousNode) {
+                console.warn(`[BattleStageScene] 关卡节点坐标重叠: ${previousNode}, ${node.name}, position=${positionKey}`);
+            } else {
+                occupiedPositions.set(positionKey, node.name);
+            }
         }
     }
 
@@ -257,11 +280,14 @@ export class BattleStageScene extends BaseScene {
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
 export class BattleScene extends BaseScene {
+    private static readonly BATTLE_LAYOUT_TRACE_INTERVAL = 0.2;
+
     private _paused = false;
     private _battleUnitsCreated = false;
     private _battleUnitLoadToken = 0;
     private _lastBattleLayoutTrace = "";
     private _lastBattleLayoutTraceAt = -Infinity;
+    private _nextBattleLayoutTraceAt = 0;
     private _lastBattleAliveCount = "";
 
     onEnter(param?: any): void {
@@ -270,6 +296,7 @@ export class BattleScene extends BaseScene {
         this._battleUnitLoadToken++;
         this._lastBattleLayoutTrace = "";
         this._lastBattleLayoutTraceAt = -Infinity;
+        this._nextBattleLayoutTraceAt = 0;
         this._lastBattleAliveCount = "";
         this.applyStageMapConfig(param);
         super.onEnter(param);
@@ -341,12 +368,16 @@ export class BattleScene extends BaseScene {
         this._battleUnitsCreated = false;
         this._lastBattleLayoutTrace = "";
         this._lastBattleLayoutTraceAt = -Infinity;
+        this._nextBattleLayoutTraceAt = 0;
         this._lastBattleAliveCount = "";
         super.onExit();
     }
 
     setPaused(paused: boolean): void {
+        if (this._paused === paused) return;
         this._paused = paused;
+        if (paused) this._sceneTime.pause();
+        else this._sceneTime.resume();
     }
 
     get isPaused(): boolean {
@@ -354,6 +385,9 @@ export class BattleScene extends BaseScene {
     }
 
     private traceBattleLayout(curTime: number): void {
+        if (curTime < this._nextBattleLayoutTraceAt) return;
+        this._nextBattleLayoutTraceAt = curTime + BattleScene.BATTLE_LAYOUT_TRACE_INTERVAL;
+
         const units = Array.from(this._objMap.values())
             .filter((obj): obj is CharacterSceneObj => obj instanceof CharacterSceneObj);
         if (units.length === 0) return;

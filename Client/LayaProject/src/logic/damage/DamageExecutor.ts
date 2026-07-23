@@ -31,7 +31,7 @@ export class DamageExecutor {
             damage,
             options.sourceType || "",
             options.sourceId || 0,
-            options.curTime !== undefined ? options.curTime : Laya.timer.currTimer
+            options.curTime !== undefined ? options.curTime : target.scene?.curTime ?? 0
         );
 
         try {

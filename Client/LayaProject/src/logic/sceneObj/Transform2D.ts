@@ -92,7 +92,7 @@ export class Transform2D {
     private updateAngleTween(curTime: number): void {
         if (!this._isTurning) return;
 
-        let changeAngle = (curTime - this._startTurnTime) * this._angleSpeed * 0.001;
+        let changeAngle = (curTime - this._startTurnTime) * this._angleSpeed;
         if (changeAngle < 0) return;
 
         if (changeAngle >= this._deltaAngle) {

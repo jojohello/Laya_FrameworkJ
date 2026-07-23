@@ -31,7 +31,7 @@
 - LayaAir 3.3 `.shader` 的 GLSL 代码块标记必须与 IDE 内置模板一致，使用连写的 `#defineGLSL name` 和 `#endGLSL`；写成网页文档展示形式 `#define GLSL` 会静默产生 `VS/FS is empty`。
 - 纹理型 Sprite2D Shader 的 attributeMap 必须与同版本引擎 `Shader2D.graphicsAttribute` 一致，包含 `a_posuv`、`a_attribColor`、`a_attribFlags`、`a_customs`；顶点阶段应转发 `v_useClip/v_customs` 并调用 `getPosition(info.pos)`。`uniformMap` 会自动生成 GLSL uniform，片元块不得重复声明同名 uniform。
 - 角色动作名稳定为 `idle`、`walk`、`attack`。静态占位允许三个动作显示同一帧；正式序列帧适配器必须保持动作入口不变。
-- 帧动画的主图帧与队伍蒙版帧必须一一对应；每次帧索引变化都同步更新两张子纹理及各自图集 UV。攻击等非循环动作通过配置指定后继动作，不在战斗调用方散落定时切换逻辑。
+- 帧动画的主图帧与队伍蒙版帧必须一一对应；每次帧索引变化都同步更新两张子纹理及各自图集 UV。当前由所属 Entity 的 `update(curTime, dt)` 驱动 `ResFrameAnimation.update(dt)`，不得为每个动画实例另建 `Laya.timer`。攻击等非循环动作通过完成回调交还 FSM 决策，不在战斗调用方散落定时切换逻辑。
 - AI 和战斗调用方通过角色实体的 `runTo()`、`attack()` 表达行为，不直接播放动画。Run 状态承载逐帧位移并在到达后回 Idle；Attack 只在技能释放成功后进入，并由动画完成事件回 Idle。状态被打断时必须清理旧移动目标，对象复用时清理全部行为运行态。
 
 ### Sprite2D Shader 错误诊断
@@ -85,3 +85,11 @@
 
 - Team color is derived from the character's `team` ID during initialization and stored on the character, not owned only by a scene-specific creation helper.
 - Every material creation, frame-animation bind, or pooled-object reuse must reapply the stored team color. The material default is only a fallback; it must never replace a valid team color during an async resource transition.
+
+## Team shader batching isolation rule
+
+- A team-colored Sprite2D material is not isolated only by its `u_TeamColor` value. When red and blue characters use the same atlas and shader in one render batch, a later batch can reuse the wrong team uniform and make the blue character render red.
+- Every team that uses the same atlas must have a distinct shader variant name, such as `CharacterTeamColor2D_Red`, `CharacterTeamColor2D_Blue`, or `CharacterTeamColor2D_Yellow`. Do not solve a new team by changing only the RGB palette.
+- When adding a team, register and validate its shader variant before creating characters, select that variant from `team`, and test at least two teams with the same character and atlas simultaneously.
+- Frame animation ownership decision: the current instance-level playback state and frame advancement remain in `ResFrameAnimation`, driven by its owning Entity update with scaled scene delta time. `ResourceMgr` owns loading, references, pooling, and disposal, but does not advance animation. Final draw submission remains Laya's responsibility. A future centralized renderer may replace the `update/apply-frame` boundary only after large-unit performance data proves it necessary; do not introduce player/renderer/system layers preemptively.
+- Performance baseline decision: the acceptance target is 400 visible character instances on iOS WeChat Mini Game at stable 30 FPS. Every run records FPS/frame time, CPU main-thread time, JS heap, total process memory, GPU texture memory, render-node/node counts, DrawCall/instance DrawCall, texture switches, and per-frame allocations/GC pauses. The 30 FPS budget is 33.3 ms with headroom. Test 100/200/400 characters, with and without team-mask rendering, plus enter/recycle/re-entry loops. GPU instancing is not accepted without a target-device fallback result.

@@ -28,7 +28,7 @@ export class BuffRuntime {
         this._stack = Math.max(1, Math.min(buffInfo.maxStack, stack));
         this._durationOverride = Math.max(0, durationOverride);
         this._expireTime = this.calcExpireTime(curTime);
-        this._nextTickTime = buffInfo.tickIntervalMs > 0 ? curTime + buffInfo.tickIntervalMs : -1;
+        this._nextTickTime = buffInfo.tickIntervalMs > 0 ? curTime + buffInfo.tickIntervalMs / 1000 : -1;
         this.applyAttrModifiers();
         this.executeActions(this._buffInfo.onAddActions, curTime);
     }
@@ -53,7 +53,7 @@ export class BuffRuntime {
 
         this._expireTime = this.calcExpireTime(curTime);
         if (this._nextTickTime < 0 && this._buffInfo.tickIntervalMs > 0) {
-            this._nextTickTime = curTime + this._buffInfo.tickIntervalMs;
+            this._nextTickTime = curTime + this._buffInfo.tickIntervalMs / 1000;
         }
     }
 
@@ -65,7 +65,7 @@ export class BuffRuntime {
                 if (this._buffInfo.onTickActions.length > 0) {
                     this.executeActions(this._buffInfo.onTickActions, this._nextTickTime);
                 }
-                this._nextTickTime += this._buffInfo.tickIntervalMs;
+                this._nextTickTime += this._buffInfo.tickIntervalMs / 1000;
             }
         }
 
@@ -126,7 +126,7 @@ export class BuffRuntime {
 
     private calcExpireTime(curTime: number): number {
         const duration = this._durationOverride > 0 ? this._durationOverride : this._buffInfo.durationMs;
-        return duration > 0 ? curTime + duration : 0;
+        return duration > 0 ? curTime + duration / 1000 : 0;
     }
 
     private executeActions(actions: readonly BaseAction[], curTime: number): void {
@@ -147,6 +147,6 @@ export class BuffRuntime {
     }
 
     private getDefaultTime(): number {
-        return Laya.timer ? Laya.timer.currTimer : 0;
+        return this._target.scene?.curTime ?? 0;
     }
 }

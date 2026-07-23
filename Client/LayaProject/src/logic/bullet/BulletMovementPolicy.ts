@@ -47,7 +47,7 @@ export class LineBulletMovementPolicy implements IBulletMovementPolicy {
             this._flyTime = config.flyTime;
         } else {
             const distance = MathUtils.distance(host.x, host.y, config.targetX, config.targetY);
-            this._flyTime = config.speed > 0 ? distance / config.speed * 1000 : 0;
+            this._flyTime = config.speed > 0 ? distance / config.speed : 0;
         }
 
         host.pointTo(this._endX, this._endY);
@@ -112,8 +112,8 @@ export class TraceBulletMovementPolicy implements IBulletMovementPolicy {
         }
 
         const deltaTime = Math.max(0, curTime - this._lastUpdateTime);
-        const distance = this._speed * deltaTime * 0.001;
-        if (distance < 0.5 && deltaTime < 100) {
+        const distance = this._speed * deltaTime;
+        if (distance < 0.5 && deltaTime < 0.1) {
             return { moved: false, finished: false };
         }
 

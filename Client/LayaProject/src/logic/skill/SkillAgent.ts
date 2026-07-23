@@ -79,7 +79,7 @@ export class SkillAgent implements ISceneObjModule {
             }
 
             this._pendingActions.push({
-                executeTime: curTime + action.delayMs,
+                executeTime: curTime + action.delayMs / 1000,
                 action,
                 context: { ...context },
             });
@@ -99,7 +99,7 @@ export class SkillAgent implements ISceneObjModule {
 
     getCooldownRemain(skillId: number, curTime: number = this.getDefaultTime()): number {
         const cooldownEndTime = this._cooldownEndTimeMap.get(skillId) || 0;
-        return Math.max(0, cooldownEndTime - curTime);
+        return Math.max(0, cooldownEndTime - curTime) * 1000;
     }
 
     clearPendingActions(): void {
@@ -127,7 +127,7 @@ export class SkillAgent implements ISceneObjModule {
             return;
         }
 
-        this._cooldownEndTimeMap.set(skillId, curTime + cdMs);
+        this._cooldownEndTimeMap.set(skillId, curTime + cdMs / 1000);
     }
 
     private executeAction(action: BaseAction, context: SkillCastContext, curTime: number): void {
@@ -143,6 +143,6 @@ export class SkillAgent implements ISceneObjModule {
     }
 
     private getDefaultTime(): number {
-        return Laya.timer ? Laya.timer.currTimer : 0;
+        return this._owner?.scene?.curTime ?? 0;
     }
 }

@@ -228,8 +228,9 @@ export abstract class BaseSceneObj {
     /**
      * 每帧更新
      * @param curTime 当前时间
+     * @param dt 当前帧场景游戏时间间隔，单位秒
      */
-    update(curTime: number): void {
+    update(curTime: number, dt: number): void {
         if (this._isRelease) return;
 
         // 更新变换
@@ -241,8 +242,8 @@ export abstract class BaseSceneObj {
         }
 
         // 子类更新
-        this.callModuleOwnerUpdate(curTime);
-        this.onUpdate(curTime);
+        this.callModuleOwnerUpdate(curTime, dt);
+        this.onUpdate(curTime, dt);
     }
 
     /**
@@ -274,7 +275,7 @@ export abstract class BaseSceneObj {
     /**
      * 子类每帧更新（可选重写）
      */
-    protected onUpdate(curTime: number): void {}
+    protected onUpdate(curTime: number, dt: number): void {}
 
     /**
      * 子类延迟更新（可选重写）
@@ -549,10 +550,10 @@ export abstract class BaseSceneObj {
         }
     }
 
-    private callModuleOwnerUpdate(curTime: number): void {
+    private callModuleOwnerUpdate(curTime: number, dt: number): void {
         for (const module of this._modules) {
             if (module.onOwnerUpdate) {
-                module.onOwnerUpdate(this, curTime);
+                module.onOwnerUpdate(this, curTime, dt);
             }
         }
     }

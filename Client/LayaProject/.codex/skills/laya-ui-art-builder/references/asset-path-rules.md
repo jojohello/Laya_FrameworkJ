@@ -22,9 +22,12 @@ Laya UI files may use `res://...` UUID references. Do not replace these with raw
 
 ## Meta Files
 
-- Do not manually create `.meta`.
+- Do not manually create `.meta` or UUID values.
 - If replacing PNG content, keep existing `.meta`.
 - If adding a new asset, let Laya generate `.meta`.
+- For an existing IDE-generated `.meta`, maintain a known importer field such as `sizeGrid` only when the project contains a same-version generated sample and its schema is confirmed.
+- In this project's confirmed LayaAir 3.3 texture metas, `sizeGrid` is stored under `importer` as `[top, right, bottom, left, repeatFlag]`. Values are source pixels and must match the asset's designed fixed margins.
+- After changing importer settings, parse the `.meta`, reopen or reimport the asset in LayaAir IDE, and verify the field is preserved.
 
 ## Temporary Files
 

@@ -74,7 +74,7 @@ UI:
 Main scene decision from the accepted result:
 
 - bottom dock panels should not share the same cream/stone color as castle walls or ground
-- use pale cyan-cream or lightly cool-tinted centers for bottom docks over bright castle scenes
+- the current bottom-navigation dock uses a dark desaturated gray-blue center related to the top HUD, while lighter cyan-cream remains suitable for secondary information panels
 - main feature buttons may keep warm gold/orange, but need stronger edge definition and soft shadow/grounding
 - primary UI panels can use high opacity when they carry interaction; `0.9` worked better than `0.7` for the main scene bottom dock
 
@@ -101,6 +101,8 @@ For panels, title bars, buttons, and input backgrounds:
 ## Asset Integration Rules
 
 - Laya-referenced icons should be independent small PNGs.
+- Reuse an existing asset only when its meaning, silhouette, style, and intended display size all fit the new role. Do not assemble a formal UI from merely similar resources to avoid adding a file.
+- When no suitable reusable asset exists, create a new formal PNG. If it needs a `res://` reference, place the PNG in its final folder, ask the user to open LayaAir IDE to generate `.meta`, and continue integration only after reading the IDE-generated UUID.
 - Keep original filenames when replacing existing resources.
 - Directly overwrite old PNGs after the style/result is accepted.
 - Do not manually create `.meta`; let Laya generate or update them.
@@ -154,8 +156,8 @@ Important accepted examples:
   - Bright western magic kingdom scene background.
   - Should stay softer than foreground UI.
 - `assets/ui/mainscene/imgs/bottom-panel.png`
-  - Accepted bottom dock separation treatment.
-  - Pale cyan-cream center over bright castle scene.
+  - Accepted gray-blue nine-slice bottom-dock treatment used by the finalized main navigation.
+  - Compact `256x96` source displayed at `750x279`; warm navigation buttons remain the foreground emphasis.
 - `assets/ui/mainscene/imgs/btn-bg-yellow.png`
   - Accepted warm button treatment.
   - Needs stronger edge and soft grounding over bright scenes.

@@ -152,7 +152,7 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._speed = speed;
         this._damage = damage;
         this._searchTeam = searchTeam;
-        this._flyTime = flyTime;
+        this._flyTime = flyTime > 0 ? flyTime / 1000 : flyTime;
         this.resetCollisionPolicy();
         this._collisionPolicy.configure({
             useTrailCollision: false,
@@ -167,7 +167,7 @@ export class BulletSceneObj extends DisplaySceneObj {
             targetX: this.x,
             targetY: this.y,
             speed,
-            flyTime,
+            flyTime: flyTime > 0 ? flyTime / 1000 : flyTime,
         };
         this._movementStarted = false;
     }

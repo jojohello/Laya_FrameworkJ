@@ -4,6 +4,6 @@ Description,导航ID,功能开放ID,显示名称,图标路径,稳定路由键,JS
 UsedSize,c,c,c,c,c,c,c,c,c
 ,1,1001,战斗地图,ui/mainscene/imgs/icon-battle.png,battle.stage,,disabled,ignore,1
 ,2,0,背包,ui/mainscene/imgs/icon-box.png,main.bag,,enabled,route,2
-,3,0,主世界,ui/mainscene/imgs/icon-flag.png,main.world,,enabled,route,3
-,4,0,商店,ui/mainscene/imgs/icon-cup.png,main.shop,,enabled,route,4
-,5,0,设置,ui/mainscene/imgs/icon-world.png,main.settings,,enabled,route,5
+,3,0,主世界,ui/mainscene/imgs/icon-world.png,main.world,,enabled,route,3
+,4,0,商店,ui/mainscene/imgs/icon-shop.png,main.shop,,enabled,route,4
+,5,0,设置,ui/common/imgs/btn-setting.png,main.settings,,enabled,route,5

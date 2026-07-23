@@ -1,6 +1,6 @@
 ---
 name: laya-ui-art-builder
-description: Design, generate, assemble, revise, audit, and clean up LayaAir 3 UI screens and reusable components. Use when Codex needs an end-to-end independent-screen workflow from requirement/reference collection through 750x1335 composition design, PNG slicing, common-resource reuse, .lh/.ls assembly, res:// and meta handling, visual validation, or redundant UI asset removal.
+description: Design, generate, assemble, revise, audit, and clean up LayaAir 3 UI screens and reusable components. Use when Codex needs an end-to-end independent-screen workflow, panel/button/background art, nine-slice planning and sizeGrid validation, PNG slicing, common-resource reuse, .lh/.ls assembly, res:// and meta handling, visual validation, or redundant UI asset removal.
 ---
 
 # Laya UI Art Builder
@@ -36,12 +36,14 @@ For a new independent screen, a complete screen redesign, or a screen whose part
    - workflow documentation update
 2. Read project art docs and relevant Laya UI files.
 3. Audit `assets/ui/common/`, `assets/ui/UI_RESOURCE_INDEX.md`, and related prefabs before producing any new component.
-4. Keep Laya-referenced icons as independent PNGs.
-5. Preserve existing filenames and dimensions when replacing existing assets unless the user asks otherwise.
-6. Do not manually create `.meta` files. Keep existing `.meta` files when only replacing PNG content.
-7. For `.ls/.lh`, treat files as JSON-like Laya documents. Preserve IDs, prefab links, runtime links, and `res://` values unless intentionally changing a reference.
-8. Validate after changes:
+4. Before designing any panel, button, input, progress track, dock, or other scalable background, decide whether it should use nine-slice. Read `references/art-workflow.md` for the required decision, source-design, `sizeGrid`, and validation process.
+5. Keep Laya-referenced icons as independent PNGs.
+6. Preserve existing filenames and dimensions when replacing existing assets unless the user asks otherwise or a confirmed nine-slice conversion intentionally replaces a full-size source with a compact source.
+7. Do not manually create `.meta` files or UUIDs. After IDE creation, maintain only importer fields whose schema is confirmed by same-version project samples and project rules.
+8. For `.ls/.lh`, treat files as JSON-like Laya documents. Preserve IDs, prefab links, runtime links, and `res://` values unless intentionally changing a reference.
+9. Validate after changes:
    - PNG dimensions
+   - nine-slice source margins, `meta.importer.sizeGrid`, and actual-size stretch preview when applicable
    - JSON parse for `.ls/.lh` when possible
    - missing references / stale temporary files
    - project docs updated
@@ -117,7 +119,8 @@ Before final response:
 
 - final assets are in project folders
 - temporary review/source/contact/comparison images are removed
-- `.meta` files were not manually authored
+- `.meta` files and UUIDs were IDE-created; any maintained importer settings use confirmed same-version fields
+- every intended nine-slice asset has a compact stretch-safe source, valid `sizeGrid`, and an actual-size stretch check
 - dimensions are preserved where needed
 - docs are updated when asset meaning/status changes
 - any unverified risk is called out clearly

@@ -34,3 +34,4 @@ If an otherwise acceptable idle source has one or two frames with a large visual
 ## Accept
 
 Inspect at original resolution: no spill or clipping; consistent scale and baseline; correct action order; acceptable loop endpoints; masks limited to intended regions; every base frame paired with matching mask geometry. Let LayaAir IDE generate `.meta` files.
+- Action metadata contract: for each character resource, record only the action name and inclusive atlas frame range. Example: `idle: 0..5`, `walk: 6..11`, `attack: 12..23`. Ranges may have different lengths; do not assume a fixed six-column action layout. Character ownership comes from the resource path/file, not a repeated `characterId` field.

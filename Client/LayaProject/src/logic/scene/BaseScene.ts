@@ -94,6 +94,7 @@ export class BaseScene {
      * @param param 场景参数
      */
     onEnter(param?: any): void {
+        this._lastFixedTime = 0;
         // 首次进入创建空间分割；缓存恢复默认按当前对象表重建，避免旧 hash 残留。
         if (!this._hasEntered) {
             this.initSpaceManagers();
@@ -167,10 +168,12 @@ export class BaseScene {
     update(dt: number): void {
         if (!this._isReady) return;
 
+        this._sceneTime.update(dt);
         const curTime = this._sceneTime.curTime();
+        const gameDelta = this._sceneTime.deltaTime;
 
         // 每帧更新
-        this.onUpdate(curTime, dt);
+        this.onUpdate(curTime, gameDelta);
 
         // 延迟更新
         this.onLateUpdate(curTime);
@@ -197,7 +200,7 @@ export class BaseScene {
             if (obj.isRelease) {
                 this.addDeleteId(obj.uid);
             } else {
-                obj.update(curTime);
+                obj.update(curTime, dt);
             }
         }
     }
@@ -238,6 +241,20 @@ export class BaseScene {
      */
     get curTime(): number {
         return this._sceneTime.curTime();
+    }
+
+    /** 当前帧经过的场景游戏时间，单位秒。 */
+    get deltaTime(): number {
+        return this._sceneTime.deltaTime;
+    }
+
+    /** 设置场景游戏速度，不影响网络、加载和全局 UI Timer。 */
+    setTimeScale(value: number): void {
+        this._sceneTime.setTimeScale(value);
+    }
+
+    get timeScale(): number {
+        return this._sceneTime.timeScale;
     }
 
     /**

@@ -37,10 +37,10 @@
           "_$type": "GImage",
           "name": "bottom_bg",
           "x": 17,
-          "y": 46,
+          "y": 58,
           "width": 750,
           "height": 279,
-          "alpha": 0.9,
+          "alpha": 0.92,
           "relations": [
             {
               "_$type": "Relation",
@@ -55,7 +55,7 @@
               ]
             }
           ],
-          "src": "res://f4603d4f-ae2b-4e5d-8690-d0c0a1811e48",
+          "src": "res://38c366c3-2c67-4c9e-8af4-9853bb9467cd",
           "autoSize": false
         },
         {

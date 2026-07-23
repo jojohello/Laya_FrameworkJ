@@ -10,7 +10,7 @@ Use URLs such as `character/1001/animation/idle_00.png` and `character/1001/anim
 
 ## Configuration
 
-Maintain only `Config/csv/CharacterAnimation.csv`, then export it. Loop idle and walk; make attack non-looping with idle as its next action. Paths are relative to `assets/`.
+Maintain the owning character animation source/config, with only `actionName`, inclusive `startFrameIndex`, and `endFrameIndex` per action; export generated data through the normal pipeline. Playback is continuous through the selected range. Paths are relative to `assets/`; do not require `characterId` or `nextAction` in each action record.
 
 ## Lifecycle
 
@@ -34,3 +34,4 @@ Maintain only `Config/csv/CharacterAnimation.csv`, then export it. Loop idle and
 ## Validate
 
 Run TypeScript, text-format, and document validators. In LayaAir IDE verify idle, walk, attack-to-idle, both team colors, scale/foot anchor, exit/re-entry, and pooled reuse.
+- Current project decision: `ResourceMgr` owns loading and pooled instances. The owning Entity update advances `ResFrameAnimation` with scaled scene delta time; the animation instance applies a new base/mask frame only when its frame index changes, while Laya continues normal per-frame rendering and transform submission. Minimal action metadata is `actionName`, inclusive `startFrameIndex`, and `endFrameIndex`; character identity comes from the owning resource. Playback is continuous through the range, with no `nextAction` in the minimal contract. Do not introduce a centralized player/renderer/system split until large-unit profiling proves it necessary.

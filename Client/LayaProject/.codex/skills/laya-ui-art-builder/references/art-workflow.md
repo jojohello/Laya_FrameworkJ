@@ -55,19 +55,38 @@ Accepted main-scene rule:
 
 ## Nine-Slice Assets
 
-For buttons, panels, title bars, and input backgrounds:
+Decide whether to use nine-slice before generating or editing the art. Prefer nine-slice when a panel, button, title bar, input background, progress track, dock, or other framed background:
 
-- keep stretchable centers flat or near-flat
-- keep borders stable and uniform
-- put decorations in corners/fixed caps/separate overlays
-- avoid noisy center textures
-- avoid large gradients crossing the stretch area
+- is displayed at sizes different from its source;
+- may be reused at multiple sizes;
+- contains a large flat or near-flat center;
+- would otherwise keep a large full-resolution texture only to preserve borders.
+
+Do not use nine-slice for fixed-size icons, portraits, irregular silhouettes, or artwork whose center texture and lighting must scale as one piece.
+
+Before production:
+
+1. Choose the compact source dimensions and the intended runtime dimensions.
+2. Define fixed top, right, bottom, and left margins in source pixels.
+3. Keep every corner ornament, border turn, cap, crystal, and non-stretchable highlight entirely inside those fixed margins.
+4. Keep the horizontal, vertical, and center stretch zones flat or near-flat. Do not cross them with texture seams, noisy patterns, large gradients, text, or fixed decorations.
+
+After production:
+
+1. Let LayaAir IDE create the asset `.meta` and UUID.
+2. Inspect `meta.importer.sizeGrid`. An asset intended for nine-slice is incomplete when this field is missing or does not match the designed margins.
+3. In this project, confirmed LayaAir 3.3 samples use `[top, right, bottom, left, repeatFlag]`. Use measured source-pixel margins; do not copy another asset's numbers blindly.
+4. When project rules allow it, maintain `sizeGrid` only in an existing IDE-generated `.meta` and only after confirming the same-version schema. Never create the `.meta`, change its UUID, or guess unknown importer fields.
+5. Render or simulate the nine-slice at its actual runtime size. Confirm fixed corners and borders do not deform, the center has no seams, and the result still reads correctly over the target screen.
+6. Reopen or reimport in LayaAir IDE and verify the importer preserves the field.
+
+Nine-slice saves source texture space only when the compact source is materially smaller than the displayed panel. Adding `sizeGrid` to an already full-size texture improves scaling behavior but does not reduce its pixel footprint.
 
 ## Output Rules
 
 - Final assets go into project folders, not temporary directories.
 - Existing assets should usually be overwritten in-place after approval.
-- Keep original dimensions unless the user asks to change layout.
+- Keep original dimensions unless the user asks to change layout or a confirmed nine-slice conversion intentionally uses a compact source.
 - Do not create `.meta` manually.
 - Delete review/source/contact/comparison files after final integration.
 - Update `docs/ArtAssetReplacementMap.md` for generated/replaced formal assets.

@@ -61,7 +61,7 @@ export class SkillDebugScenario {
         caster.attrs.setBase("attack", 20);
         target.setMaxHp(200);
 
-        target.addBuff(SkillDebugScenario.TEST_BUFF_ID, caster, 1, 3000, Laya.timer.currTimer);
+        target.addBuff(SkillDebugScenario.TEST_BUFF_ID, caster, 1, 3000, scene.curTime);
 
         return {
             caster,

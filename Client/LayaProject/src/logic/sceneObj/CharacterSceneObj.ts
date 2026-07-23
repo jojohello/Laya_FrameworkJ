@@ -59,9 +59,10 @@ export class CharacterSceneObj extends CreatureSceneObj {
         CharacterActorFsm.setState(CharacterStateName.Idle, this);
     }
 
-    protected onUpdate(curTime: number): void {
+    protected onUpdate(curTime: number, dt: number): void {
         CharacterActorFsm.update(this, curTime);
         SimpleCombatAIAgent.update(this, curTime);
+        this._frameAnimation?.update(dt);
     }
 
     protected loadRes(): void {

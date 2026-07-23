@@ -4,4 +4,4 @@ Description,场景ID,注释,场景类名,地图类型(image/tilemap),地图资�
 UsedSize,c,,c,c,c,c,c,c,c,c
 ,1,MainScene,MainScene,image,map/map001/map001.png,,0,0,MainUI,0
 ,2,BattleStageScene,BattleStageScene,,,ui/battlescene/stage001.lh,750,1400,MainUI,0
-,3,BattleScene,BattleScene,,,,0,0,,0
+,3,BattleScene,BattleScene,,,,0,0,BattleUI,0

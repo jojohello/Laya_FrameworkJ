@@ -12,7 +12,7 @@
 |------|--------------------|
 | `config` | `ConfigMgr` |
 | `resource` | `ResourceMgr` |
-| `scene` | `SceneMgr`、`BaseScene`、`BattleScene` |
+| `scene` | `SceneMgr`、`BaseScene`、`BattleScene`；异步场景切换由 `SceneMgr` 串行执行，活动场景销毁前先退出 |
 | `sceneObj` | `BaseSceneObj` 及对象类型 |
 | `ui` | `UIManager` |
 | `mainScene` | `MainSceneView` loads the compact `ui/mainscene/playerProfile.lh` HUD and binds player/Wallet/function-open state |
@@ -23,6 +23,6 @@
 | `guide` | `GuideMgr`、双端条件、异步引导流程与服务器进度同步 |
 | `damage` | `DamageExecutor` |
 | `map` | `SceneMapFactory` |
-| `battleScene` | `BattleStageScene`、`BattleScene`、`BattleMainViewController`；战斗内 HUD 的暂停与返回流程 |
+| `battleScene` | `BattleStageScene`、`BattleScene`、`BattleMainViewController`；战斗内 HUD 的 1×/2×倍速、暂停与返回流程 |
 
 ManagerHub 当前注册位置是 [LogicMain.ts](LogicMain.ts)。新增 Manager 时先确认它确实需要全局生命周期，再在组合根注册。

@@ -113,7 +113,7 @@ export class CreatureSceneObj extends DisplaySceneObj {
         return this.getSkillAgent().getCooldownRemain(skillId);
     }
 
-    addBuff(buffId: number, caster: BaseSceneObj, stack: number = 1, durationOverride: number = 0, curTime: number = Laya.timer.currTimer): boolean {
+    addBuff(buffId: number, caster: BaseSceneObj, stack: number = 1, durationOverride: number = 0, curTime: number = this.scene?.curTime ?? 0): boolean {
         return this.getBuffAgent().addBuff(buffId, caster, stack, durationOverride, curTime);
     }
 

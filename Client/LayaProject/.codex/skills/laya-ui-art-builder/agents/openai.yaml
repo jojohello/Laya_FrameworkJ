@@ -1,4 +1,4 @@
 interface:
   display_name: "Laya UI Art Builder"
-  short_description: "Design and assemble LayaAir UI screens and assets."
-  default_prompt: "Use $laya-ui-art-builder to design a complete LayaAir UI at 750x1335, reuse common assets, slice production PNGs, and assemble the final .lh or .ls."
+  short_description: "Design LayaAir UI, nine-slice assets, and layouts."
+  default_prompt: "Use $laya-ui-art-builder to design a complete LayaAir UI, decide and validate nine-slice backgrounds, reuse suitable assets, configure confirmed meta importer settings, and assemble the final .lh or .ls."

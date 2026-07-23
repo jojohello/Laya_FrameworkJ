@@ -123,10 +123,24 @@
           "_$id": "common-dialog-confirm-button",
           "_$type": "GButton",
           "name": "confirmButton",
-          "x": 175,
-          "y": 300,
+          "x": 250,
+          "y": 329,
           "width": 150,
           "height": 58,
+          "anchorX": 0.5,
+          "anchorY": 0.5,
+          "controllers": {
+            "_$type": "Record",
+            "button": {
+              "_$type": "Controller",
+              "pages": [
+                "up",
+                "down",
+                "over",
+                "selectedOver"
+              ]
+            }
+          },
           "gears": [
             {
               "_$type": "GearNumber",
@@ -136,8 +150,38 @@
               },
               "propPath": "x",
               "values": {
-                "0": 245,
-                "1": 175,
+                "0": 320,
+                "1": 250,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "common-dialog-confirm-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleX",
+              "values": {
+                "0": 1,
+                "1": 0.92,
+                "2": 1,
+                "3": 0.92,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "common-dialog-confirm-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleY",
+              "values": {
+                "0": 1,
+                "1": 0.92,
+                "2": 1,
+                "3": 0.92,
                 "_$type": "Record"
               }
             }
@@ -171,10 +215,24 @@
           "_$id": "common-dialog-cancel-button",
           "_$type": "GButton",
           "name": "cancelButton",
-          "x": 355,
-          "y": 300,
+          "x": 430,
+          "y": 329,
           "width": 150,
           "height": 58,
+          "anchorX": 0.5,
+          "anchorY": 0.5,
+          "controllers": {
+            "_$type": "Record",
+            "button": {
+              "_$type": "Controller",
+              "pages": [
+                "up",
+                "down",
+                "over",
+                "selectedOver"
+              ]
+            }
+          },
           "gears": [
             {
               "_$type": "GearDisplay",
@@ -185,6 +243,36 @@
               "pages": [
                 1
               ]
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "common-dialog-cancel-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleX",
+              "values": {
+                "0": 1,
+                "1": 0.92,
+                "2": 1,
+                "3": 0.92,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "common-dialog-cancel-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleY",
+              "values": {
+                "0": 1,
+                "1": 0.92,
+                "2": 1,
+                "3": 0.92,
+                "_$type": "Record"
+              }
             }
           ],
           "title": "取消",
@@ -216,19 +304,66 @@
           "_$id": "common-dialog-close-button",
           "_$type": "GButton",
           "name": "closeButton",
-          "x": 552,
-          "y": -7,
+          "x": 597,
+          "y": 38,
           "width": 90,
           "height": 90,
+          "anchorX": 0.5,
+          "anchorY": 0.5,
+          "controllers": {
+            "_$type": "Record",
+            "button": {
+              "_$type": "Controller",
+              "pages": [
+                "up",
+                "down",
+                "over",
+                "selectedOver"
+              ]
+            }
+          },
+          "gears": [
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "common-dialog-close-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleX",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "common-dialog-close-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleY",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            }
+          ],
           "title": "×",
           "_$child": [
             {
               "_$id": "common-dialog-close-icon",
-              "_$type": "GLoader",
+              "_$type": "GImage",
               "name": "icon",
               "width": 90,
               "height": 90,
-              "src": "res://8cf2fd3a-80bc-406e-9b97-315503616884"
+              "src": "res://8cf2fd3a-80bc-406e-9b97-315503616884",
+              "autoSize": false
             },
             {
               "_$id": "common-dialog-close-label",

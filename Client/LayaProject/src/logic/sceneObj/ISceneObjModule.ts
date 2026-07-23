@@ -18,7 +18,7 @@ export interface ISceneObjModule {
     onOwnerInit?(owner: BaseSceneObj): void;
 
     /** Called during the owner's update loop. */
-    onOwnerUpdate?(owner: BaseSceneObj, curTime: number): void;
+    onOwnerUpdate?(owner: BaseSceneObj, curTime: number, dt: number): void;
 
     /** Called during the owner's late update loop. */
     onOwnerLateUpdate?(owner: BaseSceneObj, curTime: number): void;

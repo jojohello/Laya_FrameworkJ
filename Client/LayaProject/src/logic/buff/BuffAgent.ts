@@ -111,6 +111,6 @@ export class BuffAgent implements ISceneObjModule {
     }
 
     private getDefaultTime(): number {
-        return Laya.timer ? Laya.timer.currTimer : 0;
+        return this._owner?.scene?.curTime ?? 0;
     }
 }

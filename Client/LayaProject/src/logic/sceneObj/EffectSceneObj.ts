@@ -22,7 +22,7 @@ export class EffectSceneObj extends DisplaySceneObj {
     }
 
     setDuration(durationMs: number): void {
-        this._duration = Math.max(0, durationMs);
+        this._duration = Math.max(0, durationMs) / 1000;
     }
 
     protected onUpdate(curTime: number): void {

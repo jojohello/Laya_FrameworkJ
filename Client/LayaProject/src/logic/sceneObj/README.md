@@ -56,6 +56,8 @@ const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 
 角色模型、兵种、缩放和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔；技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`。
 
+帧动画由角色 Entity 的每帧更新使用场景游戏时间驱动，暂停、加速和减速与场景逻辑保持一致；每个动画实例不再创建独立 Timer。Laya 仍逐帧提交场景渲染，只有动画帧索引变化时才重写主图、蒙版和对应 UV，角色位置变化不受换帧频率限制。
+
 参数含义：
 
 | 参数 | 说明 |
@@ -189,3 +191,6 @@ Keep the same facing direction, hand side, character scale, and foot baseline in
 ### Team-color lifecycle rule
 
 `CharacterSceneObj` initializes its team palette from the immutable `team` ID during `onInit()`. Every material creation or frame-animation material rebind must reapply the stored team color. Callers may use `setTeamColor()` for an intentional override, but ordinary battle setup must not be the only place that assigns the color; otherwise an async reload or pooled-object reset can fall back to the default red material.
+
+Team colors also use separate Sprite2D Shader variant names per team. The current red and blue variants are `CharacterTeamColor2D_Red` and `CharacterTeamColor2D_Blue`; a future yellow team must add its own variant (for example `CharacterTeamColor2D_Yellow`) and register it before creating characters. This is required even when all teams share the same atlas, because changing only `u_TeamColor` can be overwritten by 2D render batching.
+- Runtime object updates use the scene clock in seconds. Duration parameters exposed as `durationMs` are converted to seconds when stored; callers should not mix `Laya.timer.currTimer` with scene-object lifecycle timestamps.

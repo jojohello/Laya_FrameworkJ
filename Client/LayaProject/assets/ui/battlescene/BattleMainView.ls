@@ -43,30 +43,224 @@
       "_$id": "battle-toolbar",
       "_$type": "GBox",
       "name": "toolbar",
-      "x": 534,
-      "y": 22,
-      "width": 196,
-      "height": 108,
+      "x": 502,
+      "y": 14,
+      "width": 232,
+      "height": 81,
       "mouseThrough": true,
       "_$child": [
         {
+          "_$id": "battle-speed-button",
+          "_$type": "GButton",
+          "name": "speedButton",
+          "x": 36,
+          "y": 40.5,
+          "width": 72,
+          "height": 81,
+          "anchorX": 0.5,
+          "anchorY": 0.5,
+          "controllers": {
+            "_$type": "Record",
+            "button": {
+              "_$type": "Controller",
+              "pages": [
+                "up",
+                "down",
+                "over",
+                "selectedOver"
+              ]
+            }
+          },
+          "gears": [
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "battle-speed-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleX",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "battle-speed-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleY",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            }
+          ],
+          "_$child": [
+            {
+              "_$id": "battle-speed-background",
+              "_$type": "GImage",
+              "name": "background",
+              "width": 72,
+              "height": 81,
+              "src": "res://3b6045fd-fdd9-4783-bd8e-5ab994a6e4ac",
+              "autoSize": false
+            },
+            {
+              "_$id": "battle-speed-label",
+              "_$type": "GTextField",
+              "name": "speedLabel",
+              "width": 72,
+              "height": 81,
+              "text": "1×",
+              "fontSize": 27,
+              "color": "#fff3d9",
+              "bold": true,
+              "align": "center",
+              "valign": "middle",
+              "stroke": 3,
+              "strokeColor": "#234955"
+            }
+          ]
+        },
+        {
           "_$id": "battle-pause-button",
-          "_$type": "GLoader",
+          "_$type": "GButton",
           "name": "pauseButton",
-          "width": 96,
-          "height": 108,
-          "src": "res://cf08cdc3-7581-489d-afdf-b7abf50e6066",
-          "mouseEnabled": true
+          "x": 116,
+          "y": 40.5,
+          "width": 72,
+          "height": 81,
+          "anchorX": 0.5,
+          "anchorY": 0.5,
+          "controllers": {
+            "_$type": "Record",
+            "button": {
+              "_$type": "Controller",
+              "pages": [
+                "up",
+                "down",
+                "over",
+                "selectedOver"
+              ]
+            }
+          },
+          "gears": [
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "battle-pause-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleX",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "battle-pause-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleY",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            }
+          ],
+          "_$child": [
+            {
+              "_$id": "battle-pause-image",
+              "_$type": "GImage",
+              "name": "image",
+              "width": 72,
+              "height": 81,
+              "src": "res://cf08cdc3-7581-489d-afdf-b7abf50e6066",
+              "autoSize": false
+            }
+          ]
         },
         {
           "_$id": "battle-back-button",
-          "_$type": "GLoader",
+          "_$type": "GButton",
           "name": "backButton",
-          "x": 100,
-          "width": 96,
-          "height": 108,
-          "src": "res://1ae6de2d-7b7d-40ca-aa18-bdeaf23f7789",
-          "mouseEnabled": true
+          "x": 196,
+          "y": 40.5,
+          "width": 72,
+          "height": 81,
+          "anchorX": 0.5,
+          "anchorY": 0.5,
+          "controllers": {
+            "_$type": "Record",
+            "button": {
+              "_$type": "Controller",
+              "pages": [
+                "up",
+                "down",
+                "over",
+                "selectedOver"
+              ]
+            }
+          },
+          "gears": [
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "battle-back-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleX",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            },
+            {
+              "_$type": "GearNumber",
+              "controller": {
+                "_$ref": "battle-back-button",
+                "_$ctrl": "button"
+              },
+              "propPath": "scaleY",
+              "values": {
+                "0": 1,
+                "1": 0.9,
+                "2": 1,
+                "3": 0.9,
+                "_$type": "Record"
+              }
+            }
+          ],
+          "_$child": [
+            {
+              "_$id": "battle-back-image",
+              "_$type": "GImage",
+              "name": "image",
+              "width": 72,
+              "height": 81,
+              "src": "res://1ae6de2d-7b7d-40ca-aa18-bdeaf23f7789",
+              "autoSize": false
+            }
+          ]
         }
       ]
     }

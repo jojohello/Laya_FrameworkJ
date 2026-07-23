@@ -37,6 +37,10 @@ enum MainShellMode {
 export class MainSceneView extends MainSceneViewBase {
     private static readonly BATTLE_FUNCTION_ID = 1001;
     private static readonly DEFAULT_SELECTED_INDEX = 2;
+    private static readonly NAV_LABEL_NORMAL_COLOR = "#f1dfbc";
+    private static readonly NAV_LABEL_NORMAL_STROKE_COLOR = "#4c4c44";
+    private static readonly NAV_LABEL_SELECTED_COLOR = "#ffd66b";
+    private static readonly NAV_LABEL_SELECTED_STROKE_COLOR = "#6a3e12";
     private static readonly GOLD_CURRENCY_ITEM_ID = 1001;
     private static readonly EXP_BAR_WIDTH = 106;
     private static readonly DISPLAY_EXP_PER_LEVEL = 100;
@@ -219,27 +223,37 @@ export class MainSceneView extends MainSceneViewBase {
         if (!this.btn_list) return;
 
         this._navConfigs = this.loadNavConfigs();
+        this.btn_list.itemRenderer = this.renderSystemButton;
+        this.btn_list.numItems = this._navConfigs.length;
 
         for (let i = 0; i < this.btn_list.numChildren; i++) {
-            const button = this.getSystemButtonAt(i);
-            if (!button) continue;
-
-            const config = this._navConfigs[i];
-
-            const name = button.getChild("name_1") as Laya.GTextField;
-            const loader = button.getChild("loader_1") as Laya.GLoader;
-            if (name) name.text = config?.label || `系统${i + 1}`;
-            if (loader) loader.url = config?.icon || "";
-            button.selected = false;
+            const itemIndex = this.btn_list.childIndexToItemIndex(i);
+            this.renderSystemButton(itemIndex, this.btn_list.getChildAt(i));
         }
         this.refreshSystemButtonStates();
     }
+
+    private renderSystemButton = (index: number, item: Laya.GWidget): void => {
+        if (!(item instanceof Laya.GButton)) return;
+
+        const config = this._navConfigs[index];
+        const name = item.getChild("name_1") as Laya.GTextField;
+        const loader = item.getChild("loader_1") as Laya.GLoader;
+        if (name) {
+            name.text = config?.label || `系统${index + 1}`;
+            name.color = MainSceneView.NAV_LABEL_NORMAL_COLOR;
+            name.strokeColor = MainSceneView.NAV_LABEL_NORMAL_STROKE_COLOR;
+        }
+        if (loader) loader.src = config?.icon || "";
+        item.selected = false;
+    };
 
     private refreshSystemButtonStates(): void {
         if (!this.btn_list) return;
         for (let i = 0; i < this.btn_list.numChildren; i++) {
             const button = this.getSystemButtonAt(i);
-            const config = this._navConfigs[i];
+            const itemIndex = this.btn_list.childIndexToItemIndex(i);
+            const config = this._navConfigs[itemIndex];
             if (!button || !config) continue;
 
             const open = config.functionId <= 0
@@ -272,33 +286,12 @@ export class MainSceneView extends MainSceneViewBase {
         if (!profile) return;
 
         const data = PlayerMgr.instance.data;
-        const profileBg = profile.getChild("profileBg") as Laya.GLoader;
-        const avatarFrame = profile.getChild("avatarFrame") as Laya.GLoader;
         const avatar = profile.getChild("playerAvatar") as Laya.GLoader;
-        const levelBadge = profile.getChild("levelBadge") as Laya.GLoader;
-        const expTrack = profile.getChild("expTrack") as Laya.GLoader;
-        const expFill = profile.getChild("expFill") as Laya.GLoader;
-        const crystalIcon = profile.getChild("crystalIcon") as Laya.GLoader;
+        const expFill = profile.getChild("expFill") as Laya.GImage;
         const crystalAmount = profile.getChild("crystalAmount") as Laya.GTextField;
-        const crystalAdd = profile.getChild("crystalAdd") as Laya.GLoader;
-        const goldIcon = profile.getChild("goldIcon") as Laya.GLoader;
         const goldAmount = profile.getChild("goldAmount") as Laya.GTextField;
-        const goldAdd = profile.getChild("goldAdd") as Laya.GLoader;
-        const staminaIcon = profile.getChild("staminaIcon") as Laya.GLoader;
         const staminaAmount = profile.getChild("staminaAmount") as Laya.GTextField;
-        const staminaAdd = profile.getChild("staminaAdd") as Laya.GLoader;
-        if (profileBg) profileBg.url = "ui/mainscene/imgs/player-profile-bg.png";
-        if (avatarFrame) avatarFrame.url = "ui/common/imgs/player-avatar-frame.png";
-        if (avatar) avatar.url = "ui/common/imgs/player-avatar-default.png";
-        if (levelBadge) levelBadge.url = "ui/mainscene/imgs/player-level-badge.png";
-        if (expTrack) expTrack.url = "ui/common/imgs/exp-track.png";
-        if (expFill) expFill.url = "ui/common/imgs/exp-fill.png";
-        if (crystalIcon) crystalIcon.url = "ui/common/imgs/currency-crystal.png";
-        if (goldIcon) goldIcon.url = "ui/common/imgs/currency-gold.png";
-        if (staminaIcon) staminaIcon.url = "ui/common/imgs/stamina-potion.png";
-        if (crystalAdd) crystalAdd.url = "ui/common/imgs/btn-add.png";
-        if (goldAdd) goldAdd.url = "ui/common/imgs/btn-add.png";
-        if (staminaAdd) staminaAdd.url = "ui/common/imgs/btn-add.png";
+        if (avatar) avatar.src = "ui/common/imgs/player-avatar-default.png";
         this.applyAvatarMask(avatar);
         profile.setPlayerIdentity(data?.name, data?.level);
         if (crystalAmount) crystalAmount.text = "0";
@@ -363,7 +356,18 @@ export class MainSceneView extends MainSceneViewBase {
             const button = this.getSystemButtonAt(i);
             if (!button) continue;
 
-            button.selected = i === this._selectedButtonIndex;
+            const itemIndex = this.btn_list.childIndexToItemIndex(i);
+            const selected = itemIndex === this._selectedButtonIndex;
+            const name = button.getChild("name_1") as Laya.GTextField;
+            button.selected = selected;
+            if (name) {
+                name.color = selected
+                    ? MainSceneView.NAV_LABEL_SELECTED_COLOR
+                    : MainSceneView.NAV_LABEL_NORMAL_COLOR;
+                name.strokeColor = selected
+                    ? MainSceneView.NAV_LABEL_SELECTED_STROKE_COLOR
+                    : MainSceneView.NAV_LABEL_NORMAL_STROKE_COLOR;
+            }
         }
         console.log(`[MainSceneView] 导航选中态已同步: index=${this._selectedButtonIndex}, selection=${this.btn_list.selection.index}`);
     }

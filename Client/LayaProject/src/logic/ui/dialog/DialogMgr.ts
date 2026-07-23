@@ -52,13 +52,11 @@ export class DialogMgr implements IManager {
         const confirm = this.getChild(panel, "confirmButton") as any;
         const cancel = this.getChild(panel, "cancelButton") as any;
         const close = this.getChild(panel, "closeButton") as any;
-        const closeIcon = this.getChild(close, "icon") as any;
         if (!panel || !title || !context || !confirm || !cancel || !close) {
             throw new Error("CommonDialog resource is missing required nodes");
         }
         title.text = options.title || "提示";
         context.text = options.message;
-        if (closeIcon) closeIcon.url = "ui/common/imgs/btn-close.png";
         confirm.title = options.confirmText || "确定";
         cancel.title = options.cancelText || "取消";
         const controller = panel.getController?.("dialogButtons");
@@ -66,7 +64,6 @@ export class DialogMgr implements IManager {
         cancel.visible = !!options.cancelText;
         close.visible = options.showClose !== false;
         close.touchable = options.showClose !== false;
-        confirm.x = options.cancelText ? 175 : 245;
         confirm.on(Laya.Event.CLICK, this, () => { options.onConfirm?.(); options.onClosed?.(true); this.close(false); });
         cancel.on(Laya.Event.CLICK, this, () => { options.onCancel?.(); options.onClosed?.(false); this.close(false); });
         close.on(Laya.Event.CLICK, this, () => { options.onClose?.(); options.onClosed?.(false); this.close(false); });
