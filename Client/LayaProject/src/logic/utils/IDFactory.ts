@@ -15,13 +15,6 @@ class IDFactory {
     }
 
     /**
-     * 重置ID计数器（谨慎使用，仅在特殊场景如测试重置时）
-     */
-    public static Reset(): void {
-        IDFactory.GAME_UNIQUE_ID = 0;
-    }
-
-    /**
      * 获取当前ID计数（不递增）
      */
     public static GetCurrentID(): number {

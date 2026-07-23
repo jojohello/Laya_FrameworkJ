@@ -2,8 +2,8 @@ import { BaseScene } from "../scene/BaseScene";
 import { CreatureSceneObj } from "../sceneObj/CreatureSceneObj";
 
 export interface SkillDebugScenarioResult {
-    caster: CreatureSceneObj;
-    target: CreatureSceneObj;
+    casterId: number;
+    targetId: number;
     skillId: number;
     skillLevel: number;
     castSuccess: boolean;
@@ -31,6 +31,7 @@ export class SkillDebugScenario {
 
         const castSuccess = caster.castSkill(
             SkillDebugScenario.TEST_SKILL_ID,
+            scene.curTime,
             target.uid,
             target.x,
             target.y,
@@ -38,8 +39,8 @@ export class SkillDebugScenario {
         );
 
         return {
-            caster,
-            target,
+            casterId: caster.uid,
+            targetId: target.uid,
             skillId: SkillDebugScenario.TEST_SKILL_ID,
             skillLevel,
             castSuccess,
@@ -61,11 +62,11 @@ export class SkillDebugScenario {
         caster.attrs.setBase("attack", 20);
         target.setMaxHp(200);
 
-        target.addBuff(SkillDebugScenario.TEST_BUFF_ID, caster, 1, 3000, scene.curTime);
+        target.addBuff(SkillDebugScenario.TEST_BUFF_ID, caster.uid, scene.curTime, 1, 3000);
 
         return {
-            caster,
-            target,
+            casterId: caster.uid,
+            targetId: target.uid,
             skillId: 0,
             skillLevel: 0,
             castSuccess: target.hasBuff(SkillDebugScenario.TEST_BUFF_ID),

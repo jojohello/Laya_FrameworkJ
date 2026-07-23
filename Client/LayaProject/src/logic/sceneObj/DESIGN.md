@@ -10,6 +10,8 @@
 - SceneObj 显示节点只能挂到所属 Scene 的 Layer，缺少 Scene 或 Layer 时直接报错并停止挂载，不允许回退到 `Laya.stage`。
 - `BaseSceneObj` 只保留 uid、配置、队伍、Scene、Transform2D、生命周期、释放状态、模块容器和基础空间索引入口。
 - HUD、AI、Skill 等新增能力优先实现为 `ISceneObjModule`，同时由 SceneObj 提供稳定的业务便捷入口，避免调用方依赖模块内部实现。
+- `ISceneObjModule` 与 Agent 不得长期缓存其宿主 owner。生命周期钩子和需要宿主参与的业务接口显式接收 owner，由 `BaseSceneObj` 维持唯一的“宿主持有模块”方向；模块可以缓存自身状态、资源句柄和由 owner 派生出的不可变基础值，但不能通过字段或延迟记录反向持有 owner。`HudHealthBarModule`、`BuffAgent`、`SkillAgent` 已遵循该契约。
+- 所有 Runtime 和相邻系统继承 `src/DESIGN.md` 的实体引用强约束。`BuffRuntime` 只保存 casterId，target 由所属 `BuffAgent` 在调用时输入；Camera follow、AI 调度、延迟 Action 和 Bullet 也只能保存实体 ID，不能以“关系仍有效”为理由暂存对象引用。
 
 ## 生命周期与对象池
 
@@ -30,9 +32,9 @@
 - `.shader.meta` 未声明 Shader importer 时，`Laya.loader.load(path)` 只会得到文本资源而不会注册 Shader；运行时代码必须按 `Laya.Loader.TEXT` 加载并显式调用 `Laya.ShaderParser.parse()`，随后用 `Shader3D.find()` 验证注册结果。
 - LayaAir 3.3 `.shader` 的 GLSL 代码块标记必须与 IDE 内置模板一致，使用连写的 `#defineGLSL name` 和 `#endGLSL`；写成网页文档展示形式 `#define GLSL` 会静默产生 `VS/FS is empty`。
 - 纹理型 Sprite2D Shader 的 attributeMap 必须与同版本引擎 `Shader2D.graphicsAttribute` 一致，包含 `a_posuv`、`a_attribColor`、`a_attribFlags`、`a_customs`；顶点阶段应转发 `v_useClip/v_customs` 并调用 `getPosition(info.pos)`。`uniformMap` 会自动生成 GLSL uniform，片元块不得重复声明同名 uniform。
-- 角色动作名稳定为 `idle`、`walk`、`attack`。静态占位允许三个动作显示同一帧；正式序列帧适配器必须保持动作入口不变。
-- 帧动画的主图帧与队伍蒙版帧必须一一对应；每次帧索引变化都同步更新两张子纹理及各自图集 UV。当前由所属 Entity 的 `update(curTime, dt)` 驱动 `ResFrameAnimation.update(dt)`，不得为每个动画实例另建 `Laya.timer`。攻击等非循环动作通过完成回调交还 FSM 决策，不在战斗调用方散落定时切换逻辑。
-- AI 和战斗调用方通过角色实体的 `runTo()`、`attack()` 表达行为，不直接播放动画。Run 状态承载逐帧位移并在到达后回 Idle；Attack 只在技能释放成功后进入，并由动画完成事件回 Idle。状态被打断时必须清理旧移动目标，对象复用时清理全部行为运行态。
+- 角色动作名由动画配置定义；`idle`、`walk`、`attack` 只是当前资源已有动作，不是技能逻辑可以写死的完整集合。静态占位可以让多个动作显示同一帧，但正式序列帧适配器必须按传入的动作名查询。
+- 帧动画的主图帧与队伍蒙版帧必须一一对应；每次帧索引变化都同步更新两张子纹理及各自图集 UV。动画实例由所属 Entity 的逻辑时间驱动，不得各自建立 `Laya.timer`。`ResFrameAnimation` 管理动作名、帧范围和时长，播放成功时向调用方返回动作时长；Gameplay 根据统一逻辑时间判断状态结束，不使用动画播放完成回调。
+- AI 和战斗调用方通过角色实体的 `runTo()`、`attack()` 表达行为，不直接写死播放某个动画。Run 状态承载逐帧位移并在到达后回 Idle；技能释放成功后，由通用 `AnimationAction` 按配置 delay 播放指定动作，技能状态根据最后 Action 计划触发时间和所有动画计划结束时间的最大值结束。状态被打断时必须清理旧移动目标，对象复用时清理全部行为运行态。
 
 ### Sprite2D Shader 错误诊断
 

@@ -41,7 +41,7 @@ export class ResourceTestScene extends Laya.Scene {
     }
 
     private onUpdate(): void {
-        const dt = Laya.timer.delta / 1000;
+        const dt = Laya.timer.unscaledDelta / 1000;
         ManagerHub.instance.update(dt);
     }
 

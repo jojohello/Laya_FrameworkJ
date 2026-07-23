@@ -9,29 +9,31 @@ export class BulletAction extends BaseAction {
         const bulletId = this.info.getNumberParam(0);
         const bulletInfo = SkillMgr.instance.getBullet(bulletId);
         if (!bulletInfo) return;
+        const caster = context.scene.getLiveObject(context.casterId);
+        if (!caster) return;
 
         const bullet = context.scene.addObjectToScene(
             "BulletSceneObj",
             bulletId,
-            context.caster.team,
-            context.caster.x,
-            context.caster.y,
+            caster.team,
+            caster.x,
+            caster.y,
             0
         ) as BulletSceneObj | null;
         if (!bullet) return;
 
         const data = bulletInfo.data;
-        const targetX = context.targetX ?? context.caster.x;
-        const targetY = context.targetY ?? context.caster.y;
-        const targetObj = context.targetId ? context.scene.getObject(context.targetId) : null;
-        const searchTeam = targetObj ? targetObj.team : context.caster.team;
+        const targetX = context.targetX ?? caster.x;
+        const targetY = context.targetY ?? caster.y;
+        const targetObj = context.targetId ? context.scene.getLiveObject(context.targetId) : null;
+        const searchTeam = targetObj ? targetObj.team : caster.team;
         const actionEffectScale = this.info.getNumberParam(1, 1);
         bullet.setRange(Math.max(0, Number(data.Range) || 0));
         bullet.setHitActions(bulletInfo.onHitActions, (context.effectScale || 1) * actionEffectScale);
 
         if (data.MoveType === BulletMoveType.Trace && context.targetId) {
             bullet.initTraceMovement(
-                context.caster.getCasterId(),
+                context.casterId,
                 context.targetId,
                 data.Speed,
                 0,
@@ -40,7 +42,7 @@ export class BulletAction extends BaseAction {
             );
         } else {
             bullet.initLineMovement(
-                context.caster.getCasterId(),
+                context.casterId,
                 targetX,
                 targetY,
                 data.Speed,

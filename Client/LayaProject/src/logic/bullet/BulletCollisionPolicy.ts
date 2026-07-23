@@ -85,9 +85,11 @@ export class DefaultBulletCollisionPolicy implements IBulletCollisionPolicy {
 
     private collectTrailHits(host: BulletCollisionHost): void {
         if (!host.scene) return;
+        const owner = host.scene.getLiveObject(host.ownerId);
+        if (!owner) return;
 
         host.scene.getTrailCollision(
-            host.owner,
+            owner,
             host.lastX,
             host.lastY,
             host.x,
@@ -107,7 +109,7 @@ export class DefaultBulletCollisionPolicy implements IBulletCollisionPolicy {
         if (!idsSet || idsSet.size === 0) return;
 
         idsSet.forEach(uid => {
-            if (!host.scene || uid === host.owner.uid) return;
+            if (!host.scene || uid === host.ownerId) return;
             const target = host.scene.getObject(uid);
             if (!target || target.isRelease || !target.hasCollisionBox || target.range <= 0) return;
             if (!host.canHitTarget(target)) return;

@@ -73,7 +73,7 @@ const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 ```typescript
 const monster = scene.getObject(uid);
 if (monster && scene.camera) {
-    scene.camera.follow(monster);
+    scene.camera.follow(monster.uid);
 }
 ```
 
@@ -99,7 +99,7 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | `addModule(module)` | 添加跟随对象缓存的功能模块 |
 | `getModule(ModuleClass)` | 获取指定类型的功能模块 |
 | `hasModule(ModuleClass)` | 判断是否存在指定类型模块 |
-| `removeModule(ModuleClass)` | 移除指定类型模块并清理 |
+| `removeModule(ModuleClass, curTime)` | 移除指定类型模块，并使用显式场景逻辑时间完成清理 |
 | `release()` | 标记对象释放 |
 
 ### ISceneObjModule
@@ -108,16 +108,17 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 
 | Hook | 说明 |
 |------|------|
-| `onAttach(owner)` | 模块添加到对象时调用 |
-| `onDetach(owner)` | 模块移除或对象销毁时调用 |
-| `reset()` | 对象复用并开始新生命周期前调用 |
+| `reset(owner, curTime)` | 对象复用并开始新生命周期前调用 |
 | `onOwnerInit(owner)` | 对象初始化完成后调用 |
-| `onOwnerUpdate(owner, curTime)` | 对象 update 阶段调用 |
-| `onOwnerLateUpdate(owner, curTime)` | 对象 lateUpdate 阶段调用 |
-| `onOwnerFixedUpdate(owner, curTime)` | 对象 fixedUpdate 阶段调用 |
+| `onOwnerLogicUpdate(owner, logicDt, curTime, tick)` | 对象权威逻辑更新阶段调用 |
+| `onOwnerLateLogicUpdate(owner, curTime, tick)` | 对象 late logic 阶段调用 |
+| `onOwnerRenderUpdate(owner, renderDt, curTime, tick, interpolationAlpha)` | 对象表现更新阶段调用 |
+| `onOwnerFixedUpdate(owner, curTime, tick)` | 对象低频逻辑阶段调用 |
 | `onOwnerConfirmPos(owner)` | 对象显示位置确认变化后调用 |
-| `onRecycle()` | 对象回收到对象池前调用 |
-| `onDispose()` | 对象彻底销毁时调用 |
+| `onRecycle(owner, curTime)` | 对象回收到对象池前调用 |
+| `onDispose(owner, curTime)` | 对象彻底销毁时调用 |
+
+模块由 SceneObj 单向持有。模块不得缓存 owner；需要宿主参与的生命周期和业务方法按调用显式传入 owner。
 
 ### CreatureSceneObj
 
@@ -125,15 +126,15 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 |-----|------|
 | `setMaxHp(value)` | 设置最大生命，按差值同步当前生命 |
 | `showHealthBar(show)` | 显示/隐藏血条 |
-| `getDamage(casterId, damage)` | 受到伤害 |
+| `getDamage(casterId, damage, curTime)` | 受到伤害 |
 | `heal(value)` | 治疗 |
-| `castSkill(skillId, targetId, x, y, skillLevel)` | 技能入口，内部走 `SkillAgent` |
-| `canCastSkill(skillId)` | 检查技能 CD |
-| `getSkillCooldownRemain(skillId)` | 获取技能剩余 CD，单位毫秒 |
-| `runTo(x, y, stopDistance)` | 按 speed 属性跑向世界坐标，FSM 自动管理 Run/Idle 和 walk/idle 动画 |
-| `attack(skillId, targetId, x, y, skillLevel)` | 成功释放技能后进入 Attack，动画完成后自动回 Idle |
-| `addBuff(buffId, caster, stack, durationOverride, curTime)` | 添加 Buff，内部走 `BuffAgent` |
-| `removeBuff(buffId)` | 移除指定 Buff |
+| `castSkill(skillId, curTime, targetId, x, y, skillLevel)` | 技能入口，内部走 `SkillAgent` |
+| `canCastSkill(skillId, curTime)` | 检查技能 CD |
+| `getSkillCooldownRemain(skillId, curTime)` | 获取技能剩余 CD，单位毫秒 |
+| `runTo(x, y, curTime, stopDistance)` | 按 speed 属性跑向世界坐标，FSM 自动管理 Run/Idle 和 walk/idle 动画 |
+| `attack(skillId, curTime, targetId, x, y, skillLevel)` | 成功释放技能后进入 Attack |
+| `addBuff(buffId, casterId, curTime, stack, durationOverrideMs)` | 添加 live-caster Buff；Runtime 只保存 casterId，覆盖时长在进入 Runtime 时由毫秒转换为秒 |
+| `removeBuff(buffId, curTime)` | 移除指定 Buff |
 | `hasBuff(buffId)` | 检查是否存在指定 Buff |
 
 ### BulletSceneObj

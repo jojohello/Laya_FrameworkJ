@@ -33,3 +33,9 @@
 - LayaAir 3.3 标准帧动画资源使用“一张 PNG + `.atlas`”；传给 `Laya.Animation.images` 的是 atlas 已缓存的子纹理 URL，不是未描述的大图网格坐标。
 - atlas 的帧键与运行时子纹理 URL 必须带 `.png` 等受支持后缀。`Loader.cacheRes()` 依赖后缀确定类型；无后缀帧不会进入缓存，并会连续触发 `unsupported suffix` 与 `DrawTextureCmd sourceWidth` 空引用。
 - 修改清理逻辑时验证：并发加载、池复用、超上限销毁、缓存到期卸载、Manager reset/release。
+
+## 帧动画动作信息
+
+- `ResFrameAnimation` 的实例动作表管理动作名、逻辑帧范围和一次播放时长；配置中的 `durationMs` 在进入运行时边界时转换为统一逻辑时间单位。
+- `play(actionName, ...)` 成功时返回对应动作的运行时时长，动作不存在或资源未就绪时必须返回可明确区分的失败结果。Gameplay 只使用返回时长和统一逻辑 `curTime` 计算结束时间，不监听动画播放完成回调。
+- Realtime 大步长补处理延迟动作时，动画进度与结束时间以原计划触发时间为起点，不得以补处理发生的当前帧时间重新开始；渲染可以直接显示该逻辑时间对应的最新帧。

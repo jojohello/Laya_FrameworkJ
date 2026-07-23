@@ -7,6 +7,10 @@ export interface SceneCameraBounds {
     bottom: number;
 }
 
+export interface SceneCameraTargetResolver {
+    getLiveObject(uid: number): BaseSceneObj | null;
+}
+
 /**
  * Small wrapper around Laya.Camera2D.
  *
@@ -17,7 +21,7 @@ export class SceneCamera2D {
     readonly camera2D: Laya.Camera2D;
 
     private _root: Laya.Sprite;
-    private _followTarget: BaseSceneObj | null = null;
+    private _followTargetId: number = 0;
     private _followOffsetX: number = 0;
     private _followOffsetY: number = 0;
     private _x: number = 0;
@@ -102,14 +106,14 @@ export class SceneCamera2D {
         Laya.stage.off(Laya.Event.MOUSE_MOVE, this, this.onDragMove);
     }
 
-    follow(target: BaseSceneObj, offsetX: number = 0, offsetY: number = 0): void {
-        this._followTarget = target;
+    follow(targetId: number, offsetX: number = 0, offsetY: number = 0): void {
+        this._followTargetId = targetId;
         this._followOffsetX = offsetX;
         this._followOffsetY = offsetY;
     }
 
     clearFollow(): void {
-        this._followTarget = null;
+        this._followTargetId = 0;
     }
 
     moveTo(x: number, y: number): void {
@@ -123,14 +127,19 @@ export class SceneCamera2D {
         this.moveTo(this._x + dx, this._y + dy);
     }
 
-    update(): void {
-        if (!this._followTarget || this._followTarget.isRelease) return;
-        this.moveTo(this._followTarget.x + this._followOffsetX, this._followTarget.y + this._followOffsetY);
+    update(resolver: SceneCameraTargetResolver): void {
+        if (this._followTargetId <= 0) return;
+        const target = resolver.getLiveObject(this._followTargetId);
+        if (!target) {
+            this.clearFollow();
+            return;
+        }
+        this.moveTo(target.x + this._followOffsetX, target.y + this._followOffsetY);
     }
 
     release(): void {
         this.disableDrag();
-        this._followTarget = null;
+        this._followTargetId = 0;
         this.camera2D.removeSelf();
         this.camera2D.destroy();
         this._root.pos(0, 0);

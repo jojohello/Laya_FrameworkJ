@@ -144,7 +144,8 @@ export class LogicMain {
     }
 
     private updateManagers(): void {
-        const dt = Laya.timer.delta / 1000;
+        // Read the engine's unscaled frame delta once at the outer update boundary.
+        const dt = Laya.timer.unscaledDelta / 1000;
         ManagerHub.instance.update(dt);
     }
 }

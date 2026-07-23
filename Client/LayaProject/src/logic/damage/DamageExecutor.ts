@@ -2,13 +2,12 @@ import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { DamageContext } from "./DamageContext";
 
 export interface DamageApplyOptions {
-    caster?: BaseSceneObj | null;
-    casterId?: number;
+    casterId: number;
     target: BaseSceneObj;
     damage: number;
     sourceType?: string;
     sourceId?: number;
-    curTime?: number;
+    curTime: number;
 }
 
 export class DamageExecutor {
@@ -21,8 +20,9 @@ export class DamageExecutor {
         const damage = Math.max(0, Math.ceil(Number(options.damage) || 0));
         if (!target || target.isRelease || target.isDead || damage <= 0) return 0;
 
-        const caster = options.caster || null;
-        const casterId = options.casterId || (caster ? caster.getCasterId() : 0);
+        const casterId = options.casterId;
+        const caster = target.scene?.getLiveObject(casterId) || null;
+        if (casterId > 0 && !caster) return 0;
         const ctx = this.acquireContext();
         ctx.init(
             caster,
@@ -31,7 +31,7 @@ export class DamageExecutor {
             damage,
             options.sourceType || "",
             options.sourceId || 0,
-            options.curTime !== undefined ? options.curTime : target.scene?.curTime ?? 0
+            options.curTime
         );
 
         try {
@@ -67,7 +67,7 @@ export class DamageExecutor {
             return;
         }
 
-        target.getDamage(ctx.casterId, ctx.finalDamage);
+        target.getDamage(ctx.casterId, ctx.finalDamage, ctx.curTime);
     }
 
     private static callBuffHook(owner: BaseSceneObj | null, hookName: string, ctx: DamageContext): void {
@@ -77,7 +77,7 @@ export class DamageExecutor {
         const buffAgent = obj.getBuffAgentForDamage();
         const hook = buffAgent ? buffAgent[hookName] : null;
         if (typeof hook === "function") {
-            hook.call(buffAgent, ctx);
+            hook.call(buffAgent, owner, ctx);
         }
     }
 

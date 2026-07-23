@@ -1,87 +1,92 @@
+import { BaseAction } from "../action/BaseAction";
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { ISceneObjModule } from "../sceneObj/ISceneObjModule";
 import { SkillMgr } from "./SkillMgr";
 import { SkillCastContext } from "./SkillRuntime";
-import { BaseAction } from "../action/BaseAction";
 
 interface PendingSkillAction {
     executeTime: number;
     action: BaseAction;
-    context: SkillCastContext;
+    skillId: number;
+    skillLevel: number;
+    targetId: number;
+    targetX: number;
+    targetY: number;
+    effectScale: number;
 }
 
 export class SkillAgent implements ISceneObjModule {
-    private _owner: BaseSceneObj | null = null;
     private readonly _cooldownEndTimeMap: Map<number, number> = new Map();
     private readonly _pendingActions: PendingSkillAction[] = [];
 
-    onAttach(owner: BaseSceneObj): void {
-        this._owner = owner;
-    }
-
-    onDetach(_owner: BaseSceneObj): void {
-        this._owner = null;
-    }
-
-    reset(): void {
+    reset(_owner: BaseSceneObj, _curTime: number): void {
         this._cooldownEndTimeMap.clear();
         this._pendingActions.length = 0;
     }
 
-    onOwnerFixedUpdate(_owner: BaseSceneObj, _curTime: number): void {
-        // Skill CD and action delays are milliseconds; SceneObj fixed time is seconds.
-        this.update(this.getDefaultTime());
+    onOwnerLogicUpdate(
+        owner: BaseSceneObj,
+        _logicDt: number,
+        curTime: number,
+        _tick: number
+    ): void {
+        this.update(owner, curTime);
     }
 
-    onRecycle(): void {
-        this.reset();
+    onRecycle(owner: BaseSceneObj, curTime: number): void {
+        this.reset(owner, curTime);
     }
 
-    onDispose(): void {
-        this.reset();
-        this._owner = null;
+    onDispose(owner: BaseSceneObj, curTime: number): void {
+        this.reset(owner, curTime);
     }
 
     castSkill(
+        owner: BaseSceneObj,
         skillId: number,
         skillLevel: number,
+        curTime: number,
         targetId: number = 0,
         targetX?: number,
         targetY?: number,
-        effectScale: number = 1,
-        curTime: number = this.getDefaultTime()
+        effectScale: number = 1
     ): boolean {
-        const owner = this._owner;
-        if (!owner || !owner.scene || owner.isRelease || owner.isDead) return false;
+        if (!owner.scene || owner.isRelease || owner.isDead) return false;
 
         const levelInfo = SkillMgr.instance.getSkillLevel(skillId, skillLevel);
         if (!levelInfo || levelInfo.actions.length === 0) return false;
         if (!this.canCast(skillId, curTime)) return false;
 
-        const context: SkillCastContext = {
-            scene: owner.scene,
-            caster: owner,
-            skillId,
-            skillLevel,
-            targetId,
-            targetX: targetX !== undefined ? targetX : owner.x,
-            targetY: targetY !== undefined ? targetY : owner.y,
-            effectScale,
-            curTime,
-        };
-
+        const resolvedTargetX = targetX !== undefined ? targetX : owner.x;
+        const resolvedTargetY = targetY !== undefined ? targetY : owner.y;
         this.startCooldown(skillId, Number(levelInfo.data.CD) || 0, curTime);
 
         for (const action of levelInfo.actions) {
+            const executeTime = curTime + action.delayMs / 1000;
             if (action.delayMs <= 0) {
-                this.executeAction(action, context, curTime);
+                this.executeAction(
+                    owner,
+                    action,
+                    skillId,
+                    skillLevel,
+                    targetId,
+                    resolvedTargetX,
+                    resolvedTargetY,
+                    effectScale,
+                    executeTime
+                );
                 continue;
             }
 
             this._pendingActions.push({
-                executeTime: curTime + action.delayMs / 1000,
+                executeTime,
                 action,
-                context: { ...context },
+                skillId,
+                skillLevel,
+                targetId,
+                targetX: resolvedTargetX,
+                targetY: resolvedTargetY,
+                effectScale,
             });
         }
 
@@ -92,12 +97,12 @@ export class SkillAgent implements ISceneObjModule {
         return true;
     }
 
-    canCast(skillId: number, curTime: number = this.getDefaultTime()): boolean {
+    canCast(skillId: number, curTime: number): boolean {
         const cooldownEndTime = this._cooldownEndTimeMap.get(skillId) || 0;
         return curTime >= cooldownEndTime;
     }
 
-    getCooldownRemain(skillId: number, curTime: number = this.getDefaultTime()): number {
+    getCooldownRemain(skillId: number, curTime: number): number {
         const cooldownEndTime = this._cooldownEndTimeMap.get(skillId) || 0;
         return Math.max(0, cooldownEndTime - curTime) * 1000;
     }
@@ -106,8 +111,8 @@ export class SkillAgent implements ISceneObjModule {
         this._pendingActions.length = 0;
     }
 
-    update(curTime: number): void {
-        if (!this._owner || this._owner.isRelease || this._owner.isDead) {
+    update(owner: BaseSceneObj, curTime: number): void {
+        if (owner.isRelease || owner.isDead || !owner.scene) {
             this._pendingActions.length = 0;
             return;
         }
@@ -117,7 +122,17 @@ export class SkillAgent implements ISceneObjModule {
             if (pending.executeTime > curTime) return;
 
             this._pendingActions.shift();
-            this.executeAction(pending.action, pending.context, curTime);
+            this.executeAction(
+                owner,
+                pending.action,
+                pending.skillId,
+                pending.skillLevel,
+                pending.targetId,
+                pending.targetX,
+                pending.targetY,
+                pending.effectScale,
+                pending.executeTime
+            );
         }
     }
 
@@ -130,19 +145,31 @@ export class SkillAgent implements ISceneObjModule {
         this._cooldownEndTimeMap.set(skillId, curTime + cdMs / 1000);
     }
 
-    private executeAction(action: BaseAction, context: SkillCastContext, curTime: number): void {
-        const owner = this._owner;
-        if (!owner || !owner.scene || owner.isRelease || owner.isDead) return;
+    private executeAction(
+        owner: BaseSceneObj,
+        action: BaseAction,
+        skillId: number,
+        skillLevel: number,
+        targetId: number,
+        targetX: number,
+        targetY: number,
+        effectScale: number,
+        executeTime: number
+    ): void {
+        const scene = owner.scene;
+        if (!scene || owner.isRelease || owner.isDead) return;
 
-        action.execute({
-            ...context,
-            scene: owner.scene,
-            caster: owner,
-            curTime,
-        });
-    }
-
-    private getDefaultTime(): number {
-        return this._owner?.scene?.curTime ?? 0;
+        const context: SkillCastContext = {
+            scene,
+            casterId: owner.getCasterId(),
+            skillId,
+            skillLevel,
+            targetId,
+            targetX,
+            targetY,
+            effectScale,
+            curTime: executeTime,
+        };
+        action.execute(context);
     }
 }

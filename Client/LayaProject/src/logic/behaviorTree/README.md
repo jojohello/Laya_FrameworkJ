@@ -36,23 +36,23 @@ monsterTree.execute(monsterB, curTime);
 
 思考时间与 `SceneTime` 一致使用秒；当前代码常量为 `0.1` 秒，不从配置读取。
 
-`AIScheduler` 负责把 AI 分组到不同帧：
+`AIScheduler` 负责把 AI 分组到不同逻辑更新。调度项只保存实体 ID 和共享的无状态 Agent，owner 由 Scene 在执行时解析：
 
 ```ts
 const scheduler = new AIScheduler({ groupCount: 3 });
-scheduler.register(monster.uid, monster, monsterAgent);
-scheduler.update(curTime);
+scheduler.register(monster.uid, monsterAgent);
+scheduler.update(curTime, tick, sceneResolver);
 ```
 
-`groupCount=3` 时每帧只 tick 一组，30 FPS 下约等于每个实体 0.1 秒被调度一次。`AIAgent` 仍然会按自己的 `thinkInterval` 做精确间隔判断。
+`sceneResolver` 实现 `getAIOwner(id)`，内部通过 Scene 的 live 实体查询取得本次 owner；Scheduler 不缓存 owner。`groupCount=3` 时每次逻辑更新只 tick 一组，30 tick/秒下每个实体约每 0.1 秒被调度一次。`AIAgent` 仍按自己的 `thinkInterval` 做精确间隔判断。当前 `BattleScene` 已使用该三组调度，不再由每个 Character 逐逻辑帧直接执行 AI。
 
-也可以配置帧预算：
+也可以配置确定性的单次逻辑更新数量预算：
 
 ```ts
-scheduler.setFrameBudget(50, 1.5);
+scheduler.setLogicUpdateBudget(50);
 ```
 
-含义是单帧最多处理 50 个 AI，或最多消耗约 1.5ms。预算不够时，调度器会保留当前组，下帧继续处理剩余实体。
+含义是单次逻辑更新最多处理 50 个 AI。预算不够时保留当前组，下次逻辑更新继续；不得使用 `performance.now()` 或墙钟耗时决定哪些 AI 获得 gameplay 更新。
 
 ## 简单战斗 AI
 

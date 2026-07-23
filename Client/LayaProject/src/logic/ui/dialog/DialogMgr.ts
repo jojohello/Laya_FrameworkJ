@@ -38,6 +38,7 @@ export class DialogMgr implements IManager {
         const active = this._active;
         if (!active) return;
         this._active = null;
+        this.unbindResource(active.root);
         if (notifyClosed) active.options.onClosed?.(false);
         active.overlay.destroy();
         UIManager.instance.close("CommonDialog");
@@ -57,16 +58,56 @@ export class DialogMgr implements IManager {
         }
         title.text = options.title || "提示";
         context.text = options.message;
-        confirm.title = options.confirmText || "确定";
-        cancel.title = options.cancelText || "取消";
+        this.setButtonText(confirm, options.confirmText || "确定");
+        this.setButtonText(cancel, options.cancelText || "取消");
         const controller = panel.getController?.("dialogButtons");
         if (controller) controller.selectedIndex = options.cancelText ? 1 : 0;
         cancel.visible = !!options.cancelText;
         close.visible = options.showClose !== false;
         close.touchable = options.showClose !== false;
-        confirm.on(Laya.Event.CLICK, this, () => { options.onConfirm?.(); options.onClosed?.(true); this.close(false); });
-        cancel.on(Laya.Event.CLICK, this, () => { options.onCancel?.(); options.onClosed?.(false); this.close(false); });
-        close.on(Laya.Event.CLICK, this, () => { options.onClose?.(); options.onClosed?.(false); this.close(false); });
+        confirm.off(Laya.Event.CLICK, this, this.onConfirmClick);
+        cancel.off(Laya.Event.CLICK, this, this.onCancelClick);
+        close.off(Laya.Event.CLICK, this, this.onCloseClick);
+        confirm.on(Laya.Event.CLICK, this, this.onConfirmClick);
+        cancel.on(Laya.Event.CLICK, this, this.onCancelClick);
+        close.on(Laya.Event.CLICK, this, this.onCloseClick);
+    }
+
+    private unbindResource(root: Laya.Scene): void {
+        const panel = this.getChild(root, "panel");
+        this.getChild(panel, "confirmButton")?.off(Laya.Event.CLICK, this, this.onConfirmClick);
+        this.getChild(panel, "cancelButton")?.off(Laya.Event.CLICK, this, this.onCancelClick);
+        this.getChild(panel, "closeButton")?.off(Laya.Event.CLICK, this, this.onCloseClick);
+    }
+
+    private onConfirmClick(): void {
+        const options = this._active?.options;
+        if (!options) return;
+        options.onConfirm?.();
+        options.onClosed?.(true);
+        this.close(false);
+    }
+
+    private onCancelClick(): void {
+        const options = this._active?.options;
+        if (!options) return;
+        options.onCancel?.();
+        options.onClosed?.(false);
+        this.close(false);
+    }
+
+    private onCloseClick(): void {
+        const options = this._active?.options;
+        if (!options) return;
+        options.onClose?.();
+        options.onClosed?.(false);
+        this.close(false);
+    }
+
+    private setButtonText(button: any, text: string): void {
+        button.title = text;
+        const label = this.getChild(button, "label");
+        if (label) label.text = text;
     }
 
     private getChild(parent: any, name: string): any {

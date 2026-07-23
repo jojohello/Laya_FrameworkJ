@@ -1,54 +1,49 @@
-import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { BaseAction } from "../action/BaseAction";
 import type { CreatureSceneObj } from "../sceneObj/CreatureSceneObj";
 import { DamageContext } from "../damage/DamageContext";
 import { BuffInfo, BuffStackType } from "../skill/SkillInfo";
 export class BuffRuntime {
     private _buffInfo: BuffInfo;
-    private _caster: BaseSceneObj;
-    private _target: CreatureSceneObj;
+    private _casterId: number;
     private _stack: number;
     private _expireTime: number;
     private _nextTickTime: number = -1;
     private _appliedAddScale: number = 0;
     private _appliedPercentScale: number = 0;
-    private _durationOverride: number = 0;
+    private _durationOverrideMs = 0;
+    private _disposed = false;
 
     constructor(
         buffInfo: BuffInfo,
-        caster: BaseSceneObj,
+        casterId: number,
         target: CreatureSceneObj,
         stack: number,
         curTime: number,
-        durationOverride: number = 0
+        durationOverrideMs: number = 0
     ) {
         this._buffInfo = buffInfo;
-        this._caster = caster;
-        this._target = target;
+        this._casterId = casterId;
         this._stack = Math.max(1, Math.min(buffInfo.maxStack, stack));
-        this._durationOverride = Math.max(0, durationOverride);
+        this._durationOverrideMs = Math.max(0, durationOverrideMs);
         this._expireTime = this.calcExpireTime(curTime);
         this._nextTickTime = buffInfo.tickIntervalMs > 0 ? curTime + buffInfo.tickIntervalMs / 1000 : -1;
-        this.applyAttrModifiers();
-        this.executeActions(this._buffInfo.onAddActions, curTime);
+        this.applyAttrModifiers(target);
+        this.executeActions(target, this._buffInfo.onAddActions, curTime);
     }
 
     get buffId(): number {
         return this._buffInfo.data.ID;
     }
 
-    get isExpired(): boolean {
-        return this._target.isRelease || this._target.isDead;
-    }
-
-    refresh(caster: BaseSceneObj, stack: number, curTime: number): void {
-        this._caster = caster;
+    refresh(casterId: number, target: CreatureSceneObj, stack: number, curTime: number): void {
+        if (this._disposed) return;
+        this._casterId = casterId;
         const addStack = Math.max(1, stack);
 
         if (this._buffInfo.stackType === BuffStackType.Stack) {
-            this.setStack(Math.min(this._buffInfo.maxStack, this._stack + addStack));
+            this.setStack(target, Math.min(this._buffInfo.maxStack, this._stack + addStack));
         } else if (this._buffInfo.stackType === BuffStackType.Replace) {
-            this.setStack(Math.min(this._buffInfo.maxStack, addStack));
+            this.setStack(target, Math.min(this._buffInfo.maxStack, addStack));
         }
 
         this._expireTime = this.calcExpireTime(curTime);
@@ -57,13 +52,15 @@ export class BuffRuntime {
         }
     }
 
-    update(curTime: number): boolean {
-        if (this.isExpired) return false;
+    update(target: CreatureSceneObj, curTime: number): boolean {
+        if (this._disposed || target.isRelease || target.isDead || !this.resolveCaster(target)) {
+            return false;
+        }
 
         if (this._nextTickTime > 0) {
             while (this._nextTickTime > 0 && this._nextTickTime <= curTime) {
                 if (this._buffInfo.onTickActions.length > 0) {
-                    this.executeActions(this._buffInfo.onTickActions, this._nextTickTime);
+                    this.executeActions(target, this._buffInfo.onTickActions, this._nextTickTime);
                 }
                 this._nextTickTime += this._buffInfo.tickIntervalMs / 1000;
             }
@@ -72,9 +69,11 @@ export class BuffRuntime {
         return this._expireTime <= 0 || curTime < this._expireTime;
     }
 
-    dispose(curTime: number = this.getDefaultTime()): void {
-        this.executeActions(this._buffInfo.onRemoveActions, curTime);
-        this.removeAttrModifiers();
+    dispose(target: CreatureSceneObj, curTime: number): void {
+        if (this._disposed) return;
+        this._disposed = true;
+        this.executeActions(target, this._buffInfo.onRemoveActions, curTime);
+        this.removeAttrModifiers(target);
     }
 
     onBeforeDamage(_context: DamageContext): void {
@@ -89,35 +88,35 @@ export class BuffRuntime {
     onAfterBeDamaged(_context: DamageContext): void {
     }
 
-    private setStack(stack: number): void {
+    private setStack(target: CreatureSceneObj, stack: number): void {
         if (this._stack === stack) return;
-        this.removeAttrModifiers();
+        this.removeAttrModifiers(target);
         this._stack = stack;
-        this.applyAttrModifiers();
+        this.applyAttrModifiers(target);
     }
 
-    private applyAttrModifiers(): void {
+    private applyAttrModifiers(target: CreatureSceneObj): void {
         this._appliedAddScale = this._stack;
         this._appliedPercentScale = this._stack;
 
         for (const modifier of this._buffInfo.attrAdds) {
-            this._target.attrs.addAdd(modifier.attr, modifier.value * this._appliedAddScale);
+            target.attrs.addAdd(modifier.attr, modifier.value * this._appliedAddScale);
         }
 
         for (const modifier of this._buffInfo.attrPercents) {
-            this._target.attrs.addPercent(modifier.attr, modifier.value * this._appliedPercentScale);
+            target.attrs.addPercent(modifier.attr, modifier.value * this._appliedPercentScale);
         }
     }
 
-    private removeAttrModifiers(): void {
+    private removeAttrModifiers(target: CreatureSceneObj): void {
         if (this._appliedAddScale <= 0 && this._appliedPercentScale <= 0) return;
 
         for (const modifier of this._buffInfo.attrAdds) {
-            this._target.attrs.addAdd(modifier.attr, -modifier.value * this._appliedAddScale);
+            target.attrs.addAdd(modifier.attr, -modifier.value * this._appliedAddScale);
         }
 
         for (const modifier of this._buffInfo.attrPercents) {
-            this._target.attrs.addPercent(modifier.attr, -modifier.value * this._appliedPercentScale);
+            target.attrs.addPercent(modifier.attr, -modifier.value * this._appliedPercentScale);
         }
 
         this._appliedAddScale = 0;
@@ -125,28 +124,34 @@ export class BuffRuntime {
     }
 
     private calcExpireTime(curTime: number): number {
-        const duration = this._durationOverride > 0 ? this._durationOverride : this._buffInfo.durationMs;
-        return duration > 0 ? curTime + duration / 1000 : 0;
+        const durationMs = this._durationOverrideMs > 0
+            ? this._durationOverrideMs
+            : this._buffInfo.durationMs;
+        return durationMs > 0 ? curTime + durationMs / 1000 : 0;
     }
 
-    private executeActions(actions: readonly BaseAction[], curTime: number): void {
-        const scene = this._target.scene;
-        if (!scene || actions.length === 0) return;
+    private executeActions(
+        target: CreatureSceneObj,
+        actions: readonly BaseAction[],
+        curTime: number
+    ): void {
+        const scene = target.scene;
+        if (!scene || !this.resolveCaster(target) || actions.length === 0) return;
 
         for (const action of actions) {
             action.execute({
                 scene,
-                caster: this._caster,
-                targetId: this._target.uid,
-                targetX: this._target.x,
-                targetY: this._target.y,
+                casterId: this._casterId,
+                targetId: target.uid,
+                targetX: target.x,
+                targetY: target.y,
                 effectScale: this._stack,
                 curTime,
             });
         }
     }
 
-    private getDefaultTime(): number {
-        return this._target.scene?.curTime ?? 0;
+    private resolveCaster(target: CreatureSceneObj) {
+        return target.scene?.getLiveObject(this._casterId) || null;
     }
 }

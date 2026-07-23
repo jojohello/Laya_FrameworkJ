@@ -6,7 +6,6 @@ import { BaseScene } from "../scene/BaseScene";
 import { CharacterAnimationConfigInfo } from "./CharacterAnimationConfigInfo";
 import { FrameAnimationAction, ResFrameAnimation } from "../resource/ResFrameAnimation";
 import { ResourceMgr } from "../resource/ResourceMgr";
-import { FsmRuntime } from "../actorFsm/ActorFsm";
 import { CharacterActorFsm, CharacterStateName, CharacterStateNameValue } from "../actorFsm/CharacterActorFsm";
 import { CharacterAIRuntime, SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 
@@ -28,7 +27,7 @@ const TEAM_COLOR_TRACE = true;
  */
 @regClass()
 export class CharacterSceneObj extends CreatureSceneObj {
-    fsmRuntime?: FsmRuntime;
+    fsmStateName?: string;
     aiRuntime?: CharacterAIRuntime;
     private _animName: CharacterAnimName = "idle";
     private _baseLayer: Laya.Sprite | null = null;
@@ -41,6 +40,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
     private _runTargetY = 0;
     private _runStopDistance = 1;
     private _lastRunUpdateTime = 0;
+    private _lastLogicTime = 0;
     private _hasRunTarget = false;
     private _skillIds: number[] = [];
 
@@ -56,13 +56,13 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this._skillIds = this.parseSkillIds(config?.skillIds || "");
         SimpleCombatAIAgent.reset(this);
         CharacterActorFsm.reset(this);
-        CharacterActorFsm.setState(CharacterStateName.Idle, this);
+        CharacterActorFsm.setState(CharacterStateName.Idle, this, scene.curTime);
     }
 
-    protected onUpdate(curTime: number, dt: number): void {
+    protected onLogicUpdate(logicDt: number, curTime: number, _tick: number): void {
+        this._lastLogicTime = curTime;
         CharacterActorFsm.update(this, curTime);
-        SimpleCombatAIAgent.update(this, curTime);
-        this._frameAnimation?.update(dt);
+        this._frameAnimation?.update(logicDt);
     }
 
     protected loadRes(): void {
@@ -134,8 +134,8 @@ export class CharacterSceneObj extends CreatureSceneObj {
         return this._animName;
     }
 
-    changeState(stateName: CharacterStateNameValue, force: boolean = false): void {
-        CharacterActorFsm.setState(stateName, this, force);
+    changeState(stateName: CharacterStateNameValue, curTime: number, force: boolean = false): void {
+        CharacterActorFsm.setState(stateName, this, curTime, force);
     }
 
     get stateName(): string {
@@ -143,7 +143,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
     }
 
     /** Run toward a world position using the entity's configured speed. */
-    runTo(x: number, y: number, stopDistance: number = 1): boolean {
+    runTo(x: number, y: number, curTime: number, stopDistance: number = 1): boolean {
         if (this.isRelease || this.isDead || !Number.isFinite(x) || !Number.isFinite(y)) return false;
         if (this.attrs.getFinal("speed", 0) <= 0) return false;
 
@@ -156,40 +156,41 @@ export class CharacterSceneObj extends CreatureSceneObj {
         const dy = y - this.y;
         if (dx * dx + dy * dy <= this._runStopDistance * this._runStopDistance) {
             this._hasRunTarget = false;
-            this.changeState(CharacterStateName.Idle);
+            this.changeState(CharacterStateName.Idle, curTime);
             return true;
         }
 
-        this.changeState(CharacterStateName.Run);
+        this.changeState(CharacterStateName.Run, curTime);
         return true;
     }
 
     /** Cast a skill and enter Attack only when the cast request succeeds. */
     attack(
         skillId: number,
+        curTime: number,
         targetId: number = 0,
         targetX: number = this.x,
         targetY: number = this.y,
         skillLevel: number = 1
     ): boolean {
         if (this.isRelease || this.isDead) return false;
-        const success = this.castSkill(skillId, targetId, targetX, targetY, skillLevel);
+        const success = this.castSkill(skillId, curTime, targetId, targetX, targetY, skillLevel);
         if (!success) return false;
 
         this._hasRunTarget = false;
-        this.changeState(CharacterStateName.Attack, true);
+        this.changeState(CharacterStateName.Attack, curTime, true);
         return true;
     }
 
     /** Called by StateRun; external systems should use runTo(). */
-    beginRunState(): void {
-        this._lastRunUpdateTime = this.scene?.curTime ?? 0;
+    beginRunState(curTime: number): void {
+        this._lastRunUpdateTime = curTime;
     }
 
     /** Called by StateRun; external systems should use runTo(). */
     updateRunState(curTime: number): void {
         if (!this._hasRunTarget) {
-            this.changeState(CharacterStateName.Idle);
+            this.changeState(CharacterStateName.Idle, curTime);
             return;
         }
 
@@ -198,7 +199,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
         const distance = Math.sqrt(dx * dx + dy * dy);
         if (distance <= this._runStopDistance) {
             this._hasRunTarget = false;
-            this.changeState(CharacterStateName.Idle);
+            this.changeState(CharacterStateName.Idle, curTime);
             return;
         }
 
@@ -214,7 +215,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
                 this.y + dy / distance * remainingDistance
             );
             this._hasRunTarget = false;
-            this.changeState(CharacterStateName.Idle);
+            this.changeState(CharacterStateName.Idle, curTime);
             return;
         }
 
@@ -253,12 +254,12 @@ export class CharacterSceneObj extends CreatureSceneObj {
         return dx * dx + dy * dy <= this._runStopDistance * this._runStopDistance;
     }
 
-    reset(): void {
+    reset(curTime: number): void {
         this.teamColorTrace("reset", {
             previousTeam: this.team,
             previousColor: this._teamColor,
         });
-        super.reset();
+        super.reset(curTime);
         this._animName = "idle";
         CharacterActorFsm.reset(this);
         this._teamColor = [...DEFAULT_TEAM_COLOR];
@@ -266,6 +267,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this._runTargetY = 0;
         this._runStopDistance = 1;
         this._lastRunUpdateTime = 0;
+        this._lastLogicTime = 0;
         this._hasRunTarget = false;
         this._skillIds.length = 0;
         this.releaseFrameAnimation();
@@ -415,7 +417,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
 
     private onAnimationActionComplete = (actionName: string): void => {
         if (actionName === "attack" && this.stateName === CharacterStateName.Attack) {
-            this.changeState(CharacterStateName.Idle);
+            this.changeState(CharacterStateName.Idle, this._lastLogicTime);
         }
     };
 

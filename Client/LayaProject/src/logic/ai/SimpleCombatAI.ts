@@ -58,7 +58,7 @@ export class IsIdleNode extends BConditionNode<CharacterSceneObj> {
 
 class EnsureNearestTargetNode extends BActionNode<CharacterSceneObj> {
     constructor() {
-        super(owner => {
+        super((owner, curTime) => {
             if (getTarget(owner)) return true;
             const target = owner.scene?.findNearestEnemy(owner) || null;
             getRuntime(owner).targetUid = target?.uid || 0;
@@ -69,13 +69,13 @@ class EnsureNearestTargetNode extends BActionNode<CharacterSceneObj> {
 
 class SelectReadySkillNode extends BActionNode<CharacterSceneObj> {
     constructor() {
-        super(owner => {
+        super((owner, curTime) => {
             const runtime = getRuntime(owner);
             runtime.selectedSkillId = 0;
             runtime.selectedSkillRange = 0;
             for (const skillId of owner.skillIds) {
                 const skill = SkillMgr.instance.getSkillLevel(skillId, 1);
-                if (!skill || !owner.canCastSkill(skillId)) continue;
+                if (!skill || !owner.canCastSkill(skillId, curTime)) continue;
                 runtime.selectedSkillId = skillId;
                 runtime.selectedSkillRange = Math.max(0, Number(skill.data.CastRange) || 0);
                 return true;
@@ -87,7 +87,7 @@ class SelectReadySkillNode extends BActionNode<CharacterSceneObj> {
 
 class IsSelectedSkillInRangeNode extends BConditionNode<CharacterSceneObj> {
     constructor() {
-        super(owner => {
+        super((owner, curTime) => {
             const target = getTarget(owner);
             if (!target) return false;
             const runtime = getRuntime(owner);
@@ -100,11 +100,11 @@ class IsSelectedSkillInRangeNode extends BConditionNode<CharacterSceneObj> {
 
 class CastSelectedSkillNode extends BActionNode<CharacterSceneObj> {
     constructor() {
-        super(owner => {
+        super((owner, curTime) => {
             const target = getTarget(owner);
             const runtime = getRuntime(owner);
             return !!target && runtime.selectedSkillId > 0
-                && owner.attack(runtime.selectedSkillId, target.uid, target.x, target.y, 1);
+                && owner.attack(runtime.selectedSkillId, curTime, target.uid, target.x, target.y, 1);
         });
     }
 }
@@ -121,7 +121,7 @@ export class TryUseSkillNode extends BSequenceNode<CharacterSceneObj> {
 
 class ApproachTargetNode extends BActionNode<CharacterSceneObj> {
     constructor() {
-        super(owner => {
+        super((owner, curTime) => {
             const target = getTarget(owner);
             if (!target) return false;
 
@@ -137,15 +137,20 @@ class ApproachTargetNode extends BActionNode<CharacterSceneObj> {
                 }
             }
             if (!Number.isFinite(desiredRange)) return false;
-            return owner.runTo(target.x, target.y, Math.max(0, desiredRange - AI_MOVE_STOP_TOLERANCE));
+            return owner.runTo(
+                target.x,
+                target.y,
+                curTime,
+                Math.max(0, desiredRange - AI_MOVE_STOP_TOLERANCE)
+            );
         });
     }
 }
 
 class EnterIdleNode extends BActionNode<CharacterSceneObj> {
     constructor() {
-        super(owner => {
-            owner.changeState("Idle");
+        super((owner, curTime) => {
+            owner.changeState("Idle", curTime);
             return true;
         });
     }

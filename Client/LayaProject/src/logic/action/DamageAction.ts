@@ -11,15 +11,16 @@ export class DamageAction extends BaseAction {
 
         const damageInfo = SkillMgr.instance.getDamage(damageId);
         if (!damageInfo) return;
-        const target = context.scene.getObject(context.targetId);
-        if (!target || target.isRelease || target.isDead) return;
+        const caster = context.scene.getLiveObject(context.casterId);
+        const target = context.scene.getLiveObject(context.targetId);
+        if (!caster || !target || target.isDead) return;
 
         const data = damageInfo.data;
         DamageExecutor.apply({
-            caster: context.caster,
+            casterId: context.casterId,
             target,
             damage: this.calculateDamage(
-                context.caster,
+                caster,
                 target,
                 data.BaseDamage,
                 data.AttackRate,

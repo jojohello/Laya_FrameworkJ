@@ -87,7 +87,7 @@ export abstract class BaseSceneObj {
      * @param angle 初始角度
      */
     init(uid: number, cfgId: number, scene: BaseScene, team: number, x: number, y: number, angle: number): void {
-        this.reset();
+        this.reset(scene.curTime);
         this._isRelease = false;
         this._isDead = false;
         this._uid = uid;
@@ -121,7 +121,11 @@ export abstract class BaseSceneObj {
      * 新一轮生命周期开始前重置状态。
      * 对象池复用时必须先 reset 再 init。
      */
-    reset(): void {
+    reset(curTime: number): void {
+        for (const module of this._modules) {
+            module.reset(this, curTime);
+        }
+
         this._isRelease = false;
         this._isDead = false;
         this._uid = 0;
@@ -137,9 +141,6 @@ export abstract class BaseSceneObj {
         this._transform.setAngle(0);
         this._transform.forceUpdate();
 
-        for (const module of this._modules) {
-            module.reset();
-        }
     }
 
     /**
@@ -182,7 +183,7 @@ export abstract class BaseSceneObj {
         this.recycleSpaceHash();
 
         for (const module of this._modules) {
-            module.onRecycle();
+            module.onRecycle(this, scene.curTime);
         }
 
         if (this._model) {
@@ -201,10 +202,7 @@ export abstract class BaseSceneObj {
         this.recycleSpaceHash();
 
         for (const module of this._modules) {
-            if (module.onDetach) {
-                module.onDetach(this);
-            }
-            module.onDispose();
+            module.onDispose(this, scene.curTime);
         }
 
         if (this._model) {
@@ -230,7 +228,7 @@ export abstract class BaseSceneObj {
      * @param curTime 当前时间
      * @param dt 当前帧场景游戏时间间隔，单位秒
      */
-    update(curTime: number, dt: number): void {
+    logicUpdate(logicDt: number, curTime: number, tick: number): void {
         if (this._isRelease) return;
 
         // 更新变换
@@ -242,50 +240,71 @@ export abstract class BaseSceneObj {
         }
 
         // 子类更新
-        this.callModuleOwnerUpdate(curTime, dt);
-        this.onUpdate(curTime, dt);
+        this.callModuleOwnerLogicUpdate(logicDt, curTime, tick);
+        this.onLogicUpdate(logicDt, curTime, tick);
     }
 
     /**
      * 延迟更新（位置确认）
      * @param curTime 当前时间
      */
-    lateUpdate(curTime: number): void {
+    lateLogicUpdate(curTime: number, tick: number): void {
         if (this._isRelease) return;
 
-        // 确认位置（将 Transform 应用到显示对象）
+        // 这里只处理逻辑 late update；显示位置在 renderUpdate 中一次提交。
+        this.callModuleOwnerLateLogicUpdate(curTime, tick);
+        this.onLateLogicUpdate(curTime, tick);
+    }
+
+    /**
+     * 表现更新。FixedTick 追帧时可能跳过；恢复时 renderDt 包含被跳过的逻辑时间。
+     */
+    renderUpdate(
+        renderDt: number,
+        curTime: number,
+        tick: number,
+        interpolationAlpha: number
+    ): void {
+        if (this._isRelease) return;
+
         this.confirmPos();
-        
-        // 子类延迟更新
-        this.callModuleOwnerLateUpdate(curTime);
-        this.onLateUpdate(curTime);
+        this.callModuleOwnerRenderUpdate(renderDt, curTime, tick, interpolationAlpha);
+        this.onRenderUpdate(renderDt, curTime, tick, interpolationAlpha);
     }
 
     /**
      * 固定间隔更新
      * @param curTime 当前时间
      */
-    fixedUpdate(curTime: number): void {
+    fixedUpdate(curTime: number, tick: number): void {
         if (this._isRelease) return;
 
-        this.callModuleOwnerFixedUpdate(curTime);
-        this.onFixedUpdate(curTime);
+        this.callModuleOwnerFixedUpdate(curTime, tick);
+        this.onFixedUpdate(curTime, tick);
     }
 
     /**
      * 子类每帧更新（可选重写）
      */
-    protected onUpdate(curTime: number, dt: number): void {}
+    protected onLogicUpdate(logicDt: number, curTime: number, tick: number): void {}
 
     /**
      * 子类延迟更新（可选重写）
      */
-    protected onLateUpdate(curTime: number): void {}
+    protected onLateLogicUpdate(curTime: number, tick: number): void {}
+
+    /** 子类表现更新（可选重写）。 */
+    protected onRenderUpdate(
+        renderDt: number,
+        curTime: number,
+        tick: number,
+        interpolationAlpha: number
+    ): void {}
 
     /**
      * 子类固定间隔更新（可选重写）
      */
-    protected onFixedUpdate(curTime: number): void {}
+    protected onFixedUpdate(curTime: number, tick: number): void {}
 
     // ========== 位置管理 ==========
 
@@ -438,7 +457,7 @@ export abstract class BaseSceneObj {
      * @param casterId 造成伤害的对象 ID
      * @param damage 伤害值
      */
-    getDamage(casterId: number, damage: number): void {}
+    getDamage(casterId: number, damage: number, curTime: number): void {}
 
     /**
      * 获取造成伤害者 ID（子弹等对象可能需要重写）
@@ -478,9 +497,6 @@ export abstract class BaseSceneObj {
     addModule(module: ISceneObjModule): void {
         if (this._modules.indexOf(module) !== -1) return;
         this._modules.push(module);
-        if (module.onAttach) {
-            module.onAttach(this);
-        }
     }
 
     /**
@@ -506,15 +522,15 @@ export abstract class BaseSceneObj {
     /**
      * 移除指定类型的功能模块，并执行彻底清理。
      */
-    removeModule<T extends ISceneObjModule>(moduleClass: new (...args: any[]) => T): T | null {
+    removeModule<T extends ISceneObjModule>(
+        moduleClass: new (...args: any[]) => T,
+        curTime: number
+    ): T | null {
         for (let i = 0; i < this._modules.length; i++) {
             const module = this._modules[i];
             if (module instanceof moduleClass) {
                 this._modules.splice(i, 1);
-                if (module.onDetach) {
-                    module.onDetach(this);
-                }
-                module.onDispose();
+                module.onDispose(this, curTime);
                 return module;
             }
         }
@@ -550,26 +566,39 @@ export abstract class BaseSceneObj {
         }
     }
 
-    private callModuleOwnerUpdate(curTime: number, dt: number): void {
+    private callModuleOwnerLogicUpdate(logicDt: number, curTime: number, tick: number): void {
         for (const module of this._modules) {
-            if (module.onOwnerUpdate) {
-                module.onOwnerUpdate(this, curTime, dt);
+            if (module.onOwnerLogicUpdate) {
+                module.onOwnerLogicUpdate(this, logicDt, curTime, tick);
             }
         }
     }
 
-    private callModuleOwnerLateUpdate(curTime: number): void {
+    private callModuleOwnerLateLogicUpdate(curTime: number, tick: number): void {
         for (const module of this._modules) {
-            if (module.onOwnerLateUpdate) {
-                module.onOwnerLateUpdate(this, curTime);
+            if (module.onOwnerLateLogicUpdate) {
+                module.onOwnerLateLogicUpdate(this, curTime, tick);
             }
         }
     }
 
-    private callModuleOwnerFixedUpdate(curTime: number): void {
+    private callModuleOwnerRenderUpdate(
+        renderDt: number,
+        curTime: number,
+        tick: number,
+        interpolationAlpha: number
+    ): void {
+        for (const module of this._modules) {
+            if (module.onOwnerRenderUpdate) {
+                module.onOwnerRenderUpdate(this, renderDt, curTime, tick, interpolationAlpha);
+            }
+        }
+    }
+
+    private callModuleOwnerFixedUpdate(curTime: number, tick: number): void {
         for (const module of this._modules) {
             if (module.onOwnerFixedUpdate) {
-                module.onOwnerFixedUpdate(this, curTime);
+                module.onOwnerFixedUpdate(this, curTime, tick);
             }
         }
     }

@@ -25,7 +25,7 @@ export class EffectSceneObj extends DisplaySceneObj {
         this._duration = Math.max(0, durationMs) / 1000;
     }
 
-    protected onUpdate(curTime: number): void {
+    protected onLogicUpdate(_logicDt: number, curTime: number, _tick: number): void {
         if (this._duration <= 0) return;
         if (this._startTime <= 0) {
             this._startTime = curTime;

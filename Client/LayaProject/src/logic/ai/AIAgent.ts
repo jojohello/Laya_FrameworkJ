@@ -27,7 +27,7 @@ export class AIAgent<TOwner extends AIOwner = any> {
     update(owner: TOwner, curTime: number): void {
         const runtime = this.getRuntime(owner);
         if (runtime.stopped) return;
-        if (runtime.nextThinkTime > curTime) return;
+        if (runtime.nextThinkTime - curTime > 1e-9) return;
 
         runtime.nextThinkTime = curTime + this._thinkInterval;
         this._aiTree.execute(owner, curTime);

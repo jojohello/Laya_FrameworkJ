@@ -13,40 +13,29 @@ const TEAM_BAR_URLS: Record<number, string> = {
 };
 
 /**
- * HUD health bar module bound to a SceneObj owner.
+ * HUD health bar module. The owner is supplied per call and is never cached.
  */
 export class HudHealthBarModule implements ISceneObjModule {
-    private _owner: BaseSceneObj | null = null;
     private _view: HealthBarView | null = null;
-    private _visible: boolean = false;
-    private _offsetY: number = -70;
+    private _visible = false;
+    private _offsetY = -70;
     private _options: HudHealthBarOptions = {};
 
-    onAttach(owner: BaseSceneObj): void {
-        this._owner = owner;
-    }
-
-    onDetach(owner: BaseSceneObj): void {
-        if (this._owner === owner) {
-            this._owner = null;
-        }
-    }
-
-    reset(): void {
+    reset(_owner: BaseSceneObj, _curTime: number): void {
         this.hide();
         this._offsetY = -70;
         this._options = {};
     }
 
-    show(options: HudHealthBarOptions = {}): void {
+    show(owner: BaseSceneObj, options: HudHealthBarOptions = {}): void {
         this._visible = true;
         this._options = { ...this._options, ...options };
         this._offsetY = options.offsetY ?? this._offsetY;
         this.ensureView();
-        this.attachToHudLayer();
-        this.applyStyle();
-        this.refresh();
-        this.updatePosition();
+        this.attachToHudLayer(owner);
+        this.applyStyle(owner);
+        this.refresh(owner);
+        this.updatePosition(owner);
     }
 
     hide(): void {
@@ -56,37 +45,34 @@ export class HudHealthBarModule implements ISceneObjModule {
         this._view.removeSelf();
     }
 
-    refresh(): void {
-        if (!this._visible || !this._view || !this._owner) return;
-        const owner = this._owner as any;
-        const hp = Number(owner.hp);
-        const maxHp = Number(owner.maxHp);
+    refresh(owner: BaseSceneObj): void {
+        if (!this._visible || !this._view) return;
+        const creature = owner as any;
+        const hp = Number(creature.hp);
+        const maxHp = Number(creature.maxHp);
         this._view.setProgress(maxHp > 0 ? hp / maxHp : 0);
     }
 
     onOwnerInit(owner: BaseSceneObj): void {
-        this._owner = owner;
         if (this._visible) {
-            this.show(this._options);
+            this.show(owner, this._options);
         }
     }
 
     onOwnerConfirmPos(owner: BaseSceneObj): void {
-        this._owner = owner;
-        this.updatePosition();
+        this.updatePosition(owner);
     }
 
-    onRecycle(): void {
+    onRecycle(_owner: BaseSceneObj, _curTime: number): void {
         this.hide();
     }
 
-    onDispose(): void {
+    onDispose(_owner: BaseSceneObj, _curTime: number): void {
         if (this._view) {
             this._view.removeSelf();
             this._view.destroy();
             this._view = null;
         }
-        this._owner = null;
         this._visible = false;
     }
 
@@ -97,18 +83,18 @@ export class HudHealthBarModule implements ISceneObjModule {
         this._view.visible = true;
     }
 
-    private attachToHudLayer(): void {
-        if (!this._view || !this._owner?.scene) return;
-        const layer = this._owner.scene.getSafeLayer(SceneLayerType.Hud);
+    private attachToHudLayer(owner: BaseSceneObj): void {
+        if (!this._view || !owner.scene) return;
+        const layer = owner.scene.getSafeLayer(SceneLayerType.Hud);
         if (layer && this._view.parent !== layer) {
             layer.addChild(this._view);
         }
     }
 
-    private applyStyle(): void {
-        if (!this._view || !this._owner) return;
+    private applyStyle(owner: BaseSceneObj): void {
+        if (!this._view) return;
 
-        const teamBarUrl = TEAM_BAR_URLS[this._owner.team] || "ui/common/imgs/blood-red.png";
+        const teamBarUrl = TEAM_BAR_URLS[owner.team] || "ui/common/imgs/blood-red.png";
         this._view.setStyle({
             bgUrl: "ui/common/imgs/blood-bg.png",
             barUrl: teamBarUrl,
@@ -116,9 +102,9 @@ export class HudHealthBarModule implements ISceneObjModule {
         });
     }
 
-    private updatePosition(): void {
-        if (!this._visible || !this._view || !this._owner) return;
-        this.attachToHudLayer();
-        this._view.pos(this._owner.x, this._owner.y + this._owner.zOffset + this._offsetY);
+    private updatePosition(owner: BaseSceneObj): void {
+        if (!this._visible || !this._view) return;
+        this.attachToHudLayer(owner);
+        this._view.pos(owner.x, owner.y + owner.zOffset + this._offsetY);
     }
 }

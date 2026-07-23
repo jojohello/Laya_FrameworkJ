@@ -34,7 +34,7 @@ export class CreatureSceneObj extends DisplaySceneObj {
         this.setCollisionBox(20);
     }
 
-    protected onFixedUpdate(curTime: number): void {
+    protected onFixedUpdate(curTime: number, _tick: number): void {
         this.onSkillUpdate(curTime);
     }
 
@@ -65,18 +65,19 @@ export class CreatureSceneObj extends DisplaySceneObj {
             return;
         }
 
-        this.getHudHealthBarModule().show({
+        this.getHudHealthBarModule().show(this, {
             offsetY: this._healthBarOffsetY,
         });
         this.refreshHealthBar();
     }
 
-    getDamage(casterId: number, damage: number): void {
+    getDamage(casterId: number, damage: number, curTime: number): void {
         DamageExecutor.apply({
             casterId,
             target: this,
             damage,
             sourceType: "direct",
+            curTime,
         });
     }
 
@@ -99,34 +100,47 @@ export class CreatureSceneObj extends DisplaySceneObj {
         this.refreshHealthBar();
     }
 
-    castSkill(skillId: number, targetId: number = 0, x: number = this.x, y: number = this.y, skillLevel: number = 1): boolean {
-        const success = this.getSkillAgent().castSkill(skillId, skillLevel, targetId, x, y);
+    castSkill(
+        skillId: number,
+        curTime: number,
+        targetId: number = 0,
+        x: number = this.x,
+        y: number = this.y,
+        skillLevel: number = 1
+    ): boolean {
+        const success = this.getSkillAgent().castSkill(this, skillId, skillLevel, curTime, targetId, x, y);
         this.onCastSkill(skillId, targetId, x, y);
         return success;
     }
 
-    canCastSkill(skillId: number): boolean {
-        return this.getSkillAgent().canCast(skillId);
+    canCastSkill(skillId: number, curTime: number): boolean {
+        return this.getSkillAgent().canCast(skillId, curTime);
     }
 
-    getSkillCooldownRemain(skillId: number): number {
-        return this.getSkillAgent().getCooldownRemain(skillId);
+    getSkillCooldownRemain(skillId: number, curTime: number): number {
+        return this.getSkillAgent().getCooldownRemain(skillId, curTime);
     }
 
-    addBuff(buffId: number, caster: BaseSceneObj, stack: number = 1, durationOverride: number = 0, curTime: number = this.scene?.curTime ?? 0): boolean {
-        return this.getBuffAgent().addBuff(buffId, caster, stack, durationOverride, curTime);
+    addBuff(
+        buffId: number,
+        casterId: number,
+        curTime: number,
+        stack: number = 1,
+        durationOverrideMs: number = 0
+    ): boolean {
+        return this.getBuffAgent().addBuff(this, buffId, casterId, stack, durationOverrideMs, curTime);
     }
 
-    removeBuff(buffId: number): void {
-        this.getBuffAgent().removeBuff(buffId);
+    removeBuff(buffId: number, curTime: number): void {
+        this.getBuffAgent().removeBuff(this, buffId, curTime);
     }
 
     hasBuff(buffId: number): boolean {
         return this.getBuffAgent().hasBuff(buffId);
     }
 
-    reset(): void {
-        super.reset();
+    reset(curTime: number): void {
+        super.reset(curTime);
         this._attrs.clear();
     }
 
@@ -167,7 +181,7 @@ export class CreatureSceneObj extends DisplaySceneObj {
     protected refreshHealthBar(): void {
         const module = this.getModule(HudHealthBarModule);
         if (module) {
-            module.refresh();
+            module.refresh(this);
         }
     }
 

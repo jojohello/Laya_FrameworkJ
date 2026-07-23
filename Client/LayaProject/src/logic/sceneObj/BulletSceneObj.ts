@@ -185,7 +185,13 @@ export class BulletSceneObj extends DisplaySceneObj {
         return this._casterId || this.uid;
     }
 
-    protected onUpdate(curTime: number): void {
+    protected onLogicUpdate(_logicDt: number, curTime: number, _tick: number): void {
+        const caster = this._casterId > 0 ? this._scene?.getLiveObject(this._casterId) : null;
+        if (this._casterId <= 0 || !caster) {
+            this.release();
+            return;
+        }
+
         if (!this._movementStarted) {
             this.startMovementPolicy(curTime);
             return;
@@ -256,13 +262,16 @@ export class BulletSceneObj extends DisplaySceneObj {
     };
 
     protected onHit(target: BaseSceneObj, curTime: number): void {
+        if (!this._scene) return;
+        const casterId = this.getCasterId();
+        const caster = this._scene.getLiveObject(casterId);
+        if (!caster) return;
+
         if (this._hitActions.length > 0) {
-            if (!this._scene) return;
-            const caster = this._scene ? this._scene.getObject(this.getCasterId()) : null;
             for (const action of this._hitActions) {
                 action.execute({
                     scene: this._scene,
-                    caster: caster || this,
+                    casterId,
                     targetId: target.uid,
                     targetX: target.x,
                     targetY: target.y,
@@ -274,7 +283,7 @@ export class BulletSceneObj extends DisplaySceneObj {
         }
 
         if (this._damage > 0) {
-            target.getDamage(this.getCasterId(), this._damage);
+            target.getDamage(casterId, this._damage, curTime);
         }
     }
 
@@ -289,7 +298,7 @@ export class BulletSceneObj extends DisplaySceneObj {
     private getCollisionHost(): BulletCollisionHost {
         return {
             scene: this._scene,
-            owner: this,
+            ownerId: this.uid,
             x: this.x,
             y: this.y,
             lastX: this._lastPos.x,

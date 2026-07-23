@@ -41,12 +41,13 @@ export class MainScene extends BaseScene {
 
     // ========== 更新逻辑 ==========
 
-    protected onUpdate(curTime: number, dt: number): void {
+    protected logicUpdate(logicDt: number, curTime: number, tick: number): void {
+        super.logicUpdate(logicDt, curTime, tick);
         // 主场景特有的每帧逻辑
         // 如：玩家移动、NPC 行为等
     }
 
-    protected onFixedUpdate(curTime: number): void {
+    protected onFixedUpdate(curTime: number, tick: number): void {
         // 固定间隔更新（用于 AI、网络同步等）
     }
 }

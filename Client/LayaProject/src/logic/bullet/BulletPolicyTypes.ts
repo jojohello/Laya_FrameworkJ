@@ -43,7 +43,7 @@ export interface BulletCollisionConfig {
 
 export interface BulletCollisionHost {
     readonly scene: BaseScene | null;
-    readonly owner: BaseSceneObj;
+    readonly ownerId: number;
     readonly x: number;
     readonly y: number;
     readonly lastX: number;

@@ -144,7 +144,8 @@ SkillDebugScenario.applyTestBurnBuff(scene);
 
 - `BuffAction` applies a buff id.
 - `BuffAgent` is the creature-side owner of active buff instances.
-- `BuffRuntime` represents one active buff instance on a target.
+- `BuffRuntime` represents one active buff instance on a target. It stores only
+  `casterId`; the owning `BuffAgent` supplies target on each call.
 - Attribute buffs modify `AttributeSet` through add/percent channels and
   remove their contribution on expire.
 - Buff lifecycle actions are `OnAddAction`, `OnTickAction` and `OnRemoveAction`.
@@ -200,3 +201,7 @@ targets.
 - `Effect` and `TrueDamage` remain compatibility aliases.
 - Bullet hit and Buff lifecycle effects use the same Action parser and executor.
 - Runtime combat time is measured in seconds from `SceneTime`. Config fields with `Ms` suffix (skill delays/CD, Buff duration/tick, bullet `FlyTime`) remain authored in milliseconds and are converted once at the runtime boundary. Public cooldown-remaining values remain milliseconds.
+- `SkillAgent` and `BuffAgent` do not cache their SceneObj owner. Creature entry points pass owner and `curTime` explicitly; delayed Skill records contain only primitive cast parameters and their planned execution time.
+- `ActionContext` carries `casterId`, not a caster object. Actions resolve live
+  entities through `Scene.getLiveObject()` only when they execute. Explicit
+  cast-time snapshots are flattened primitive fields, never generic objects.

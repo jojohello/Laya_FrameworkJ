@@ -4,10 +4,11 @@
  * 
  * 设计原则：
  * - 不包含 TiledMap（简化版）
- * - 使用 SceneTime 管理时间
+ * - update 是唯一 Laya 帧入口，SceneTime 在此集中形成逻辑时间
+ * - logicUpdate 与 renderUpdate 分离，下层不感知时间模式
  * - 与 SceneMgr 配合管理场景切换
  */
-import { SceneTime } from "./SceneTime";
+import { SceneTime, SceneTimeMode } from "./SceneTime";
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { SpaceSegmentation } from "./SpaceSegmentation";
 import IDFactory from "../utils/IDFactory";
@@ -43,7 +44,7 @@ export class BaseScene {
     /** 缓存场景再次进入时是否重建空间索引 */
     protected _rebuildSpaceOnResume: boolean = true;
 
-    /** 固定更新间隔（秒） */
+    /** 低频逻辑钩子的调用间隔（秒），与 FixedTick 调度模式无关。 */
     protected _fixedTime: number = 0.1;
 
     /** 上次固定更新时间 */
@@ -121,11 +122,9 @@ export class BaseScene {
     onExit(): void {
         this._isReady = false;
         this._sceneTime.stop();
-        this.setSceneLayersVisible(false);
-        if (this._camera) {
-            this._camera.setActive(false);
-        }
         this._mapLoadToken++;
+        this.clearRuntimeState();
+        this._sceneConfig = null;
     }
 
     /**
@@ -134,105 +133,92 @@ export class BaseScene {
     onDestroy(): void {
         this._isReady = false;
         this._sceneTime.stop();
-
-        // 销毁空间分割管理器
-        if (this._spaceManager) {
-            this._spaceManager.clear();
-            this._spaceManager.setEnabled(false);
-        }
-        this._teamSpaceManagers.forEach(spaceManager => {
-            spaceManager.clear();
-            spaceManager.setEnabled(false);
-        });
-        this._teamSpaceManagers.clear();
-        this._spaceManager = null;
-
-        // 销毁所有场景对象
-        this.clearAllObjects();
-        this._objMap.clear();
-        this._typeMap.clear();
-        this._delIdList.length = 0;
-        this._delIdSet.clear();
-        this._hasEntered = false;
-        this.releaseSceneMap();
-        this.destroySceneCamera();
-        this.destroySceneLayers();
+        this.clearRuntimeState();
+        this._sceneConfig = null;
     }
 
     // ========== 更新循环 ==========
 
     /**
-     * 每帧更新（由 SceneMgr 调用）
-     * @param dt 时间间隔（秒）
+     * 每个 Laya 帧的唯一 Scene 更新入口。
+     * @param unscaledDelta 不含 Laya Timer scale 的前台帧间隔，单位秒
+     * @param backgroundElapsed 本帧需要补入的后台经过时间，单位秒
      */
-    update(dt: number): void {
+    update(unscaledDelta: number, backgroundElapsed: number = 0): void {
         if (!this._isReady) return;
 
-        this._sceneTime.update(dt);
-        const curTime = this._sceneTime.curTime();
-        const gameDelta = this._sceneTime.deltaTime;
-
-        // 每帧更新
-        this.onUpdate(curTime, gameDelta);
-
-        // 延迟更新
-        this.onLateUpdate(curTime);
-        if (this._camera) {
-            this._camera.update();
-            this.updateSceneMapViewPort();
+        this._sceneTime.beginFrame(unscaledDelta, backgroundElapsed);
+        while (this._sceneTime.hasLogicUpdate()) {
+            const logicDt = this._sceneTime.consumeLogicUpdate();
+            this.logicUpdate(logicDt, this._sceneTime.curTime, this._sceneTime.tick);
         }
 
-        // 固定间隔更新（用于 AI 思考、帧同步等）
-        if (curTime - this._lastFixedTime > this._fixedTime) {
-            this.onFixedUpdate(curTime);
+        if (this._sceneTime.shouldRenderUpdate()) {
+            this.renderUpdate(
+                this._sceneTime.consumeRenderDelta(),
+                this._sceneTime.curTime,
+                this._sceneTime.tick,
+                this._sceneTime.interpolationAlpha
+            );
+        }
+    }
+
+    /**
+     * 权威逻辑更新。参数已经由 Scene 调度器形成，子类不得再次处理暂停、
+     * 倍速或时间模式。
+     */
+    protected logicUpdate(logicDt: number, curTime: number, tick: number): void {
+        for (const obj of this._objMap.values()) {
+            if (obj.isRelease) {
+                this.addDeleteId(obj.uid);
+            } else {
+                obj.logicUpdate(logicDt, curTime, tick);
+            }
+        }
+
+        for (const obj of this._objMap.values()) {
+            if (!obj.isRelease) {
+                obj.lateLogicUpdate(curTime, tick);
+            }
+        }
+
+        this.deleteObjectFromScene();
+
+        // 这是可降频的逻辑钩子，不是 FixedTick 模式本身。
+        if (curTime - this._lastFixedTime + Number.EPSILON >= this._fixedTime) {
+            for (const obj of this._objMap.values()) {
+                if (!obj.isRelease) {
+                    obj.fixedUpdate(curTime, tick);
+                }
+            }
+            this.onFixedUpdate(curTime, tick);
             this._lastFixedTime = curTime;
         }
     }
 
     /**
-     * 每帧更新逻辑
-     * @param curTime 当前时间
-     * @param dt 时间间隔
+     * 项目表现更新。暂停时仍会调用；FixedTick 追帧过载时可被跳过。
      */
-    protected onUpdate(curTime: number, dt: number): void {
-        // 更新所有场景对象
-        for (const obj of this._objMap.values()) {
-            if (obj.isRelease) {
-                this.addDeleteId(obj.uid);
-            } else {
-                obj.update(curTime, dt);
-            }
-        }
-    }
-
-    /**
-     * 延迟更新（用于位置确认等）
-     * @param curTime 当前时间
-     */
-    protected onLateUpdate(curTime: number): void {
-        // 延迟更新所有场景对象
+    protected renderUpdate(
+        renderDt: number,
+        curTime: number,
+        tick: number,
+        interpolationAlpha: number
+    ): void {
         for (const obj of this._objMap.values()) {
             if (!obj.isRelease) {
-                obj.lateUpdate(curTime);
+                obj.renderUpdate(renderDt, curTime, tick, interpolationAlpha);
             }
         }
 
-        // 清理已释放的对象
-        this.deleteObjectFromScene();
-    }
-
-    /**
-     * 固定间隔更新（用于 AI 思考、帧同步）
-     * @param curTime 当前时间
-     */
-    protected onFixedUpdate(curTime: number): void {
-        // 固定间隔更新所有场景对象
-        for (const obj of this._objMap.values()) {
-            if (!obj.isRelease) {
-                obj.fixedUpdate(curTime);
-            }
+        if (this._camera) {
+            this._camera.update(this);
+            this.updateSceneMapViewPort();
         }
     }
+
+    /** 可降频的逻辑钩子，默认每 0.1 秒调用一次。 */
+    protected onFixedUpdate(curTime: number, tick: number): void {}
 
     // ========== 工具方法 ==========
 
@@ -240,7 +226,7 @@ export class BaseScene {
      * 获取当前时间
      */
     get curTime(): number {
-        return this._sceneTime.curTime();
+        return this._sceneTime.curTime;
     }
 
     /** 当前帧经过的场景游戏时间，单位秒。 */
@@ -255,6 +241,36 @@ export class BaseScene {
 
     get timeScale(): number {
         return this._sceneTime.timeScale;
+    }
+
+    setPaused(value: boolean): void {
+        if (value) this._sceneTime.pause();
+        else this._sceneTime.resume();
+    }
+
+    get isPaused(): boolean {
+        return this._sceneTime.isPaused;
+    }
+
+    /** Selects how this Scene forms logic steps; gameplay code does not read it. */
+    setTimeMode(value: SceneTimeMode): void {
+        this._sceneTime.setMode(value);
+    }
+
+    get timeMode(): SceneTimeMode {
+        return this._sceneTime.mode;
+    }
+
+    setFixedTickRate(value: number): void {
+        this._sceneTime.setFixedTickRate(value);
+    }
+
+    get fixedTickRate(): number {
+        return this._sceneTime.fixedTickRate;
+    }
+
+    get tick(): number {
+        return this._sceneTime.tick;
     }
 
     /**
@@ -272,9 +288,12 @@ export class BaseScene {
     }
 
     /**
-     * 设置固定更新间隔
+     * 设置低频逻辑钩子的更新间隔，不改变 Scene 的 FixedTick 频率。
      */
     setFixedTime(value: number): void {
+        if (!Number.isFinite(value) || value <= 0) {
+            throw new Error(`[BaseScene] Invalid fixed update interval: ${value}`);
+        }
         this._fixedTime = value;
     }
 
@@ -323,6 +342,7 @@ export class BaseScene {
             this._typeMap.set(objType, []);
         }
         this._typeMap.get(objType)!.push(newId);
+        this.onObjectAdded(newObj);
 
         return newObj;
     }
@@ -344,6 +364,12 @@ export class BaseScene {
      */
     getObject(uid: number): BaseSceneObj | null {
         return this._objMap.get(uid) || null;
+    }
+
+    /** Resolves an entity lifecycle ID and rejects objects already queued for release. */
+    getLiveObject(uid: number): BaseSceneObj | null {
+        const obj = this._objMap.get(uid) || null;
+        return obj && !obj.isRelease ? obj : null;
     }
 
     /** Finds the nearest living object on another team without allocating a result list. */
@@ -396,6 +422,7 @@ export class BaseScene {
         for (const uid of this._delIdList) {
             const obj = this._objMap.get(uid);
             if (obj) {
+                this.onObjectRemoving(obj);
                 // 从类型映射中移除
                 const objType = obj.getObjType();
                 const typeList = this._typeMap.get(objType);
@@ -429,6 +456,7 @@ export class BaseScene {
      */
     clearAllObjects(): void {
         for (const obj of this._objMap.values()) {
+            this.onObjectRemoving(obj);
             const className = obj.getClassName();
             if (obj.cacheable) {
                 obj.onRecycle(this);
@@ -441,6 +469,41 @@ export class BaseScene {
         this._typeMap.clear();
         this._delIdList.length = 0;
         this._delIdSet.clear();
+    }
+
+    /** Scene-specific registration hook. Persistent indexes must store obj.uid, not obj. */
+    protected onObjectAdded(_obj: BaseSceneObj): void {}
+
+    /** Called before an object is recycled or disposed while its uid is still valid. */
+    protected onObjectRemoving(_obj: BaseSceneObj): void {}
+
+    /**
+     * A cached Scene retains only its reusable class instance. Runtime objects,
+     * map instances, camera/layer bindings and time state are rebuilt on enter.
+     */
+    private clearRuntimeState(): void {
+        this.clearAllObjects();
+
+        if (this._spaceManager) {
+            this._spaceManager.clear();
+            this._spaceManager.setEnabled(false);
+        }
+        this._teamSpaceManagers.forEach(spaceManager => {
+            spaceManager.clear();
+            spaceManager.setEnabled(false);
+        });
+        this._teamSpaceManagers.clear();
+        this._spaceManager = null;
+
+        this.releaseSceneMap();
+        this.destroySceneCamera();
+        this.destroySceneLayers();
+        this._objMap.clear();
+        this._typeMap.clear();
+        this._delIdList.length = 0;
+        this._delIdSet.clear();
+        this._hasEntered = false;
+        this._lastFixedTime = 0;
     }
 
     /**

@@ -17,6 +17,7 @@ import { SceneType } from "./SceneType";
 // 场景类在各文件末尾用 Laya.ClassUtils.regClass 注册运行时查找 key。
 // 此处导入仅用于触发模块加载使注册执行，确保 createScene 能按 sceneClass 名取到场景类。
 import "../mainScene/MainScene";
+import "../battleScene/BattleStageScene";
 import "../battleScene/BattleScene";
 
 /**
@@ -48,20 +49,34 @@ export class SceneMgr implements IManager {
     /** 场景缓存（已关闭但未销毁） */
     private _cachedScenes: Map<SceneType, SceneInstance> = new Map();
 
+    /** 串行化异步切换，避免快速点击让退出、创建和 UI 打开流程交叉。 */
+    private _switchQueue: Promise<void> = Promise.resolve();
+
+    /** 后台经过时间只在 Scene 调度边界测量，不向 gameplay 暴露墙钟。 */
+    private _backgroundStartedAt = -1;
+    private _pendingBackgroundElapsed = 0;
+    private _discardNextTimerDelta = false;
+
     // ========== IManager 接口实现 ==========
 
     async init(): Promise<void> {
-        // 创建场景层级容器（如果需要）
+        Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, this, this.onVisibilityChange);
+        Laya.stage.on(Laya.Event.VISIBILITY_CHANGE, this, this.onVisibilityChange);
     }
 
-    update(dt: number): void {
-        // 更新当前场景
-        if (this._curScene && this._curScene.scene) {
-            this._curScene.scene.update(dt);
-        }
+    update(unscaledDelta: number): void {
+        const backgroundElapsed = this._pendingBackgroundElapsed;
+        this._pendingBackgroundElapsed = 0;
+
+        // Laya's first delta after visibility recovery may already contain the
+        // hidden interval. The measured interval is passed separately exactly once.
+        const foregroundDelta = this._discardNextTimerDelta ? 0 : unscaledDelta;
+        this._discardNextTimerDelta = false;
+        this._curScene?.scene.update(foregroundDelta, backgroundElapsed);
     }
 
     reset(): void {
+        this.resetBackgroundTracking();
         // 关闭当前场景，但不销毁
         if (this._curScene) {
             this._curScene.scene.onExit();
@@ -71,6 +86,9 @@ export class SceneMgr implements IManager {
     }
 
     release(): void {
+        Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, this, this.onVisibilityChange);
+        this.resetBackgroundTracking();
+
         // 销毁所有缓存的场景
         this._cachedScenes.forEach(instance => {
             instance.scene.onDestroy();
@@ -79,6 +97,7 @@ export class SceneMgr implements IManager {
 
         // 销毁当前场景
         if (this._curScene) {
+            this._curScene.scene.onExit();
             this._curScene.scene.onDestroy();
             this._curScene = null;
         }
@@ -105,7 +124,19 @@ export class SceneMgr implements IManager {
      * @param sceneType 场景类型（SceneType enum，对应配置表 ID）
      * @param param 传递给场景的参数
      */
-    async switchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
+    switchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
+        const task = this._switchQueue.then(
+            () => this.performSwitchScene(sceneType, param),
+            () => this.performSwitchScene(sceneType, param)
+        );
+        this._switchQueue = task.then(
+            () => undefined,
+            () => undefined
+        );
+        return task;
+    }
+
+    private async performSwitchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
         const sceneName = SceneType[sceneType];
         console.log(`[SceneMgr] 开始切换场景: from=${this.curSceneName || "none"}, to=${sceneName || sceneType}, id=${sceneType}`);
 
@@ -124,7 +155,7 @@ export class SceneMgr implements IManager {
 
         // 3. 退出当前场景
         if (this._curScene) {
-            await this.exitCurScene(config.cache, config.uiName || "");
+            await this.exitCurScene(config.uiName || "");
         }
 
         // 4. 尝试从缓存恢复
@@ -172,27 +203,28 @@ export class SceneMgr implements IManager {
 
     /**
      * 退出当前场景
-     * @param cache 是否缓存场景
      * @param preserveUIName 新旧场景共用的 UI；共用时保留实例，只刷新场景模式
      */
-    private async exitCurScene(cache: boolean = false, preserveUIName: string = ""): Promise<void> {
+    private async exitCurScene(preserveUIName: string = ""): Promise<void> {
         if (!this._curScene) return;
 
+        const current = this._curScene;
+
         // 关闭关联 UI
-        const uiName = this._curScene.config.uiName;
+        const uiName = current.config.uiName;
         if (uiName && uiName !== preserveUIName) {
             UIManager.instance.close(uiName);
         }
 
         // 调用场景退出方法
-        this._curScene.scene.onExit();
+        current.scene.onExit();
 
         // 根据配置决定是否缓存
-        if (cache && this._curScene.config.cache) {
-            this._cachedScenes.set(this._curScene.sceneType, this._curScene);
+        if (current.config.cache) {
+            this._cachedScenes.set(current.sceneType, current);
         } else {
             // 销毁场景
-            this._curScene.scene.onDestroy();
+            current.scene.onDestroy();
         }
 
         this._curScene = null;
@@ -288,5 +320,33 @@ export class SceneMgr implements IManager {
             desc: config.desc || ""
         };
         return sceneConfig;
+    }
+
+    private onVisibilityChange(): void {
+        const now = this.getMonotonicSeconds();
+        if (!Laya.stage.isVisibility) {
+            if (this._backgroundStartedAt < 0) {
+                this._backgroundStartedAt = now;
+            }
+            return;
+        }
+
+        if (this._backgroundStartedAt < 0) return;
+        this._pendingBackgroundElapsed += Math.max(0, now - this._backgroundStartedAt);
+        this._backgroundStartedAt = -1;
+        this._discardNextTimerDelta = true;
+    }
+
+    private resetBackgroundTracking(): void {
+        this._backgroundStartedAt = -1;
+        this._pendingBackgroundElapsed = 0;
+        this._discardNextTimerDelta = false;
+    }
+
+    private getMonotonicSeconds(): number {
+        const performanceApi = Laya.Browser.window?.performance;
+        return performanceApi && typeof performanceApi.now === "function"
+            ? performanceApi.now() / 1000
+            : Date.now() / 1000;
     }
 }

@@ -1,10 +1,5 @@
-export interface FsmRuntime {
-    currentStateName: string;
-    stateData: Map<string, any>;
-}
-
 export interface FsmOwner {
-    fsmRuntime?: FsmRuntime;
+    fsmStateName?: string;
 }
 
 export abstract class BaseState<TOwner extends FsmOwner = any> {
@@ -18,29 +13,18 @@ export abstract class BaseState<TOwner extends FsmOwner = any> {
         return this._stateName;
     }
 
-    onEnter(_owner: TOwner, _runtime: FsmRuntime): void {
+    onEnter(_owner: TOwner, _curTime: number): void {
     }
 
-    onUpdate(_owner: TOwner, _curTime: number, _runtime: FsmRuntime): void {
+    onUpdate(_owner: TOwner, _curTime: number): void {
     }
 
-    onExit(_owner: TOwner, _runtime: FsmRuntime): void {
-    }
-
-    protected getStateData<T extends object>(runtime: FsmRuntime, defaultValue: T): T {
-        const stateName = this.getStateName();
-        let data = runtime.stateData.get(stateName) as T | undefined;
-        if (!data) {
-            data = defaultValue;
-            runtime.stateData.set(stateName, data);
-        }
-
-        return data;
+    onExit(_owner: TOwner, _curTime: number): void {
     }
 }
 
 /**
- * Shared state machine definition. Current state and state data are stored on owner.fsmRuntime.
+ * Shared state machine definition. Only the current state name is stored on the owner.
  */
 export class StateMachine<TOwner extends FsmOwner = any> {
     private readonly _stateMap: Map<string, BaseState<TOwner>> = new Map();
@@ -50,49 +34,34 @@ export class StateMachine<TOwner extends FsmOwner = any> {
         return this;
     }
 
-    setState(stateName: string, owner: TOwner, force: boolean = false): void {
-        const runtime = this.getRuntime(owner);
-        if (!force && runtime.currentStateName === stateName) return;
+    setState(stateName: string, owner: TOwner, curTime: number, force: boolean = false): void {
+        const currentStateName = owner.fsmStateName || "";
+        if (!force && currentStateName === stateName) return;
 
-        const currentState = this._stateMap.get(runtime.currentStateName);
+        const currentState = this._stateMap.get(currentStateName);
         if (currentState) {
-            currentState.onExit(owner, runtime);
+            currentState.onExit(owner, curTime);
         }
 
-        runtime.currentStateName = stateName;
+        owner.fsmStateName = stateName;
         const nextState = this._stateMap.get(stateName);
         if (nextState) {
-            nextState.onEnter(owner, runtime);
+            nextState.onEnter(owner, curTime);
         }
     }
 
     update(owner: TOwner, curTime: number): void {
-        const runtime = this.getRuntime(owner);
-        const currentState = this._stateMap.get(runtime.currentStateName);
+        const currentState = this._stateMap.get(owner.fsmStateName || "");
         if (currentState) {
-            currentState.onUpdate(owner, curTime, runtime);
+            currentState.onUpdate(owner, curTime);
         }
     }
 
     getCurStateName(owner: TOwner): string {
-        return this.getRuntime(owner).currentStateName;
+        return owner.fsmStateName || "";
     }
 
     reset(owner: TOwner): void {
-        owner.fsmRuntime = {
-            currentStateName: "",
-            stateData: new Map(),
-        };
-    }
-
-    private getRuntime(owner: TOwner): FsmRuntime {
-        if (!owner.fsmRuntime) {
-            owner.fsmRuntime = {
-                currentStateName: "",
-                stateData: new Map(),
-            };
-        }
-
-        return owner.fsmRuntime;
+        owner.fsmStateName = "";
     }
 }

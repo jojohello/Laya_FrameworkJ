@@ -12,13 +12,13 @@
 |------|--------------------|
 | `config` | `ConfigMgr` |
 | `resource` | `ResourceMgr` |
-| `scene` | `SceneMgr`、`BaseScene`、`BattleScene`；异步场景切换由 `SceneMgr` 串行执行，活动场景销毁前先退出 |
+| `scene` | `SceneMgr`、`BaseScene`；异步场景切换串行执行，Realtime/30Hz FixedTick 在 Scene 边界形成统一逻辑时间，逻辑与渲染分离 |
 | `sceneObj` | `BaseSceneObj` 及对象类型 |
 | `ui` | `UIManager` |
 | `mainScene` | `MainSceneView` loads the compact `ui/mainscene/playerProfile.lh` HUD and binds player/Wallet/function-open state |
 | `skill` | `SkillMgr`、`SkillAgent` |
 | `item` | `ItemMgr`、`BagMgr` |
-| `ai` | `AIAgent`、`AIScheduler` |
+| `ai` | `AIAgent`、仅保存实体 ID 的 `AIScheduler`；BattleScene 使用三组确定性摊帧 |
 | `action` | `ActionFactory`、Action 执行体系 |
 | `guide` | `GuideMgr`、双端条件、异步引导流程与服务器进度同步 |
 | `damage` | `DamageExecutor` |

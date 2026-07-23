@@ -1,41 +1,45 @@
 import { AIAgent, AIOwner } from "./AIAgent";
 
 export interface AIScheduleItem<TOwner extends AIOwner = any> {
-    id: number | string;
-    owner: TOwner;
+    id: number;
     agent: AIAgent<TOwner>;
     groupIndex: number;
 }
 
+export interface AIOwnerResolver<TOwner extends AIOwner = any> {
+    getAIOwner(id: number): TOwner | null;
+}
+
 export interface AISchedulerOptions {
     groupCount?: number;
-    maxItemsPerFrame?: number;
-    maxFrameTimeMs?: number;
+    maxItemsPerLogicUpdate?: number;
 }
 
 /**
- * Distributes AI thinking across multiple frames.
+ * Distributes AI thinking across authoritative logic updates.
  *
- * Example: groupCount=3 means only one group is ticked per frame, so each owner
- * is considered every 3 frames. AIAgent still owns the exact think interval.
+ * Example: groupCount=3 means only one group is ticked per logic update, so each
+ * owner is considered every 3 ticks. AIAgent still owns the exact think interval.
  */
 export class AIScheduler<TOwner extends AIOwner = any> {
     private readonly _groups: AIScheduleItem<TOwner>[][] = [];
-    private readonly _itemMap: Map<number | string, AIScheduleItem<TOwner>> = new Map();
+    private readonly _itemMap: Map<number, AIScheduleItem<TOwner>> = new Map();
     private _groupCount: number = 3;
-    private _maxItemsPerFrame: number = 0;
-    private _maxFrameTimeMs: number = 0;
+    private _maxItemsPerLogicUpdate: number = 0;
     private _nextRegisterIndex: number = 0;
-    private _frameIndex: number = 0;
+    private _lastTick: number = 0;
     private _groupCursor: number = 0;
+    private _pendingGroupIndex: number = -1;
 
     constructor(options?: AISchedulerOptions) {
         this.setGroupCount(options?.groupCount || 3);
-        this._maxItemsPerFrame = Math.max(0, Math.floor(options?.maxItemsPerFrame || 0));
-        this._maxFrameTimeMs = Math.max(0, options?.maxFrameTimeMs || 0);
+        this._maxItemsPerLogicUpdate = Math.max(
+            0,
+            Math.floor(options?.maxItemsPerLogicUpdate || 0)
+        );
     }
 
-    register(id: number | string, owner: TOwner, agent: AIAgent<TOwner>): AIScheduleItem<TOwner> {
+    register(id: number, agent: AIAgent<TOwner>): AIScheduleItem<TOwner> {
         const oldItem = this._itemMap.get(id);
         if (oldItem) {
             this.unregister(id);
@@ -46,7 +50,6 @@ export class AIScheduler<TOwner extends AIOwner = any> {
 
         const item: AIScheduleItem<TOwner> = {
             id,
-            owner,
             agent,
             groupIndex,
         };
@@ -56,7 +59,7 @@ export class AIScheduler<TOwner extends AIOwner = any> {
         return item;
     }
 
-    unregister(id: number | string): boolean {
+    unregister(id: number): boolean {
         const item = this._itemMap.get(id);
         if (!item) return false;
 
@@ -64,46 +67,61 @@ export class AIScheduler<TOwner extends AIOwner = any> {
         const index = group.indexOf(item);
         if (index !== -1) {
             group.splice(index, 1);
+            if (this._pendingGroupIndex === item.groupIndex && index < this._groupCursor) {
+                this._groupCursor--;
+            }
+            if (group.length === 0 && this._pendingGroupIndex === item.groupIndex) {
+                this._groupCursor = 0;
+                this._pendingGroupIndex = -1;
+            }
         }
 
         this._itemMap.delete(id);
         return true;
     }
 
-    update(curTime: number): void {
+    update(curTime: number, tick: number, resolver: AIOwnerResolver<TOwner>): void {
         if (this._groupCount <= 0 || this._itemMap.size === 0) return;
 
-        const groupIndex = this._frameIndex % this._groupCount;
-        this._frameIndex++;
+        this._lastTick = tick;
+        const groupIndex = this._pendingGroupIndex >= 0
+            ? this._pendingGroupIndex
+            : Math.abs(Math.floor(tick)) % this._groupCount;
 
         const group = this._groups[groupIndex];
         if (group.length === 0) {
             this._groupCursor = 0;
+            this._pendingGroupIndex = -1;
             return;
         }
 
-        const startTime = this.now();
         let processedCount = 0;
-        let i = Math.min(this._groupCursor, group.length - 1);
-        for (; i < group.length; i++) {
+        let i = Math.min(this._groupCursor, group.length);
+        while (i < group.length) {
             const item = group[i];
-            item.agent.update(item.owner, curTime);
-            processedCount++;
-
-            if (this._maxItemsPerFrame > 0 && processedCount >= this._maxItemsPerFrame) {
-                break;
+            const owner = resolver.getAIOwner(item.id);
+            if (!owner) {
+                group.splice(i, 1);
+                this._itemMap.delete(item.id);
+                continue;
             }
 
-            if (this._maxFrameTimeMs > 0 && this.now() - startTime >= this._maxFrameTimeMs) {
+            item.agent.update(owner, curTime);
+            processedCount++;
+            i++;
+
+            if (this._maxItemsPerLogicUpdate > 0
+                && processedCount >= this._maxItemsPerLogicUpdate) {
                 break;
             }
         }
 
-        if (i < group.length - 1) {
-            this._groupCursor = i + 1;
-            this._frameIndex--;
+        if (i < group.length) {
+            this._groupCursor = i;
+            this._pendingGroupIndex = groupIndex;
         } else {
             this._groupCursor = 0;
+            this._pendingGroupIndex = -1;
         }
     }
 
@@ -113,8 +131,9 @@ export class AIScheduler<TOwner extends AIOwner = any> {
         }
         this._itemMap.clear();
         this._nextRegisterIndex = 0;
-        this._frameIndex = 0;
+        this._lastTick = 0;
         this._groupCursor = 0;
+        this._pendingGroupIndex = -1;
     }
 
     setGroupCount(groupCount: number): void {
@@ -131,14 +150,18 @@ export class AIScheduler<TOwner extends AIOwner = any> {
         this._itemMap.clear();
         this._nextRegisterIndex = 0;
         this._groupCursor = 0;
+        this._pendingGroupIndex = -1;
         for (const item of items) {
-            this.register(item.id, item.owner, item.agent);
+            this.register(item.id, item.agent);
         }
     }
 
-    setFrameBudget(maxItemsPerFrame: number = 0, maxFrameTimeMs: number = 0): void {
-        this._maxItemsPerFrame = Math.max(0, Math.floor(maxItemsPerFrame));
-        this._maxFrameTimeMs = Math.max(0, maxFrameTimeMs);
+    /**
+     * Uses a deterministic item-count budget. Wall-clock execution time must
+     * never decide which AI owners receive a gameplay update.
+     */
+    setLogicUpdateBudget(maxItemsPerLogicUpdate: number = 0): void {
+        this._maxItemsPerLogicUpdate = Math.max(0, Math.floor(maxItemsPerLogicUpdate));
     }
 
     getGroupSize(groupIndex: number): number {
@@ -154,15 +177,8 @@ export class AIScheduler<TOwner extends AIOwner = any> {
         return this._itemMap.size;
     }
 
-    get frameIndex(): number {
-        return this._frameIndex;
+    get lastTick(): number {
+        return this._lastTick;
     }
 
-    private now(): number {
-        if (typeof performance !== "undefined" && performance.now) {
-            return performance.now();
-        }
-
-        return Date.now();
-    }
 }

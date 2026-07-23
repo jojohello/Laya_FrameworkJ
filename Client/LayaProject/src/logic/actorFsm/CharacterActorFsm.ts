@@ -24,10 +24,10 @@ class StateRun extends BaseState<CharacterSceneObj> {
         return CharacterStateName.Run;
     }
 
-    onEnter(owner: CharacterSceneObj): void {
+    onEnter(owner: CharacterSceneObj, curTime: number): void {
         // The gameplay state is Run; the current art/config action is named walk.
         owner.playAnim("walk", true);
-        owner.beginRunState();
+        owner.beginRunState(curTime);
     }
 
     onUpdate(owner: CharacterSceneObj, curTime: number): void {

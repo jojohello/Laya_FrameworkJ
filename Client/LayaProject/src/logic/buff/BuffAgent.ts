@@ -6,65 +6,67 @@ import { DamageContext } from "../damage/DamageContext";
 import { BuffRuntime } from "./BuffRuntime";
 
 export class BuffAgent implements ISceneObjModule {
-    private _owner: CreatureSceneObj | null = null;
     private readonly _buffMap: Map<number, BuffRuntime> = new Map();
 
-    onAttach(owner: BaseSceneObj): void {
-        this._owner = owner as CreatureSceneObj;
+    reset(owner: BaseSceneObj, curTime: number): void {
+        this.clear(owner as CreatureSceneObj, curTime);
     }
 
-    onDetach(_owner: BaseSceneObj): void {
-        this.clear();
-        this._owner = null;
+    onOwnerLogicUpdate(
+        owner: BaseSceneObj,
+        _logicDt: number,
+        curTime: number,
+        _tick: number
+    ): void {
+        this.update(owner as CreatureSceneObj, curTime);
     }
 
-    reset(): void {
-        this.clear();
+    onRecycle(owner: BaseSceneObj, curTime: number): void {
+        this.clear(owner as CreatureSceneObj, curTime);
     }
 
-    onOwnerFixedUpdate(_owner: BaseSceneObj, curTime: number): void {
-        this.update(curTime);
+    onDispose(owner: BaseSceneObj, curTime: number): void {
+        this.clear(owner as CreatureSceneObj, curTime);
     }
 
-    onRecycle(): void {
-        this.clear();
-    }
-
-    onDispose(): void {
-        this.clear();
-        this._owner = null;
-    }
-
-    addBuff(buffId: number, caster: BaseSceneObj, stack: number, durationOverride: number, curTime: number): boolean {
-        const owner = this._owner;
-        if (!owner || owner.isRelease || owner.isDead) return false;
+    addBuff(
+        owner: CreatureSceneObj,
+        buffId: number,
+        casterId: number,
+        stack: number,
+        durationOverrideMs: number,
+        curTime: number
+    ): boolean {
+        if (owner.isRelease || owner.isDead) return false;
+        const caster = owner.scene?.getLiveObject(casterId) || null;
+        if (!caster) return false;
 
         const info = SkillMgr.instance.getBuff(buffId);
         if (!info) return false;
 
         let runtime = this._buffMap.get(buffId);
         if (runtime) {
-            runtime.refresh(caster, stack, curTime);
+            runtime.refresh(casterId, owner, stack, curTime);
             return true;
         }
 
         runtime = new BuffRuntime(
             info,
-            caster,
+            casterId,
             owner,
             stack,
             curTime,
-            durationOverride
+            durationOverrideMs
         );
         this._buffMap.set(buffId, runtime);
         return true;
     }
 
-    removeBuff(buffId: number, curTime: number = this.getDefaultTime()): void {
+    removeBuff(_owner: CreatureSceneObj, buffId: number, curTime: number): void {
         const runtime = this._buffMap.get(buffId);
         if (!runtime) return;
 
-        runtime.dispose(curTime);
+        runtime.dispose(_owner, curTime);
         this._buffMap.delete(buffId);
     }
 
@@ -72,45 +74,39 @@ export class BuffAgent implements ISceneObjModule {
         return this._buffMap.has(buffId);
     }
 
-    clear(): void {
-        const curTime = this.getDefaultTime();
-        this._buffMap.forEach(runtime => runtime.dispose(curTime));
+    clear(owner: CreatureSceneObj, curTime: number): void {
+        this._buffMap.forEach(runtime => runtime.dispose(owner, curTime));
         this._buffMap.clear();
     }
 
-    onBeforeDamage(context: DamageContext): void {
+    onBeforeDamage(_owner: BaseSceneObj, context: DamageContext): void {
         this._buffMap.forEach(runtime => runtime.onBeforeDamage(context));
     }
 
-    onAfterDamage(context: DamageContext): void {
+    onAfterDamage(_owner: BaseSceneObj, context: DamageContext): void {
         this._buffMap.forEach(runtime => runtime.onAfterDamage(context));
     }
 
-    onBeforeBeDamaged(context: DamageContext): void {
+    onBeforeBeDamaged(_owner: BaseSceneObj, context: DamageContext): void {
         this._buffMap.forEach(runtime => runtime.onBeforeBeDamaged(context));
     }
 
-    onAfterBeDamaged(context: DamageContext): void {
+    onAfterBeDamaged(_owner: BaseSceneObj, context: DamageContext): void {
         this._buffMap.forEach(runtime => runtime.onAfterBeDamaged(context));
     }
 
-    private update(curTime: number): void {
-        const owner = this._owner;
-        if (!owner || owner.isRelease || owner.isDead) {
-            this.clear();
+    private update(owner: CreatureSceneObj, curTime: number): void {
+        if (owner.isRelease || owner.isDead) {
+            this.clear(owner, curTime);
             return;
         }
 
         this._buffMap.forEach((runtime, buffId) => {
-            const alive = runtime.update(curTime);
+            const alive = runtime.update(owner, curTime);
             if (!alive) {
-                runtime.dispose(curTime);
+                runtime.dispose(owner, curTime);
                 this._buffMap.delete(buffId);
             }
         });
-    }
-
-    private getDefaultTime(): number {
-        return this._owner?.scene?.curTime ?? 0;
     }
 }
