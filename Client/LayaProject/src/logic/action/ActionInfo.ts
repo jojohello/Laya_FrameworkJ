@@ -1,4 +1,5 @@
 export enum ActionType {
+    Animation = "Animation",
     Bullet = "Bullet",
     Buff = "Buff",
     Damage = "Damage",
@@ -8,7 +9,7 @@ export enum ActionType {
 
 export class ActionInfo {
     constructor(
-        readonly delayMs: number,
+        readonly delaySeconds: number,
         readonly actionType: string,
         readonly params: string[],
         readonly raw: string,

@@ -2,109 +2,82 @@
   {
     "ID": 100101,
     "characterId": 1001,
-    "action": "idle",
+    "actionName": "idle",
     "atlasPath": "character/1001/character-animation.atlas",
-    "framePrefix": "character/1001/animation/idle_",
-    "maskFramePrefix": "character/1001/animation/idle_mask_",
-    "frameCount": 6,
-    "interval": 167,
-    "loop": true,
-    "nextAction": ""
+    "startFrameIndex": 0,
+    "endFrameIndex": 5,
+    "durationMs": 1002
   },
   {
     "ID": 100102,
     "characterId": 1001,
-    "action": "walk",
+    "actionName": "walk",
     "atlasPath": "character/1001/character-animation.atlas",
-    "framePrefix": "character/1001/animation/walk_",
-    "maskFramePrefix": "character/1001/animation/walk_mask_",
-    "frameCount": 6,
-    "interval": 100,
-    "loop": true,
-    "nextAction": ""
+    "startFrameIndex": 6,
+    "endFrameIndex": 11,
+    "durationMs": 600
   },
   {
     "ID": 100103,
     "characterId": 1001,
-    "action": "attack",
+    "actionName": "attack",
     "atlasPath": "character/1001/character-animation.atlas",
-    "framePrefix": "character/1001/animation/attack_",
-    "maskFramePrefix": "character/1001/animation/attack_mask_",
-    "frameCount": 6,
-    "interval": 83,
-    "loop": false,
-    "nextAction": "idle"
+    "startFrameIndex": 12,
+    "endFrameIndex": 17,
+    "durationMs": 498
   },
   {
     "ID": 100201,
     "characterId": 1002,
-    "action": "idle",
+    "actionName": "idle",
     "atlasPath": "character/1002/character-animation.atlas",
-    "framePrefix": "character/1002/animation/idle_",
-    "maskFramePrefix": "character/1002/animation/idle_mask_",
-    "frameCount": 6,
-    "interval": 167,
-    "loop": true,
-    "nextAction": ""
+    "startFrameIndex": 0,
+    "endFrameIndex": 5,
+    "durationMs": 1002
   },
   {
     "ID": 100202,
     "characterId": 1002,
-    "action": "walk",
+    "actionName": "walk",
     "atlasPath": "character/1002/character-animation.atlas",
-    "framePrefix": "character/1002/animation/walk_",
-    "maskFramePrefix": "character/1002/animation/walk_mask_",
-    "frameCount": 6,
-    "interval": 100,
-    "loop": true,
-    "nextAction": ""
+    "startFrameIndex": 6,
+    "endFrameIndex": 11,
+    "durationMs": 600
   },
   {
     "ID": 100203,
     "characterId": 1002,
-    "action": "attack",
+    "actionName": "attack",
     "atlasPath": "character/1002/character-animation.atlas",
-    "framePrefix": "character/1002/animation/attack_",
-    "maskFramePrefix": "character/1002/animation/attack_mask_",
-    "frameCount": 6,
-    "interval": 100,
-    "loop": false,
-    "nextAction": "idle"
+    "startFrameIndex": 12,
+    "endFrameIndex": 17,
+    "durationMs": 600
   },
   {
     "ID": 100301,
     "characterId": 1003,
-    "action": "idle",
+    "actionName": "idle",
     "atlasPath": "character/1003/character-animation.atlas",
-    "framePrefix": "character/1003/animation/idle_",
-    "maskFramePrefix": "character/1003/animation/idle_mask_",
-    "frameCount": 6,
-    "interval": 167,
-    "loop": true,
-    "nextAction": ""
+    "startFrameIndex": 0,
+    "endFrameIndex": 5,
+    "durationMs": 1002
   },
   {
     "ID": 100302,
     "characterId": 1003,
-    "action": "walk",
+    "actionName": "walk",
     "atlasPath": "character/1003/character-animation.atlas",
-    "framePrefix": "character/1003/animation/walk_",
-    "maskFramePrefix": "character/1003/animation/walk_mask_",
-    "frameCount": 6,
-    "interval": 100,
-    "loop": true,
-    "nextAction": ""
+    "startFrameIndex": 6,
+    "endFrameIndex": 11,
+    "durationMs": 600
   },
   {
     "ID": 100303,
     "characterId": 1003,
-    "action": "attack",
+    "actionName": "attack",
     "atlasPath": "character/1003/character-animation.atlas",
-    "framePrefix": "character/1003/animation/attack_",
-    "maskFramePrefix": "character/1003/animation/attack_mask_",
-    "frameCount": 6,
-    "interval": 100,
-    "loop": false,
-    "nextAction": "idle"
+    "startFrameIndex": 12,
+    "endFrameIndex": 17,
+    "durationMs": 600
   }
 ]

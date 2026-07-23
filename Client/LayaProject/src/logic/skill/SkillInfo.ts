@@ -6,6 +6,11 @@ import {
 } from "./SkillData";
 import type { BaseAction } from "../action/BaseAction";
 
+function toNonNegativeSeconds(milliseconds: unknown): number {
+    const value = Number(milliseconds);
+    return Number.isFinite(value) ? Math.max(0, value) / 1000 : 0;
+}
+
 export enum SkillType {
     Active = "Active",
     Passive = "Passive",
@@ -40,11 +45,22 @@ export interface SkillLevelKey {
 }
 
 export class SkillInfo {
-    constructor(readonly data: SkillData, readonly actions: BaseAction[]) {}
+    readonly cooldownSeconds: number;
+
+    constructor(readonly data: SkillData, readonly actions: BaseAction[]) {
+        this.cooldownSeconds = toNonNegativeSeconds(data.CD);
+    }
 }
 
 export class BulletInfo {
-    constructor(readonly data: BulletData, readonly onHitActions: BaseAction[]) {}
+    readonly flyTimeSeconds: number;
+
+    constructor(readonly data: BulletData, readonly onHitActions: BaseAction[]) {
+        const flyTimeMs = Number(data.FlyTime);
+        this.flyTimeSeconds = Number.isFinite(flyTimeMs)
+            ? (flyTimeMs > 0 ? flyTimeMs / 1000 : flyTimeMs)
+            : 0;
+    }
 }
 
 export class DamageInfo {
@@ -52,6 +68,8 @@ export class DamageInfo {
 }
 
 export class BuffInfo {
+    readonly durationSeconds: number;
+    readonly tickIntervalSeconds: number;
     readonly attrAdds: SkillAttrModifier[];
     readonly attrPercents: SkillAttrModifier[];
     readonly onAddActions: BaseAction[];
@@ -63,19 +81,13 @@ export class BuffInfo {
         onTickActions: BaseAction[];
         onRemoveActions: BaseAction[];
     }) {
+        this.durationSeconds = toNonNegativeSeconds(data.Duration);
+        this.tickIntervalSeconds = toNonNegativeSeconds(data.TickInterval);
         this.attrAdds = SkillConfigParser.parseAttrModifierList(data.AttrAdd);
         this.attrPercents = SkillConfigParser.parseAttrModifierList(data.AttrPercent);
         this.onAddActions = actions.onAddActions;
         this.onTickActions = actions.onTickActions;
         this.onRemoveActions = actions.onRemoveActions;
-    }
-
-    get durationMs(): number {
-        return Math.max(0, Number(this.data.Duration) || 0);
-    }
-
-    get tickIntervalMs(): number {
-        return Math.max(0, Number(this.data.TickInterval) || 0);
     }
 
     get maxStack(): number {

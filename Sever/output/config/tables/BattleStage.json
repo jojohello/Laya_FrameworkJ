@@ -1,0 +1,26 @@
+[
+  {
+    "battleId": 1,
+    "canEnter": true
+  },
+  {
+    "battleId": 2,
+    "canEnter": true
+  },
+  {
+    "battleId": 3,
+    "canEnter": true
+  },
+  {
+    "battleId": 4,
+    "canEnter": true
+  },
+  {
+    "battleId": 5,
+    "canEnter": true
+  },
+  {
+    "battleId": 6,
+    "canEnter": true
+  }
+]

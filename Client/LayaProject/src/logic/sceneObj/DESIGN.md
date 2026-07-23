@@ -71,7 +71,7 @@
 - Spine 等真实模型通过 ResourceMgr 加载和回收的策略。
 ## Frame animation planning rule
 
-- Decide and record the loop frame count before drawing or generating any animation source. The `CharacterAnimation.frameCount` value, atlas column count, source-sheet layout, and action timing must agree.
+- Decide and record the loop frame count before drawing or generating any animation source. The inclusive `CharacterAnimation.startFrameIndex/endFrameIndex` range length, atlas entries, source-sheet layout, and `durationMs` must agree.
 - The project default for ordinary character loops is six frames at the current 128x160 cell size. Use eight frames only when a motion needs additional passing or anticipation poses and the atlas layout is intentionally changed.
 - A six-frame walk/run cycle must contain alternating left/right contact poses, passing poses, and a stable foot baseline. Do not solve missing leg alternation by scaling the whole frame.
 

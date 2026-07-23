@@ -6,6 +6,7 @@
     "MaxLevel": 2,
     "SkillType": "Active",
     "TargetType": "Position",
+    "CastRange": 260,
     "CD": 1000,
     "CostType": "None",
     "CostValue": 0,
@@ -18,9 +19,49 @@
     "MaxLevel": 2,
     "SkillType": "Active",
     "TargetType": "Position",
+    "CastRange": 280,
     "CD": 800,
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Bullet;1002"
+  },
+  {
+    "ID": 110101,
+    "SkillID": 1101,
+    "Level": 1,
+    "MaxLevel": 1,
+    "SkillType": "Active",
+    "TargetType": "Target",
+    "CastRange": 80,
+    "CD": 900,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Animation;attack|300;Damage;1001"
+  },
+  {
+    "ID": 120101,
+    "SkillID": 1201,
+    "Level": 1,
+    "MaxLevel": 1,
+    "SkillType": "Active",
+    "TargetType": "Target",
+    "CastRange": 260,
+    "CD": 1100,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Animation;attack|300;Bullet;1001"
+  },
+  {
+    "ID": 130101,
+    "SkillID": 1301,
+    "Level": 1,
+    "MaxLevel": 1,
+    "SkillType": "Active",
+    "TargetType": "Target",
+    "CastRange": 220,
+    "CD": 1200,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Animation;attack|300;Bullet;1001"
   }
 ]

@@ -53,8 +53,14 @@ ID, SkillID, Level, Name, MaxLevel, SkillType, TargetType, CD, CostType, CostVal
 delay;ActionName;param1;param2|delay;ActionName;param1
 ```
 
+`delay` and `CD` are authored in milliseconds. `ActionFactory` and `SkillInfo`
+convert them once into the explicitly named runtime fields `delaySeconds` and
+`cooldownSeconds`.
+
 Current action examples:
 
+- `0;Animation;attack`: immediately play the caster's configured `attack`
+  animation.
 - `0;Bullet;1001`: immediately create bullet `1001`.
 - `200;Damage;1002`: after 200 ms, execute `DamageAction` with damage config
   `1002`.
@@ -68,6 +74,9 @@ Defines projectile movement, collision and hit-result actions.
 ```txt
 ID, MoveType, Speed, Range, PenetrateCount, FlyTime, CheckCollision, Resource, OnHitAction
 ```
+
+`FlyTime` is authored in milliseconds and becomes
+`BulletInfo.flyTimeSeconds` before a projectile runtime is created.
 
 `OnHitAction` is the only configured hit-result entry. Damage, healing, buffs
 and debuffs should be actions with numeric config ids, not hardcoded fields on
@@ -92,6 +101,10 @@ Defines buff time, stacking, attribute modifiers and lifecycle actions.
 ID, Duration, TickInterval, MaxStack, StackType, AttrAdd, AttrPercent, OnAddAction, OnTickAction, OnRemoveAction, Desc
 ```
 
+`Duration` and `TickInterval` are authored in milliseconds and become
+`BuffInfo.durationSeconds` and `BuffInfo.tickIntervalSeconds` when the Info
+wrapper is built.
+
 Buff is a time container. It can execute actions on add, tick and remove, and it
 will later gain explicit damage hooks for shield, reflect, reduction and life
 steal effects.
@@ -105,6 +118,8 @@ steal effects.
 - `SkillRuntime.ts`: action/runtime context for combat entry points.
 - `../action/BaseAction.ts`: generic action base class.
 - `../action/DamageAction.ts`: executes damage by `Damage` id.
+- `../action/AnimationAction.ts`: plays a config-selected caster animation and
+  returns its duration to the owning skill execution.
 - `../action/BulletAction.ts`: creates a `BulletSceneObj` from `Bullet` config.
 - `../action/BuffAction.ts`: applies a `Buff` to the current target.
 - `../action/ActionFactory.ts`: parses Action strings once and creates shared
@@ -198,10 +213,24 @@ targets.
 - Action base classes, parsing and factories live in `src/logic/action`.
 - Skill is one caller of the generic action system.
 - `DamageAction` is the main damage entry: `delay;Damage;damageId`.
+- `AnimationAction` is the animation entry: `delay;Animation;actionName`.
 - `Effect` and `TrueDamage` remain compatibility aliases.
 - Bullet hit and Buff lifecycle effects use the same Action parser and executor.
-- Runtime combat time is measured in seconds from `SceneTime`. Config fields with `Ms` suffix (skill delays/CD, Buff duration/tick, bullet `FlyTime`) remain authored in milliseconds and are converted once at the runtime boundary. Public cooldown-remaining values remain milliseconds.
+- Runtime combat time is measured in seconds from `SceneTime`. Config-authored
+  milliseconds are converted once while building the corresponding Info/Action,
+  or at an explicitly named `Ms` public input boundary. Runtime storage and
+  comparisons use seconds. Cooldown queries use
+  `getSkillCooldownRemainSeconds()`.
 - `SkillAgent` and `BuffAgent` do not cache their SceneObj owner. Creature entry points pass owner and `curTime` explicitly; delayed Skill records contain only primitive cast parameters and their planned execution time.
 - `ActionContext` carries `casterId`, not a caster object. Actions resolve live
   entities through `Scene.getLiveObject()` only when they execute. Explicit
   cast-time snapshots are flattened primitive fields, never generic objects.
+- `ActionContext.curTime` is the current unified scene time and
+  `ActionContext.executeTime` is the planned trigger time on the same clock.
+  Delayed effects use `executeTime` for their logical start; animation playback
+  uses both values to seek directly to the latest correct frame after a large
+  Realtime step.
+- A skill execution ends after all due Actions run, at the maximum of the last
+  configured Action trigger time and every AnimationAction trigger time plus
+  returned animation duration. The implementation never reads the Scene time
+  mode and never waits for an animation-complete callback.

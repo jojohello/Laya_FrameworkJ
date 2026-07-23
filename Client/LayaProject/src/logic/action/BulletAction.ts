@@ -5,12 +5,12 @@ import { ActionContext } from "./ActionRuntime";
 import { BaseAction } from "./BaseAction";
 
 export class BulletAction extends BaseAction {
-    execute(context: ActionContext): void {
+    execute(context: ActionContext): number {
         const bulletId = this.info.getNumberParam(0);
         const bulletInfo = SkillMgr.instance.getBullet(bulletId);
-        if (!bulletInfo) return;
+        if (!bulletInfo) return 0;
         const caster = context.scene.getLiveObject(context.casterId);
-        if (!caster) return;
+        if (!caster) return 0;
 
         const bullet = context.scene.addObjectToScene(
             "BulletSceneObj",
@@ -20,7 +20,7 @@ export class BulletAction extends BaseAction {
             caster.y,
             0
         ) as BulletSceneObj | null;
-        if (!bullet) return;
+        if (!bullet) return 0;
 
         const data = bulletInfo.data;
         const targetX = context.targetX ?? caster.x;
@@ -38,7 +38,7 @@ export class BulletAction extends BaseAction {
                 data.Speed,
                 0,
                 searchTeam,
-                data.FlyTime
+                bulletInfo.flyTimeSeconds
             );
         } else {
             bullet.initLineMovement(
@@ -59,5 +59,6 @@ export class BulletAction extends BaseAction {
                 useRangeCollision: false,
             });
         }
+        return 0;
     }
 }

@@ -5,15 +5,15 @@ import { ActionContext } from "./ActionRuntime";
 import { BaseAction } from "./BaseAction";
 
 export class DamageAction extends BaseAction {
-    execute(context: ActionContext): void {
+    execute(context: ActionContext): number {
         const damageId = this.info.getNumberParam(0);
-        if (!damageId || !context.targetId) return;
+        if (!damageId || !context.targetId) return 0;
 
         const damageInfo = SkillMgr.instance.getDamage(damageId);
-        if (!damageInfo) return;
+        if (!damageInfo) return 0;
         const caster = context.scene.getLiveObject(context.casterId);
         const target = context.scene.getLiveObject(context.targetId);
-        if (!caster || !target || target.isDead) return;
+        if (!caster || !target || target.isDead) return 0;
 
         const data = damageInfo.data;
         DamageExecutor.apply({
@@ -28,8 +28,9 @@ export class DamageAction extends BaseAction {
             ),
             sourceType: "damage",
             sourceId: damageId,
-            curTime: context.curTime,
+            curTime: context.executeTime,
         });
+        return 0;
     }
 
     private calculateDamage(

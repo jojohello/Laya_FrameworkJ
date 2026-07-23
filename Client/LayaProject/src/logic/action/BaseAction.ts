@@ -8,11 +8,16 @@ export abstract class BaseAction {
         this._info = info;
     }
 
-    get delayMs(): number {
-        return this._info ? this._info.delayMs : 0;
+    get delaySeconds(): number {
+        return this._info ? this._info.delaySeconds : 0;
     }
 
-    abstract execute(context: ActionContext): void;
+    /**
+     * Executes the action.
+     * @returns Duration in scene logic seconds that extends the owning skill from
+     * the action's planned executeTime. Non-duration actions return 0.
+     */
+    abstract execute(context: ActionContext): number;
 
     protected get info(): ActionInfo {
         if (!this._info) {

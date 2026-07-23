@@ -7,11 +7,11 @@
 项目明确区分以下时间域，不允许通过含糊的 `realTime`、`now` 或默认取时混用：
 
 - **逻辑时间**：由当前 Scene 调度器形成，是 gameplay 唯一可用的权威时间。运行时单位统一为秒。
-- **墙钟时间**：只用于网络时间戳、真实超时、SDK、登录和外层后台时长测量，不参与可回放 gameplay 计算。
+- **墙钟时间**：只用于网络时间戳、真实超时、SDK、登录、资源缓存淘汰、非 gameplay 的 UI 输入去重和外层后台时长测量，不参与可回放 gameplay 计算。
 - **渲染时间**：只用于表现推进和插值，不反向决定 gameplay 结果。
 - **性能采样时间**：只用于耗时统计和预算监控，不参与业务条件。
 
-`Laya.timer.unscaledDelta` 只允许在最外层 Laya 帧入口读取一次。`Date.now()`、`performance.now()` 和 `Laya.timer` 不得出现在 SceneObj、AI、Skill、Action、Buff、Bullet、战斗 FSM 或动画完成判断中。确需墙钟或性能采样的代码必须用能表达时间域的名称，并留在对应的外层服务边界。
+`Laya.timer.unscaledDelta` 只允许在最外层 Laya 帧入口读取一次。`Date.now()`、`performance.now()` 和 `Laya.timer` 不得出现在 SceneObj、AI、Skill、Action、Buff、Bullet、战斗 FSM 或动画完成判断中。确需墙钟或性能采样的代码必须用 `wallClock`、`monotonic` 或 `performance` 等能表达时间域的名称，并留在对应的外层服务边界。
 
 ## Scene 调度边界
 
@@ -26,7 +26,7 @@ renderUpdate(renderDt, curTime, tick, interpolationAlpha)
 
 - `logicDt`、`curTime`、`renderDt` 的运行时单位均为秒。
 - `tick` 在 FixedTick 中是权威逻辑帧序号，在 Realtime 中只是逻辑更新序号。普通持续时间逻辑统一比较 `curTime`，不因模式不同切换为 tick 计算。
-- 配置表中的毫秒值必须使用 `Ms` 后缀或已有明确毫秒语义，并在进入 Runtime 边界时只转换一次。
+- 配置表中的毫秒值必须使用 `Ms` 后缀或已有明确毫秒语义，并在 Info/Action 解析或显式 `Ms` 公共输入边界只转换一次。运行时字段使用 `Seconds` 后缀，不允许在更新循环中往返换算。
 
 ## 两种时间模式
 

@@ -34,7 +34,7 @@ export class BuffAgent implements ISceneObjModule {
         buffId: number,
         casterId: number,
         stack: number,
-        durationOverrideMs: number,
+        durationOverrideSeconds: number,
         curTime: number
     ): boolean {
         if (owner.isRelease || owner.isDead) return false;
@@ -56,7 +56,7 @@ export class BuffAgent implements ISceneObjModule {
             owner,
             stack,
             curTime,
-            durationOverrideMs
+            durationOverrideSeconds
         );
         this._buffMap.set(buffId, runtime);
         return true;

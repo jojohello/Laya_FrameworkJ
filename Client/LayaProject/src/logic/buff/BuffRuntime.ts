@@ -10,7 +10,7 @@ export class BuffRuntime {
     private _nextTickTime: number = -1;
     private _appliedAddScale: number = 0;
     private _appliedPercentScale: number = 0;
-    private _durationOverrideMs = 0;
+    private _durationOverrideSeconds = 0;
     private _disposed = false;
 
     constructor(
@@ -19,14 +19,16 @@ export class BuffRuntime {
         target: CreatureSceneObj,
         stack: number,
         curTime: number,
-        durationOverrideMs: number = 0
+        durationOverrideSeconds: number = 0
     ) {
         this._buffInfo = buffInfo;
         this._casterId = casterId;
         this._stack = Math.max(1, Math.min(buffInfo.maxStack, stack));
-        this._durationOverrideMs = Math.max(0, durationOverrideMs);
+        this._durationOverrideSeconds = Math.max(0, durationOverrideSeconds);
         this._expireTime = this.calcExpireTime(curTime);
-        this._nextTickTime = buffInfo.tickIntervalMs > 0 ? curTime + buffInfo.tickIntervalMs / 1000 : -1;
+        this._nextTickTime = buffInfo.tickIntervalSeconds > 0
+            ? curTime + buffInfo.tickIntervalSeconds
+            : -1;
         this.applyAttrModifiers(target);
         this.executeActions(target, this._buffInfo.onAddActions, curTime);
     }
@@ -47,8 +49,8 @@ export class BuffRuntime {
         }
 
         this._expireTime = this.calcExpireTime(curTime);
-        if (this._nextTickTime < 0 && this._buffInfo.tickIntervalMs > 0) {
-            this._nextTickTime = curTime + this._buffInfo.tickIntervalMs / 1000;
+        if (this._nextTickTime < 0 && this._buffInfo.tickIntervalSeconds > 0) {
+            this._nextTickTime = curTime + this._buffInfo.tickIntervalSeconds;
         }
     }
 
@@ -62,7 +64,7 @@ export class BuffRuntime {
                 if (this._buffInfo.onTickActions.length > 0) {
                     this.executeActions(target, this._buffInfo.onTickActions, this._nextTickTime);
                 }
-                this._nextTickTime += this._buffInfo.tickIntervalMs / 1000;
+                this._nextTickTime += this._buffInfo.tickIntervalSeconds;
             }
         }
 
@@ -124,10 +126,10 @@ export class BuffRuntime {
     }
 
     private calcExpireTime(curTime: number): number {
-        const durationMs = this._durationOverrideMs > 0
-            ? this._durationOverrideMs
-            : this._buffInfo.durationMs;
-        return durationMs > 0 ? curTime + durationMs / 1000 : 0;
+        const durationSeconds = this._durationOverrideSeconds > 0
+            ? this._durationOverrideSeconds
+            : this._buffInfo.durationSeconds;
+        return durationSeconds > 0 ? curTime + durationSeconds : 0;
     }
 
     private executeActions(
@@ -147,6 +149,7 @@ export class BuffRuntime {
                 targetY: target.y,
                 effectScale: this._stack,
                 curTime,
+                executeTime: curTime,
             });
         }
     }

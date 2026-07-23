@@ -33,7 +33,7 @@ monsterFsm.update(monster, curTime);
 | --- | --- | --- |
 | `Idle` | `idle` 循环 | 外部请求切换 |
 | `Run` | `walk` 循环 | 外部请求切换；当前美术动作名仍为 walk |
-| `Attack` | `attack` 单次 | 动画完成后自动回 `Idle` |
+| `Attack` | 不写死动作；由技能 `AnimationAction` 选择 | 技能计划结束时间到达后回 `Idle` |
 
 外部 AI、移动和战斗逻辑调用 `CharacterSceneObj.changeState(CharacterStateName.Xxx, curTime)`；不要直接调用 `playAnim()`。状态进入、退出及更新都使用调用方显式传入的场景时间，不允许状态自行读取真实时间。动画选择和 attack 完成后的状态回切由状态机负责。角色共享 FSM 定义，当前状态名保存在各自的 `fsmStateName` 中；对象回池和复用时会重置。
 
@@ -44,4 +44,4 @@ unit.runTo(targetX, targetY, curTime);
 unit.attack(skillId, curTime, targetId, targetX, targetY, skillLevel);
 ```
 
-`runTo()` 使用实体 `speed` 属性移动，进入 Run，到达后自动进入 Idle；状态被攻击等行为打断时清除旧移动目标。`attack()` 复用 `SkillAgent`，只有技能实际释放成功才进入 Attack；连续攻击会强制重新进入 Attack 以重播动作。AI 通常不需要直接调用 `changeState()`，除非它表达的是没有移动或技能行为的纯状态控制。
+`runTo()` 使用实体 `speed` 属性移动，进入 Run，到达后自动进入 Idle；状态被攻击等行为打断时清除旧移动目标。`attack()` 复用 `SkillAgent`，只有技能实际释放成功才进入 Attack。技能动作名来自 Action 配置，状态机不判断 `"attack"`，也不监听动画完成回调；`SkillAgent` 在到期 Action 执行后按计划结束时间退出 Attack。AI 通常不需要直接调用 `changeState()`，除非它表达的是没有移动或技能行为的纯状态控制。

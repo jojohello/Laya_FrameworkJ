@@ -144,7 +144,7 @@ export class BulletSceneObj extends DisplaySceneObj {
         speed: number,
         damage: number,
         searchTeam: number,
-        flyTime: number = -1
+        flyTimeSeconds: number = -1
     ): void {
         this._moveType = BulletMoveType.Trace;
         this._casterId = casterId;
@@ -152,7 +152,7 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._speed = speed;
         this._damage = damage;
         this._searchTeam = searchTeam;
-        this._flyTime = flyTime > 0 ? flyTime / 1000 : flyTime;
+        this._flyTime = flyTimeSeconds;
         this.resetCollisionPolicy();
         this._collisionPolicy.configure({
             useTrailCollision: false,
@@ -167,7 +167,7 @@ export class BulletSceneObj extends DisplaySceneObj {
             targetX: this.x,
             targetY: this.y,
             speed,
-            flyTime: flyTime > 0 ? flyTime / 1000 : flyTime,
+            flyTime: flyTimeSeconds,
         };
         this._movementStarted = false;
     }
@@ -277,6 +277,7 @@ export class BulletSceneObj extends DisplaySceneObj {
                     targetY: target.y,
                     effectScale: this._hitEffectScale,
                     curTime,
+                    executeTime: curTime,
                 });
             }
             return;

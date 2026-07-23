@@ -11,14 +11,13 @@ import { CharacterAIRuntime, SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 
 const { regClass } = Laya;
 
-export type CharacterAnimName = "idle" | "walk" | "attack";
+export type CharacterAnimName = string;
 
 const DEFAULT_TEAM_COLOR: readonly [number, number, number] = [255, 0, 0];
 const TEAM_COLORS: Readonly<Record<number, readonly [number, number, number]>> = {
     1: [45, 110, 235],
     2: [220, 50, 55],
 };
-const TEAM_COLOR_TRACE = true;
 
 /**
  * Battle character display adapter.
@@ -33,25 +32,21 @@ export class CharacterSceneObj extends CreatureSceneObj {
     private _baseLayer: Laya.Sprite | null = null;
     private _teamMaterial: Laya.Material | null = null;
     private _frameAnimation: ResFrameAnimation | null = null;
+    private readonly _animationDurationMap = new Map<string, number>();
     private _animationLoadToken = 0;
+    private _animStartTime = 0;
+    private _animLoop = true;
     private _teamColor: [number, number, number] = [...DEFAULT_TEAM_COLOR];
-    private _teamMaterialGeneration = 0;
     private _runTargetX = 0;
     private _runTargetY = 0;
     private _runStopDistance = 1;
     private _lastRunUpdateTime = 0;
-    private _lastLogicTime = 0;
     private _hasRunTarget = false;
     private _skillIds: number[] = [];
 
     protected onInit(uid: number, cfgId: number, scene: BaseScene, team: number, x: number, y: number, angle: number): void {
         super.onInit(uid, cfgId, scene, team, x, y, angle);
         this._teamColor = [...(TEAM_COLORS[team] || DEFAULT_TEAM_COLOR)];
-        this.teamColorTrace("init", {
-            cfgId,
-            team,
-            color: this._teamColor,
-        });
         const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", cfgId);
         this._skillIds = this.parseSkillIds(config?.skillIds || "");
         SimpleCombatAIAgent.reset(this);
@@ -59,10 +54,9 @@ export class CharacterSceneObj extends CreatureSceneObj {
         CharacterActorFsm.setState(CharacterStateName.Idle, this, scene.curTime);
     }
 
-    protected onLogicUpdate(logicDt: number, curTime: number, _tick: number): void {
-        this._lastLogicTime = curTime;
+    protected onLogicUpdate(_logicDt: number, curTime: number, _tick: number): void {
         CharacterActorFsm.update(this, curTime);
-        this._frameAnimation?.update(logicDt);
+        this._frameAnimation?.update(curTime);
     }
 
     protected loadRes(): void {
@@ -92,11 +86,6 @@ export class CharacterSceneObj extends CreatureSceneObj {
         if (mask) {
             this._teamMaterial = CharacterTeamColorMaterial.create(texture, mask, this.team);
             this._baseLayer!.material = this._teamMaterial;
-            this._teamMaterialGeneration++;
-            this.teamColorTrace("create-static-material", {
-                material: this._teamMaterialGeneration,
-                shader: CharacterTeamColorMaterial.getShaderName(this.team),
-            });
             this.applyTeamColorToMaterial();
         } else {
             this._baseLayer!.material = null;
@@ -109,10 +98,6 @@ export class CharacterSceneObj extends CreatureSceneObj {
 
     setTeamColor(r: number, g: number, b: number): void {
         this._teamColor = [r, g, b];
-        this.teamColorTrace("setTeamColor", {
-            color: this._teamColor,
-            material: this._teamMaterialGeneration,
-        });
         if (!this._teamMaterial) return;
         CharacterTeamColorMaterial.setTeamColor(this._teamMaterial, r, g, b);
     }
@@ -125,9 +110,23 @@ export class CharacterSceneObj extends CreatureSceneObj {
         if (this._baseLayer.parent !== model) model.addChild(this._baseLayer);
     }
 
-    playAnim(name: CharacterAnimName = "idle", loop?: boolean, force: boolean = false): void {
+    playAnim(
+        name: CharacterAnimName,
+        startTime: number,
+        loop?: boolean,
+        force: boolean = false,
+        curTime: number = startTime
+    ): number {
         this._animName = name;
-        this._frameAnimation?.play(name, loop, force);
+        this._animStartTime = startTime;
+        this._animLoop = loop ?? false;
+        const duration = this._frameAnimation?.play(name, startTime, curTime, this._animLoop, force) ?? -1;
+        return duration >= 0 ? duration : (this._animationDurationMap.get(name) ?? -1);
+    }
+
+    /** AnimationAction entry; the action name is entirely config-driven. */
+    playActionAnimation(name: string, startTime: number, curTime: number): number {
+        return Math.max(0, this.playAnim(name, startTime, false, true, curTime));
     }
 
     get animName(): CharacterAnimName {
@@ -240,7 +239,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
     }
 
     get isExecutingSkill(): boolean {
-        return this.stateName === CharacterStateName.Attack;
+        return this.isSkillExecuting();
     }
 
     get isIdle(): boolean {
@@ -255,10 +254,6 @@ export class CharacterSceneObj extends CreatureSceneObj {
     }
 
     reset(curTime: number): void {
-        this.teamColorTrace("reset", {
-            previousTeam: this.team,
-            previousColor: this._teamColor,
-        });
         super.reset(curTime);
         this._animName = "idle";
         CharacterActorFsm.reset(this);
@@ -267,9 +262,11 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this._runTargetY = 0;
         this._runStopDistance = 1;
         this._lastRunUpdateTime = 0;
-        this._lastLogicTime = 0;
         this._hasRunTarget = false;
         this._skillIds.length = 0;
+        this._animationDurationMap.clear();
+        this._animStartTime = 0;
+        this._animLoop = true;
         this.releaseFrameAnimation();
         if (this.model) {
             this.model.filters = [];
@@ -279,32 +276,13 @@ export class CharacterSceneObj extends CreatureSceneObj {
     }
 
     onDispose(scene: BaseScene): void {
-        this.teamColorTrace("dispose", {
-            team: this.team,
-            color: this._teamColor,
-        });
         this.releaseTeamMaterial();
         this.releaseFrameAnimation();
         super.onDispose(scene);
         this._baseLayer = null;
     }
 
-    onRecycle(scene: BaseScene): void {
-        this.teamColorTrace("recycle", {
-            team: this.team,
-            color: this._teamColor,
-        });
-        super.onRecycle(scene);
-    }
-
     private releaseTeamMaterial(): void {
-        if (this._teamMaterial) {
-            this.teamColorTrace("release-material", {
-                material: this._teamMaterialGeneration,
-                team: this.team,
-                color: this._teamColor,
-            });
-        }
         if (this._baseLayer) this._baseLayer.material = null;
         if (this._frameAnimation?.animation) this._frameAnimation.animation.material = null;
         this._teamMaterial?.destroy();
@@ -313,26 +291,7 @@ export class CharacterSceneObj extends CreatureSceneObj {
 
     private applyTeamColorToMaterial(): void {
         if (!this._teamMaterial) return;
-        this.teamColorTrace("apply-shader-color", {
-            material: this._teamMaterialGeneration,
-            team: this.team,
-            color: this._teamColor,
-        });
         CharacterTeamColorMaterial.setTeamColor(this._teamMaterial, ...this._teamColor);
-        const shaderColor = this._teamMaterial.getVector4("u_TeamColor");
-        this.teamColorTrace("shader-color-after-apply", {
-            material: this._teamMaterialGeneration,
-            shaderColor: [shaderColor.x, shaderColor.y, shaderColor.z, shaderColor.w],
-        });
-    }
-
-    private teamColorTrace(event: string, details: Record<string, unknown> = {}): void {
-        if (!TEAM_COLOR_TRACE) return;
-        console.log(`[TeamColorTrace] ${event}`, JSON.stringify({
-            uid: this.uid,
-            cfgId: this._cfgId,
-            ...details,
-        }));
     }
 
     private async loadFrameAnimation(model: Laya.Sprite, characterId: number, token: number): Promise<void> {
@@ -344,50 +303,81 @@ export class CharacterSceneObj extends CreatureSceneObj {
         if (configs.length === 0) return;
 
         const atlasPath = configs[0].atlasPath;
-        this.teamColorTrace("frame-load-start", { atlasPath, token });
+        const animationFrameRoot = this.getAnimationFrameRoot(atlasPath);
+        const maxFrameIndex = Math.max(...configs.map(config => config.endFrameIndex));
+        const frameUrls = new Array<string>(maxFrameIndex + 1).fill("");
+        const maskFrameUrls = new Array<string>(maxFrameIndex + 1).fill("");
+        const actions: FrameAnimationAction[] = [];
+        this._animationDurationMap.clear();
+
+        for (const config of configs) {
+            if (
+                config.atlasPath !== atlasPath ||
+                !/^[A-Za-z0-9_-]+$/.test(config.actionName) ||
+                !Number.isInteger(config.startFrameIndex) ||
+                !Number.isInteger(config.endFrameIndex) ||
+                config.startFrameIndex < 0 ||
+                config.endFrameIndex < config.startFrameIndex ||
+                config.durationMs <= 0
+            ) {
+                console.error(`[CharacterSceneObj] Invalid frame animation config: cfgId=${characterId}, action=${config.actionName}`);
+                this._animationDurationMap.clear();
+                return;
+            }
+
+            for (
+                let frameIndex = config.startFrameIndex;
+                frameIndex <= config.endFrameIndex;
+                frameIndex++
+            ) {
+                if (frameUrls[frameIndex]) {
+                    console.error(`[CharacterSceneObj] Overlapping frame animation range: cfgId=${characterId}, index=${frameIndex}`);
+                    this._animationDurationMap.clear();
+                    return;
+                }
+                const localIndex = frameIndex - config.startFrameIndex;
+                const indexText = String(localIndex).padStart(2, "0");
+                frameUrls[frameIndex] = `${animationFrameRoot}${config.actionName}_${indexText}.png`;
+                maskFrameUrls[frameIndex] = `${animationFrameRoot}${config.actionName}_mask_${indexText}.png`;
+            }
+
+            const duration = config.durationMs / 1000;
+            this._animationDurationMap.set(
+                config.actionName,
+                duration
+            );
+            actions.push({
+                name: config.actionName,
+                startFrameIndex: config.startFrameIndex,
+                endFrameIndex: config.endFrameIndex,
+                duration,
+            });
+        }
         const resource = await ResourceMgr.instance.load(atlasPath, ResFrameAnimation);
         if (token !== this._animationLoadToken || this.model !== model) {
             ResourceMgr.instance.recoverRes(resource);
             return;
         }
 
-        const actions: FrameAnimationAction[] = configs.map(config => ({
-            name: config.action,
-            frameUrls: this.makeFrameUrls(config.framePrefix, config.frameCount),
-            maskFrameUrls: this.makeFrameUrls(config.maskFramePrefix, config.frameCount),
-            interval: config.interval,
-            loop: config.loop,
-            nextAction: config.nextAction || undefined,
-        }));
-        resource.configure(actions);
-        resource.setActionCompleteHandler(this.onAnimationActionComplete);
+        if (!resource.configure(actions, frameUrls, maskFrameUrls)) {
+            ResourceMgr.instance.recoverRes(resource);
+            return;
+        }
         resource.pos(-64, -160);
         resource.setParent(model);
         this._frameAnimation = resource;
 
         const initial = actions.find(action => action.name === this._animName) || actions[0];
-        const baseTexture = Laya.loader.getRes(initial.frameUrls[0]) as Laya.Texture;
-        const maskTexture = Laya.loader.getRes(initial.maskFrameUrls[0]) as Laya.Texture;
+        const baseTexture = Laya.loader.getRes(frameUrls[initial.startFrameIndex]) as Laya.Texture;
+        const maskTexture = Laya.loader.getRes(maskFrameUrls[initial.startFrameIndex]) as Laya.Texture;
         if (baseTexture && maskTexture) {
             this.releaseTeamMaterial();
             this._teamMaterial = CharacterTeamColorMaterial.create(baseTexture, maskTexture, this.team);
             if (this._teamMaterial && resource.animation) {
                 resource.animation.material = this._teamMaterial;
-                this._teamMaterialGeneration++;
-                this.teamColorTrace("create-frame-material", {
-                    material: this._teamMaterialGeneration,
-                    shader: CharacterTeamColorMaterial.getShaderName(this.team),
-                    action: this._animName,
-                    base: initial.frameUrls[0],
-                    mask: initial.maskFrameUrls[0],
-                });
                 this.applyTeamColorToMaterial();
-                resource.setFrameChangedHandler((base, mask, frameIndex) => {
+                resource.setFrameChangedHandler((base, mask) => {
                     if (resource.animation && resource.animation.material !== this._teamMaterial) {
-                        this.teamColorTrace("rebind-animation-material", {
-                            action: this._animName,
-                            frameIndex,
-                        });
                         resource.animation.material = this._teamMaterial;
                     }
                     if (this._teamMaterial && mask) {
@@ -396,7 +386,8 @@ export class CharacterSceneObj extends CreatureSceneObj {
                 });
             }
         }
-        if (resource.play(this._animName)) {
+        const curTime = this.scene?.curTime ?? this._animStartTime;
+        if (resource.play(this._animName, this._animStartTime, curTime, this._animLoop) >= 0) {
             this._baseLayer!.visible = false;
         } else {
             console.error(`[CharacterSceneObj] Failed to play frame animation: cfgId=${characterId}, action=${this._animName}`);
@@ -405,8 +396,10 @@ export class CharacterSceneObj extends CreatureSceneObj {
         }
     }
 
-    private makeFrameUrls(prefix: string, count: number): string[] {
-        return Array.from({ length: count }, (_, index) => `${prefix}${String(index).padStart(2, "0")}.png`);
+    private getAnimationFrameRoot(atlasPath: string): string {
+        const separatorIndex = atlasPath.lastIndexOf("/");
+        const atlasDirectory = separatorIndex >= 0 ? atlasPath.slice(0, separatorIndex + 1) : "";
+        return `${atlasDirectory}animation/`;
     }
 
     private parseSkillIds(value: string): number[] {
@@ -415,18 +408,10 @@ export class CharacterSceneObj extends CreatureSceneObj {
             .filter(skillId => Number.isInteger(skillId) && skillId > 0);
     }
 
-    private onAnimationActionComplete = (actionName: string): void => {
-        if (actionName === "attack" && this.stateName === CharacterStateName.Attack) {
-            this.changeState(CharacterStateName.Idle, this._lastLogicTime);
+    protected onSkillExecutionFinished(_skillId: number, curTime: number): void {
+        if (this.stateName === CharacterStateName.Attack) {
+            this.changeState(CharacterStateName.Idle, curTime);
         }
-    };
-
-    protected onDead(casterId: number): void {
-        this.teamColorTrace("dead", {
-            casterId,
-            team: this.team,
-            color: this._teamColor,
-        });
     }
 
     private releaseFrameAnimation(): void {

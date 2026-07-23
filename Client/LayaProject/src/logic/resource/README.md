@@ -21,10 +21,10 @@ const content = await ResourceMgr.instance.loadContent(url);
 ResourceMgr.instance.releaseRef(url);
 ```
 
-常用调试与配置入口：`getRefInfo()`、`getCacheCount()`、`setCacheTime()`、`setPoolLimit()`。默认缓存时间为 30 秒，每个 URL 最多缓存 3 个包装实例。
+常用调试与配置入口：`getRefInfo()`、`getCacheCount()`、`setCacheDurationMs()`、`setPoolLimit()`。默认缓存时间为 30 秒，每个 URL 最多缓存 3 个包装实例。
 
 新增可池化资源类型时继承 `ResBase`，实现 `buildRes()`、`onRecycle()` 和 `onDispose()`；特殊加载或卸载方式通过 `ResBaseProxy` 扩展。
 
-`ResFrameAnimation` 用于 LayaAir 标准图集帧动画。正式资源是单张 PNG 加同名 `.atlas`，动作只引用 atlas 内的子纹理 URL；该包装类负责播放、逐帧回调、事件清理和对象池复用，底层 atlas 仍由默认 Proxy 加载。
+`ResFrameAnimation` 用于 LayaAir 标准图集帧动画。正式资源是单张 PNG 加同名 `.atlas`；动作只保存名称、包含首尾的逻辑帧范围和总播放时长，基础帧与 mask 帧通过同一逻辑索引映射。该包装类负责播放、按统一场景逻辑时间定位帧、帧纹理通知和对象池复用，底层 atlas 仍由默认 Proxy 加载。`play(actionName, startTime, curTime, ...)` 成功时返回一轮动作时长（秒），失败返回 `-1`；Gameplay 不监听动画完成回调。
 
 内部生命周期和并发规则见 [DESIGN.md](DESIGN.md)。

@@ -215,7 +215,7 @@ export class test_res extends Laya.Script {
         this.clearAllImages();
 
         // 2. 设置较短的缓存时间（3秒）
-        ResourceMgr.instance.setCacheTime(3000);
+        ResourceMgr.instance.setCacheDurationMs(3000);
 
         // 3. 打印当前状态
         this.printResourceStatus();
@@ -236,7 +236,7 @@ export class test_res extends Laya.Script {
             Laya.timer.clear(this, this.checkResourceReleased);
 
             // 恢复默认缓存时间
-            ResourceMgr.instance.setCacheTime(5000);
+            ResourceMgr.instance.setCacheDurationMs(30000);
             this.updateTipText();
         }
     }

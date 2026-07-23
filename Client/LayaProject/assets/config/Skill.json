@@ -41,7 +41,7 @@
     "CD": 900,
     "CostType": "None",
     "CostValue": 0,
-    "Action": "300;Damage;1001",
+    "Action": "0;Animation;attack|300;Damage;1001",
     "Desc": "Warrior normal attack skill"
   },
   {
@@ -56,7 +56,7 @@
     "CD": 1100,
     "CostType": "None",
     "CostValue": 0,
-    "Action": "300;Bullet;1001",
+    "Action": "0;Animation;attack|300;Bullet;1001",
     "Desc": "Mage normal attack skill"
   },
   {
@@ -71,7 +71,7 @@
     "CD": 1200,
     "CostType": "None",
     "CostValue": 0,
-    "Action": "300;Bullet;1001",
+    "Action": "0;Animation;attack|300;Bullet;1001",
     "Desc": "Priest normal attack skill"
   }
 ]

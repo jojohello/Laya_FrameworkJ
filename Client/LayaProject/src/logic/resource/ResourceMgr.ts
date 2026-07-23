@@ -23,7 +23,7 @@ export class ResourceMgr implements IManager {
     private constructor() { }
 
     // ========== 配置 ==========
-    private _cacheTime: number = 30000;  // 缓存时间（毫秒）- 默认30秒
+    private _cacheDurationMs: number = 30000;  // 缓存时间（毫秒）- 默认30秒
     private _poolLimit: number = 3;     // 对象池上限
 
     // ========== 数据结构 ==========
@@ -201,8 +201,8 @@ export class ResourceMgr implements IManager {
     /**
      * 配置缓存时间
      */
-    setCacheTime(time: number): void {
-        this._cacheTime = time;
+    setCacheDurationMs(durationMs: number): void {
+        this._cacheDurationMs = durationMs;
     }
 
     /**
@@ -218,11 +218,11 @@ export class ResourceMgr implements IManager {
         let info = this._refInfoDict.get(url);
         if (!info) {
             info = new ResourceInfo();
-            info.lastUseTime = Date.now();  // 首次创建时初始化
+            info.lastUseWallClockMs = Date.now();  // 首次创建时初始化
             this._refInfoDict.set(url, info);
         }
         info.refCount++;
-        // 加载时不更新 lastUseTime（只有回收时才更新）
+        // 加载时不更新时间（只有回收时才更新）
     }
 
     private subRefCounter(url: string): void {
@@ -231,7 +231,7 @@ export class ResourceMgr implements IManager {
             info.refCount--;
             // 只有 refCount 变为 0 时才更新时间（进入缓存计时）
             if (info.refCount === 0) {
-                info.lastUseTime = Date.now();
+                info.lastUseWallClockMs = Date.now();
             }
         }
     }
@@ -240,7 +240,7 @@ export class ResourceMgr implements IManager {
     private updateResTime(url: string): void {
         let info = this._refInfoDict.get(url);
         if (info) {
-            info.lastUseTime = Date.now();
+            info.lastUseWallClockMs = Date.now();
         }
     }
 
@@ -278,7 +278,7 @@ export class ResourceMgr implements IManager {
      * 检查并释放资源（分帧处理）
      */
     private checkAndReleaseRes(): void {
-        let now = Date.now();
+        const wallClockNowMs = Date.now();
         let urlsToDelete: string[] = [];
         let clearedCache = false;
         let clearedRes = false;
@@ -290,12 +290,9 @@ export class ResourceMgr implements IManager {
                 continue;
             }
             
-            // 计算时间差（不打印，减少干扰）
-            const timeDiff = now - info.lastUseTime;
-
             // 1. 检查缓存是否过期 (批量清理)
             // 逻辑: 如果 (当前时间 - 上次活跃时间 > 30s) -> 清空该资源的全部缓存
-            if (now - info.lastUseTime > this._cacheTime) {
+            if (wallClockNowMs - info.lastUseWallClockMs > this._cacheDurationMs) {
                 let cacheList = this._cacheResDict.get(url);
                 if (cacheList && cacheList.length > 0) {
                     // 销毁所有缓存

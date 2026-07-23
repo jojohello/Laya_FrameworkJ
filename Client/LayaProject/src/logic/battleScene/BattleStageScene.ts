@@ -23,7 +23,7 @@ export class BattleStageScene extends BaseScene {
     private _stageNodeHandlers: Array<{ node: Laya.Node; handler: () => void }> = [];
     private _stageHitTargets: Array<{ node: Laya.Sprite; stageId: number; battleId: number }> = [];
     private _stageLoadToken = 0;
-    private _lastStageActivationAt = 0;
+    private _lastStageActivationWallClockMs = 0;
     private _pointerDownX = 0;
     private _pointerDownY = 0;
     private _initialPositioned = false;
@@ -34,6 +34,7 @@ export class BattleStageScene extends BaseScene {
         this.camera?.enableDrag(false, true);
         if (this.camera) this.camera.camera2D.mouseEnabled = false;
         this._initialPositioned = false;
+        this._lastStageActivationWallClockMs = 0;
     }
 
     protected logicUpdate(logicDt: number, curTime: number, tick: number): void {
@@ -253,9 +254,9 @@ export class BattleStageScene extends BaseScene {
 
     private enterStage(stageId: number, battleId: number): void {
         // 子节点 CLICK 与舞台级兜底可能在同一事件中同时触发，只允许进入一次。
-        const now = Date.now();
-        if (now - this._lastStageActivationAt < 150) return;
-        this._lastStageActivationAt = now;
+        const wallClockNowMs = Date.now();
+        if (wallClockNowMs - this._lastStageActivationWallClockMs < 150) return;
+        this._lastStageActivationWallClockMs = wallClockNowMs;
         console.log(`[BattleStageScene] 点击关卡: stageId=${stageId}, battleId=${battleId}`);
         void SceneMgr.instance.switchScene(SceneType.BattleScene, { stageId, battleId }).then(scene => {
             if (!scene) {

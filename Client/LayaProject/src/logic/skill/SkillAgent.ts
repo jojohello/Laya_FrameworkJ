@@ -5,6 +5,7 @@ import { SkillMgr } from "./SkillMgr";
 import { SkillCastContext } from "./SkillRuntime";
 
 interface PendingSkillAction {
+    castId: number;
     executeTime: number;
     action: BaseAction;
     skillId: number;
@@ -18,10 +19,18 @@ interface PendingSkillAction {
 export class SkillAgent implements ISceneObjModule {
     private readonly _cooldownEndTimeMap: Map<number, number> = new Map();
     private readonly _pendingActions: PendingSkillAction[] = [];
+    private _nextCastId = 0;
+    private _activeCastId = 0;
+    private _activeSkillId = 0;
+    private _activeSkillEndTime = 0;
 
     reset(_owner: BaseSceneObj, _curTime: number): void {
         this._cooldownEndTimeMap.clear();
         this._pendingActions.length = 0;
+        this._nextCastId = 0;
+        this._activeCastId = 0;
+        this._activeSkillId = 0;
+        this._activeSkillEndTime = 0;
     }
 
     onOwnerLogicUpdate(
@@ -59,12 +68,17 @@ export class SkillAgent implements ISceneObjModule {
 
         const resolvedTargetX = targetX !== undefined ? targetX : owner.x;
         const resolvedTargetY = targetY !== undefined ? targetY : owner.y;
-        this.startCooldown(skillId, Number(levelInfo.data.CD) || 0, curTime);
+        this.startCooldown(skillId, levelInfo.cooldownSeconds, curTime);
+        const castId = ++this._nextCastId;
+        this._activeCastId = castId;
+        this._activeSkillId = skillId;
+        this._activeSkillEndTime = curTime;
 
         for (const action of levelInfo.actions) {
-            const executeTime = curTime + action.delayMs / 1000;
-            if (action.delayMs <= 0) {
-                this.executeAction(
+            const executeTime = curTime + action.delaySeconds;
+            this._activeSkillEndTime = Math.max(this._activeSkillEndTime, executeTime);
+            if (action.delaySeconds <= 0) {
+                const duration = this.executeAction(
                     owner,
                     action,
                     skillId,
@@ -73,12 +87,15 @@ export class SkillAgent implements ISceneObjModule {
                     resolvedTargetX,
                     resolvedTargetY,
                     effectScale,
-                    executeTime
+                    executeTime,
+                    curTime
                 );
+                this.extendActiveSkillEndTime(castId, executeTime, duration);
                 continue;
             }
 
             this._pendingActions.push({
+                castId,
                 executeTime,
                 action,
                 skillId,
@@ -98,31 +115,39 @@ export class SkillAgent implements ISceneObjModule {
     }
 
     canCast(skillId: number, curTime: number): boolean {
+        if (this._activeCastId !== 0) return false;
         const cooldownEndTime = this._cooldownEndTimeMap.get(skillId) || 0;
         return curTime >= cooldownEndTime;
     }
 
-    getCooldownRemain(skillId: number, curTime: number): number {
+    getCooldownRemainSeconds(skillId: number, curTime: number): number {
         const cooldownEndTime = this._cooldownEndTimeMap.get(skillId) || 0;
-        return Math.max(0, cooldownEndTime - curTime) * 1000;
+        return Math.max(0, cooldownEndTime - curTime);
     }
 
     clearPendingActions(): void {
         this._pendingActions.length = 0;
+        this._activeCastId = 0;
+        this._activeSkillId = 0;
+        this._activeSkillEndTime = 0;
+    }
+
+    isExecuting(): boolean {
+        return this._activeCastId !== 0;
     }
 
     update(owner: BaseSceneObj, curTime: number): void {
         if (owner.isRelease || owner.isDead || !owner.scene) {
-            this._pendingActions.length = 0;
+            this.clearPendingActions();
             return;
         }
 
         while (this._pendingActions.length > 0) {
             const pending = this._pendingActions[0];
-            if (pending.executeTime > curTime) return;
+            if (pending.executeTime > curTime) break;
 
             this._pendingActions.shift();
-            this.executeAction(
+            const duration = this.executeAction(
                 owner,
                 pending.action,
                 pending.skillId,
@@ -131,18 +156,24 @@ export class SkillAgent implements ISceneObjModule {
                 pending.targetX,
                 pending.targetY,
                 pending.effectScale,
-                pending.executeTime
+                pending.executeTime,
+                curTime
             );
+            this.extendActiveSkillEndTime(pending.castId, pending.executeTime, duration);
+        }
+
+        if (this._activeCastId !== 0 && curTime >= this._activeSkillEndTime) {
+            this.finishActiveSkill(owner, curTime);
         }
     }
 
-    private startCooldown(skillId: number, cdMs: number, curTime: number): void {
-        if (cdMs <= 0) {
+    private startCooldown(skillId: number, cooldownSeconds: number, curTime: number): void {
+        if (cooldownSeconds <= 0) {
             this._cooldownEndTimeMap.delete(skillId);
             return;
         }
 
-        this._cooldownEndTimeMap.set(skillId, curTime + cdMs / 1000);
+        this._cooldownEndTimeMap.set(skillId, curTime + cooldownSeconds);
     }
 
     private executeAction(
@@ -154,10 +185,11 @@ export class SkillAgent implements ISceneObjModule {
         targetX: number,
         targetY: number,
         effectScale: number,
-        executeTime: number
-    ): void {
+        executeTime: number,
+        curTime: number
+    ): number {
         const scene = owner.scene;
-        if (!scene || owner.isRelease || owner.isDead) return;
+        if (!scene || owner.isRelease || owner.isDead) return 0;
 
         const context: SkillCastContext = {
             scene,
@@ -168,8 +200,26 @@ export class SkillAgent implements ISceneObjModule {
             targetX,
             targetY,
             effectScale,
-            curTime: executeTime,
+            curTime,
+            executeTime,
         };
-        action.execute(context);
+        return Math.max(0, action.execute(context));
+    }
+
+    private extendActiveSkillEndTime(castId: number, executeTime: number, duration: number): void {
+        if (castId !== this._activeCastId || duration <= 0) return;
+        this._activeSkillEndTime = Math.max(this._activeSkillEndTime, executeTime + duration);
+    }
+
+    private finishActiveSkill(owner: BaseSceneObj, curTime: number): void {
+        const skillId = this._activeSkillId;
+        this._activeCastId = 0;
+        this._activeSkillId = 0;
+        this._activeSkillEndTime = 0;
+
+        const skillOwner = owner as BaseSceneObj & {
+            finishSkillExecution?: (finishedSkillId: number, finishTime: number) => void;
+        };
+        skillOwner.finishSkillExecution?.(skillId, curTime);
     }
 }

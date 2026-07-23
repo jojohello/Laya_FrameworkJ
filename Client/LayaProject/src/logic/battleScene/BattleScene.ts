@@ -13,14 +13,8 @@ import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
 export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterSceneObj> {
-    private static readonly BATTLE_LAYOUT_TRACE_INTERVAL = 0.2;
-
     private _battleUnitsCreated = false;
     private _battleUnitLoadToken = 0;
-    private _lastBattleLayoutTrace = "";
-    private _lastBattleLayoutTraceAt = -Infinity;
-    private _nextBattleLayoutTraceAt = 0;
-    private _lastBattleAliveCount = "";
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
@@ -35,10 +29,6 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._aiScheduler.clear();
         this._battleUnitsCreated = false;
         this._battleUnitLoadToken++;
-        this._lastBattleLayoutTrace = "";
-        this._lastBattleLayoutTraceAt = -Infinity;
-        this._nextBattleLayoutTraceAt = 0;
-        this._lastBattleAliveCount = "";
         this.applyStageMapConfig(param);
         super.onEnter(param);
     }
@@ -73,7 +63,6 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
             this._battleUnitsCreated = true;
             void this.createBattleUnits();
         }
-        this.traceBattleLayout(curTime);
         // Hud layer does not carry runtime nodes; battle controls belong to the formal UI layer.
         return;
         /*
@@ -106,10 +95,6 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     onExit(): void {
         this._battleUnitLoadToken++;
         this._battleUnitsCreated = false;
-        this._lastBattleLayoutTrace = "";
-        this._lastBattleLayoutTraceAt = -Infinity;
-        this._nextBattleLayoutTraceAt = 0;
-        this._lastBattleAliveCount = "";
         super.onExit();
         this._aiScheduler.clear();
     }
@@ -127,81 +112,6 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
 
     protected onObjectRemoving(obj: BaseSceneObj): void {
         this._aiScheduler.unregister(obj.uid);
-    }
-
-    private traceBattleLayout(curTime: number): void {
-        if (curTime < this._nextBattleLayoutTraceAt) return;
-        this._nextBattleLayoutTraceAt = curTime + BattleScene.BATTLE_LAYOUT_TRACE_INTERVAL;
-
-        const units = Array.from(this._objMap.values())
-            .filter((obj): obj is CharacterSceneObj => obj instanceof CharacterSceneObj);
-        if (units.length === 0) return;
-
-        const records = units.map(unit => {
-            const model = unit.model;
-            const parent = model?.parent as Laya.Sprite | null;
-            return {
-                uid: unit.uid,
-                cfgId: unit.configId,
-                team: unit.team,
-                dead: unit.isDead,
-                release: unit.isRelease,
-                x: Math.round(unit.x),
-                y: Math.round(unit.y),
-                modelX: model ? Math.round(model.x) : null,
-                modelY: model ? Math.round(model.y) : null,
-                visible: model?.visible ?? false,
-                parent: parent?.name || null,
-                parentIndex: model && parent ? parent.getChildIndex(model) : -1,
-                zOrder: model ? Number((model as any).zOrder) || 0 : null,
-            };
-        }).sort((left, right) => left.uid - right.uid);
-
-        const alive = records.filter(record => !record.dead && !record.release);
-        const blue = alive.filter(record => record.team === 1);
-        const red = alive.filter(record => record.team === 2);
-        const closePairs: Array<Record<string, unknown>> = [];
-        for (const blueUnit of blue) {
-            for (const redUnit of red) {
-                const dx = blueUnit.x - redUnit.x;
-                const dy = blueUnit.y - redUnit.y;
-                const distance = Math.round(Math.sqrt(dx * dx + dy * dy));
-                if (distance <= 220) {
-                    closePairs.push({
-                        blueUid: blueUnit.uid,
-                        redUid: redUnit.uid,
-                        distance,
-                    });
-                }
-            }
-        }
-
-        const signature = records.map(record => [
-            record.uid,
-            record.team,
-            record.dead ? 1 : 0,
-            record.release ? 1 : 0,
-            Math.round(record.x / 32),
-            Math.round(record.y / 32),
-            record.visible ? 1 : 0,
-            record.parentIndex,
-            record.zOrder,
-        ].join(":" )).join("|");
-        const aliveCount = `${blue.length}:${red.length}`;
-        const countChanged = aliveCount !== this._lastBattleAliveCount;
-        const important = countChanged || closePairs.length > 0 || blue.length <= 1 || red.length <= 1;
-        if (!important || signature === this._lastBattleLayoutTrace) return;
-        if (curTime - this._lastBattleLayoutTraceAt < 0.2 && closePairs.length === 0) return;
-
-        this._lastBattleLayoutTrace = signature;
-        this._lastBattleLayoutTraceAt = curTime;
-        this._lastBattleAliveCount = aliveCount;
-        console.log("[BattleLayoutTrace]", JSON.stringify({
-            time: Number(curTime.toFixed(2)),
-            aliveCount: { blue: blue.length, red: red.length },
-            closePairs,
-            units: records,
-        }));
     }
 
     private async createBattleUnits(): Promise<void> {

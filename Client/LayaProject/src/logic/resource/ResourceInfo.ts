@@ -13,6 +13,6 @@ export enum LoadState {
  */
 export class ResourceInfo {
     refCount: number = 0;           // 引用计数
-    lastUseTime: number = 0;        // 最后使用时间（毫秒）
+    lastUseWallClockMs: number = 0; // 最后使用的墙钟时间（毫秒）
     loadState: LoadState = LoadState.UNLOAD; // 加载状态
 }

@@ -38,10 +38,10 @@ export class GuideActionRunner {
     }
 
     private async waitForStep(step: GuideStep, isCancelled: () => boolean): Promise<void> {
-        const startedAt = Date.now();
+        const startedAtWallClockMs = Date.now();
         while (!this._conditions.evaluateAll(step.waitFor)) {
             if (isCancelled()) throw new Error("Guide cancelled");
-            if (Date.now() - startedAt > 30000) {
+            if (Date.now() - startedAtWallClockMs > 30000) {
                 throw new Error(`[Guide] Wait condition timeout at step ${step.stepId}`);
             }
             await this.delay(100);

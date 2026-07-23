@@ -14,8 +14,8 @@ class StateIdle extends BaseState<CharacterSceneObj> {
         return CharacterStateName.Idle;
     }
 
-    onEnter(owner: CharacterSceneObj): void {
-        owner.playAnim("idle", true);
+    onEnter(owner: CharacterSceneObj, curTime: number): void {
+        owner.playAnim("idle", curTime, true);
     }
 }
 
@@ -26,7 +26,7 @@ class StateRun extends BaseState<CharacterSceneObj> {
 
     onEnter(owner: CharacterSceneObj, curTime: number): void {
         // The gameplay state is Run; the current art/config action is named walk.
-        owner.playAnim("walk", true);
+        owner.playAnim("walk", curTime, true);
         owner.beginRunState(curTime);
     }
 
@@ -42,10 +42,6 @@ class StateRun extends BaseState<CharacterSceneObj> {
 class StateAttack extends BaseState<CharacterSceneObj> {
     getStateName(): string {
         return CharacterStateName.Attack;
-    }
-
-    onEnter(owner: CharacterSceneObj): void {
-        owner.playAnim("attack", false, true);
     }
 }
 

@@ -61,6 +61,12 @@ public class SkillConfig implements Serializable {
     private final String TargetType;
 
     /**
+     * Cast range in pixels
+     */
+    @JsonProperty("CastRange")
+    private final int CastRange;
+
+    /**
      * Cooldown ms server needed
      */
     @JsonProperty("CD")
@@ -96,6 +102,7 @@ public class SkillConfig implements Serializable {
             @JsonProperty("MaxLevel") int MaxLevel,
             @JsonProperty("SkillType") String SkillType,
             @JsonProperty("TargetType") String TargetType,
+            @JsonProperty("CastRange") int CastRange,
             @JsonProperty("CD") int CD,
             @JsonProperty("CostType") String CostType,
             @JsonProperty("CostValue") int CostValue,
@@ -106,6 +113,7 @@ public class SkillConfig implements Serializable {
         this.MaxLevel = MaxLevel;
         this.SkillType = SkillType != null ? SkillType.intern() : null;
         this.TargetType = TargetType != null ? TargetType.intern() : null;
+        this.CastRange = CastRange;
         this.CD = CD;
         this.CostType = CostType != null ? CostType.intern() : null;
         this.CostValue = CostValue;
@@ -134,6 +142,10 @@ public class SkillConfig implements Serializable {
 
     public String getTargetType() {
         return TargetType;
+    }
+
+    public int getCastRange() {
+        return CastRange;
     }
 
     public int getCD() {

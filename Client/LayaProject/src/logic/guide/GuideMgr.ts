@@ -22,7 +22,7 @@ export class GuideMgr implements IManager {
     private _running = false;
     private _ready = false;
     private _generation = 0;
-    private _nextCheckAt = 0;
+    private _nextCheckWallClockMs = 0;
     private _lastBlockedGuideId: number | null = null;
     private constructor() {}
 
@@ -32,8 +32,10 @@ export class GuideMgr implements IManager {
     }
 
     update(_dt: number): void {
-        if (!this._ready || this._running || Date.now() < this._nextCheckAt) return;
-        this._nextCheckAt = Date.now() + 200;
+        if (!this._ready || this._running) return;
+        const wallClockNowMs = Date.now();
+        if (wallClockNowMs < this._nextCheckWallClockMs) return;
+        this._nextCheckWallClockMs = wallClockNowMs + 200;
         void this.tryStartNext();
     }
 
@@ -67,7 +69,7 @@ export class GuideMgr implements IManager {
             }
         }
         this._ready = true;
-        this._nextCheckAt = 0;
+        this._nextCheckWallClockMs = 0;
         this._lastBlockedGuideId = null;
         console.info(
             `[Guide] Init applied: queue=[${this._availableIds.join(",")}], progress=${JSON.stringify(Array.from(this._progress.values()))}`

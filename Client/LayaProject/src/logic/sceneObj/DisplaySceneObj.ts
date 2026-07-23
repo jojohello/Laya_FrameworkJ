@@ -34,7 +34,14 @@ export class DisplaySceneObj extends BaseSceneObj {
         this._transform.forceUpdate();
     }
 
-    playAnim(name: string = "idle", loop: boolean = true): void {
+    playAnim(
+        _name: string,
+        _startTime: number,
+        _loop?: boolean,
+        _force: boolean = false,
+        _curTime: number = _startTime
+    ): number {
         // Reserved for Animation/Spine adapters.
+        return -1;
     }
 }

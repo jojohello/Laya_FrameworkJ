@@ -117,8 +117,17 @@ export class CreatureSceneObj extends DisplaySceneObj {
         return this.getSkillAgent().canCast(skillId, curTime);
     }
 
-    getSkillCooldownRemain(skillId: number, curTime: number): number {
-        return this.getSkillAgent().getCooldownRemain(skillId, curTime);
+    getSkillCooldownRemainSeconds(skillId: number, curTime: number): number {
+        return this.getSkillAgent().getCooldownRemainSeconds(skillId, curTime);
+    }
+
+    isSkillExecuting(): boolean {
+        return this.getSkillAgent().isExecuting();
+    }
+
+    /** SkillAgent completion entry; modules never cache the owner reference. */
+    finishSkillExecution(skillId: number, curTime: number): void {
+        this.onSkillExecutionFinished(skillId, curTime);
     }
 
     addBuff(
@@ -128,7 +137,15 @@ export class CreatureSceneObj extends DisplaySceneObj {
         stack: number = 1,
         durationOverrideMs: number = 0
     ): boolean {
-        return this.getBuffAgent().addBuff(this, buffId, casterId, stack, durationOverrideMs, curTime);
+        const durationOverrideSeconds = Math.max(0, durationOverrideMs) / 1000;
+        return this.getBuffAgent().addBuff(
+            this,
+            buffId,
+            casterId,
+            stack,
+            durationOverrideSeconds,
+            curTime
+        );
     }
 
     removeBuff(buffId: number, curTime: number): void {
@@ -231,4 +248,5 @@ export class CreatureSceneObj extends DisplaySceneObj {
     protected onDead(casterId: number): void {}
     protected onCastSkill(skillId: number, targetId: number, x: number, y: number): void {}
     protected onSkillUpdate(curTime: number): void {}
+    protected onSkillExecutionFinished(skillId: number, curTime: number): void {}
 }

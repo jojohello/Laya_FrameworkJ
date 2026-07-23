@@ -3,6 +3,7 @@ import { BaseAction } from "./BaseAction";
 import { BuffAction } from "./BuffAction";
 import { BulletAction } from "./BulletAction";
 import { DamageAction } from "./DamageAction";
+import { AnimationAction } from "./AnimationAction";
 
 export class ActionFactory {
     static parseActions(actionScript: string, withDelay: boolean = true): BaseAction[] {
@@ -17,7 +18,7 @@ export class ActionFactory {
             }
         }
 
-        actions.sort((a, b) => a.delayMs - b.delayMs);
+        actions.sort((a, b) => a.delaySeconds - b.delaySeconds);
         return actions;
     }
 
@@ -26,12 +27,13 @@ export class ActionFactory {
         if (!raw) return null;
 
         const params = raw.split(";").map(item => item.trim());
-        let delay = 0;
+        let delaySeconds = 0;
         let actionType = "";
         let startIndex = 0;
 
         if (withDelay) {
-            delay = Math.max(0, Number(params[0]) || 0);
+            const delayMs = Number(params[0]);
+            delaySeconds = Number.isFinite(delayMs) ? Math.max(0, delayMs) / 1000 : 0;
             actionType = params[1] || "";
             startIndex = 2;
         } else {
@@ -39,7 +41,7 @@ export class ActionFactory {
             startIndex = 1;
         }
 
-        const info = new ActionInfo(delay, actionType, params.slice(startIndex), raw, index);
+        const info = new ActionInfo(delaySeconds, actionType, params.slice(startIndex), raw, index);
         return this.create(info);
     }
 
@@ -47,6 +49,9 @@ export class ActionFactory {
         let action: BaseAction | null = null;
 
         switch (info.actionType) {
+            case ActionType.Animation:
+                action = new AnimationAction();
+                break;
             case ActionType.Bullet:
                 action = new BulletAction();
                 break;
