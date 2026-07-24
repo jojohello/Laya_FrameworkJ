@@ -29,37 +29,66 @@
       "_$id": "epwy2zch",
       "_$type": "Sprite",
       "name": "stage1002",
-      "x": 367,
-      "y": 1055,
-      "width": 100,
-      "height": 100
+      "x": 610,
+      "y": 1304,
+      "width": 154,
+      "height": 144,
+      "texture": {
+        "_$uuid": "42e873e5-50fd-436c-92c7-42990a8654e1",
+        "_$type": "Texture"
+      }
     },
     {
       "_$id": "dwz2eh8s",
       "_$type": "Sprite",
       "name": "stage1003",
-      "x": 367,
-      "y": 1055,
-      "width": 100,
-      "height": 100
+      "x": 650,
+      "y": 816,
+      "width": 145,
+      "height": 141,
+      "texture": {
+        "_$uuid": "42e873e5-50fd-436c-92c7-42990a8654e1",
+        "_$type": "Texture"
+      }
     },
     {
       "_$id": "0h0glhu0",
       "_$type": "Sprite",
       "name": "stage1004",
-      "x": 367,
-      "y": 1055,
-      "width": 100,
-      "height": 100
+      "x": 407,
+      "y": 559,
+      "width": 135,
+      "height": 141,
+      "texture": {
+        "_$uuid": "42e873e5-50fd-436c-92c7-42990a8654e1",
+        "_$type": "Texture"
+      }
     },
     {
       "_$id": "9sknwd8y",
       "_$type": "Sprite",
       "name": "stage1005",
-      "x": 367,
-      "y": 1055,
-      "width": 100,
-      "height": 100
+      "x": 440,
+      "y": 375,
+      "width": 125,
+      "height": 119,
+      "texture": {
+        "_$uuid": "42e873e5-50fd-436c-92c7-42990a8654e1",
+        "_$type": "Texture"
+      }
+    },
+    {
+      "_$id": "6igqpp6w",
+      "_$type": "Sprite",
+      "name": "stage1006",
+      "x": 617,
+      "y": 94,
+      "width": 112,
+      "height": 112,
+      "texture": {
+        "_$uuid": "42e873e5-50fd-436c-92c7-42990a8654e1",
+        "_$type": "Texture"
+      }
     }
   ]
 }

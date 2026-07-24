@@ -9,12 +9,16 @@ import { SceneTime, SceneTimeMode } from "../scene/SceneTime";
 import { AIScheduler, AIOwnerResolver } from "../ai/AIScheduler";
 import { SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
+import { BattleFlowState } from "./BattleFlowState";
 
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
 export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterSceneObj> {
     private _battleUnitsCreated = false;
+    private _battleUnitsReady = false;
     private _battleUnitLoadToken = 0;
+    private _transitionError = "";
+    private _flowState = BattleFlowState.Preparing;
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
@@ -28,6 +32,9 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     onEnter(param?: any): void {
         this._aiScheduler.clear();
         this._battleUnitsCreated = false;
+        this._battleUnitsReady = false;
+        this._transitionError = "";
+        this._flowState = BattleFlowState.Loading;
         this._battleUnitLoadToken++;
         this.applyStageMapConfig(param);
         super.onEnter(param);
@@ -93,10 +100,25 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     }
 
     onExit(): void {
+        this._flowState = BattleFlowState.Exiting;
         this._battleUnitLoadToken++;
         this._battleUnitsCreated = false;
+        this._battleUnitsReady = false;
+        this._transitionError = "";
         super.onExit();
         this._aiScheduler.clear();
+    }
+
+    get flowState(): BattleFlowState {
+        return this._flowState;
+    }
+
+    get isTransitionReady(): boolean {
+        return super.isTransitionReady && this._battleUnitsReady;
+    }
+
+    get transitionError(): string {
+        return this._transitionError;
     }
 
     getAIOwner(id: number): CharacterSceneObj | null {
@@ -128,16 +150,16 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
                 Laya.loader.load(paths)
             ]);
             if (!shaderReady) {
-                console.error(`[BattleScene] 角色队伍色 Shader 显式解析失败: ${CharacterTeamColorMaterial.SHADER_PATH}`);
+                this.failTransition(`角色队伍色 Shader 显式解析失败: ${CharacterTeamColorMaterial.SHADER_PATH}`);
                 return;
             }
         } catch (error) {
-            console.error("[BattleScene] Failed to preload battle unit textures or shader", error);
+            this.failTransition("Failed to preload battle unit textures or shader", error);
             return;
         }
         if (token !== this._battleUnitLoadToken || !this.isReady) return;
         if (!Laya.Shader3D.find(CharacterTeamColorMaterial.SHADER_NAME)) {
-            console.error(`[BattleScene] 角色队伍色 Shader 加载后仍未注册: ${CharacterTeamColorMaterial.SHADER_PATH}`);
+            this.failTransition(`角色队伍色 Shader 加载后仍未注册: ${CharacterTeamColorMaterial.SHADER_PATH}`);
             return;
         }
         console.log(`[BattleScene] 角色队伍色 Shader 已就绪: ${CharacterTeamColorMaterial.SHADER_NAME}`);
@@ -145,6 +167,13 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         const columns = [220, 384, 548];
         this.createTeamUnits(2, 220, columns, configIds);
         this.createTeamUnits(1, 1120, columns, configIds);
+        this._battleUnitsReady = true;
+        this._flowState = BattleFlowState.Running;
+    }
+
+    private failTransition(message: string, error?: unknown): void {
+        this._transitionError = message;
+        console.error(`[BattleScene] ${message}`, error || "");
     }
 
     private createTeamUnits(

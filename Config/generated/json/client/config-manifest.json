@@ -72,6 +72,12 @@
       "file": "Skill.json",
       "path": "config/Skill.json",
       "rows": 5
+    },
+    {
+      "name": "UITextStyle",
+      "file": "UITextStyle.json",
+      "path": "config/UITextStyle.json",
+      "rows": 23
     }
   ]
 }

@@ -206,8 +206,11 @@
               "text": "确定",
               "fontSize": 24,
               "color": "#ffffff",
+              "bold": true,
               "align": "center",
-              "valign": "middle"
+              "valign": "middle",
+              "stroke": 2,
+              "strokeColor": "#513116"
             }
           ]
         },
@@ -295,8 +298,11 @@
               "text": "取消",
               "fontSize": 24,
               "color": "#ffffff",
+              "bold": true,
               "align": "center",
-              "valign": "middle"
+              "valign": "middle",
+              "stroke": 2,
+              "strokeColor": "#234955"
             }
           ]
         },

@@ -82,6 +82,7 @@
       "fontSize": 18,
       "color": "#fff0d5",
       "bold": true,
+      "align": "left",
       "valign": "middle",
       "overflow": 2,
       "stroke": 2,

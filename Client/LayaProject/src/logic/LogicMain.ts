@@ -46,6 +46,7 @@ export class LogicMain {
     async init(): Promise<void> {
         // 1. 初始化App（获取window上的共享对象）
         App.init();
+        SceneMgr.instance.setLoadingService(App.loadingMgr);
 
         // SceneObj is created by the stable short name stored in battle code/config.
         // @regClass binds the editor resource identity, so register the runtime lookup key explicitly.

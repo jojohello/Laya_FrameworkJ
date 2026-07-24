@@ -72,11 +72,4 @@ export const UIConfigTable: { [name: string]: any } = {
         enterAnim: true,
     },
 
-    "LoadingUI": {
-        path: "ui/loading/loadingUI.ls",
-        layerName: "Top",
-        zOrder: UILayer.Top,
-        singleton: true,
-        autoDestroy: true,
-    },
 };

@@ -18,11 +18,12 @@ import { MathUtils } from "../utils/MathUtils";
 import { BaseSceneMap } from "../map/BaseSceneMap";
 import { SceneMapFactory } from "../map/SceneMapFactory";
 import { inferSceneMapType, SceneMapConfig } from "../map/SceneMapTypes";
+import { TransitionReady } from "./TransitionReady";
 
 /**
  * 场景基类
  */
-export class BaseScene {
+export class BaseScene implements TransitionReady {
     /** 场景时间管理 */
     protected _sceneTime: SceneTime;
 
@@ -278,6 +279,19 @@ export class BaseScene {
      */
     get isReady(): boolean {
         return this._isReady;
+    }
+
+    /**
+     * SceneMgr keeps transition Loading visible until this becomes true.
+     * Scene subclasses may include additional asynchronous gameplay resources.
+     */
+    get isTransitionReady(): boolean {
+        return this._isReady;
+    }
+
+    /** Non-empty when transition preparation cannot complete and should roll back. */
+    get transitionError(): string {
+        return "";
     }
 
     /**

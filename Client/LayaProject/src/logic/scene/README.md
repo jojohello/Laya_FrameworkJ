@@ -2,6 +2,18 @@
 
 `SceneMgr` 负责串行切换 Scene、缓存空的 Scene 类实例、驱动关联 UI，并把每个 Laya 帧的未缩放 delta 传给当前 `BaseScene`。
 
+需要覆盖异步地图和 gameplay 资源准备的入口使用：
+
+```ts
+await SceneMgr.instance.switchSceneWithLoading(
+    SceneType.BattleScene,
+    { stageId, battleId },
+    "战斗加载中"
+);
+```
+
+`switchSceneWithLoading()` 不创建 Loading UI。它向首包 `LoadingMgr` 提交本次场景切换的 `onProcess` 和 `isEnd` 回调；LoadingMgr 只负责显示、逐帧刷新和关闭。目标 Scene 与目标 UI Controller 都实现 `TransitionReady` 时，SceneMgr 同时等待两者的 `isTransitionReady`；只有地图/玩法资源就绪且主界面已显示并完成控件绑定后，场景模块的 `isEnd` 才返回 `true`。普通 Scene 默认以 `isReady` 作为过场完成条件；BattleScene 还会等待角色纹理、队伍色 Shader 和初始战斗单位创建。任一参与者报告 `transitionError` 或 15 秒内未就绪时，SceneMgr 退出半初始化场景并回退到上一场景，随后结束本次 Loading。
+
 `BaseScene` 提供两种逻辑调度模式：
 
 - `SceneTimeMode.Realtime`：按 Laya 帧使用真实经过时间推进。

@@ -13,12 +13,26 @@ import { UIManager } from "../ui/UIManager";
 import { ConfigMgr } from "../config/ConfigMgr";
 import { SceneConfig } from "./SceneConfig";
 import { SceneType } from "./SceneType";
+import { TransitionReady } from "./TransitionReady";
 
 // 场景类在各文件末尾用 Laya.ClassUtils.regClass 注册运行时查找 key。
 // 此处导入仅用于触发模块加载使注册执行，确保 createScene 能按 sceneClass 名取到场景类。
 import "../mainScene/MainScene";
 import "../battleScene/BattleStageScene";
 import "../battleScene/BattleScene";
+
+const DEFAULT_TRANSITION_TIMEOUT_MS = 15000;
+
+/** Structural bridge to the first-package LoadingMgr. */
+export interface LoadingService {
+    show(options: {
+        onProcess: () => { progress: number; text?: string };
+        isEnd: () => boolean;
+        minShowTime?: number;
+    }): Promise<void>;
+    forceHide(): Promise<void>;
+    isShowing(): boolean;
+}
 
 /**
  * 场景实例信息
@@ -28,6 +42,8 @@ interface SceneInstance {
     sceneType: SceneType;   // 场景类型 ID
     scene: BaseScene;       // 场景实例
     config: any;            // 场景配置
+    enterParam: any;        // 最近一次进入参数，失败回退时恢复
+    uiController: TransitionReady | null;
 }
 
 /**
@@ -51,6 +67,7 @@ export class SceneMgr implements IManager {
 
     /** 串行化异步切换，避免快速点击让退出、创建和 UI 打开流程交叉。 */
     private _switchQueue: Promise<void> = Promise.resolve();
+    private _loadingService: LoadingService | null = null;
 
     /** 后台经过时间只在 Scene 调度边界测量，不向 gameplay 暴露墙钟。 */
     private _backgroundStartedAt = -1;
@@ -119,15 +136,41 @@ export class SceneMgr implements IManager {
         return this._curScene ? this._curScene.name : null;
     }
 
+    /** Injects the first-package Loading service without importing Start code. */
+    setLoadingService(service: LoadingService | null): void {
+        this._loadingService = service;
+    }
+
     /**
      * 切换场景
      * @param sceneType 场景类型（SceneType enum，对应配置表 ID）
      * @param param 传递给场景的参数
      */
     switchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
+        return this.enqueueSceneSwitch(sceneType, param, false);
+    }
+
+    /**
+     * Switches scenes under a top-layer Loading UI and rolls back when the
+     * target scene reports a preparation error or cannot become ready in time.
+     */
+    switchSceneWithLoading(
+        sceneType: SceneType,
+        param?: any,
+        message: string = "加载中"
+    ): Promise<BaseScene | null> {
+        return this.enqueueSceneSwitch(sceneType, param, true, message);
+    }
+
+    private enqueueSceneSwitch(
+        sceneType: SceneType,
+        param: any,
+        showLoading: boolean,
+        message: string = "加载中"
+    ): Promise<BaseScene | null> {
         const task = this._switchQueue.then(
-            () => this.performSwitchScene(sceneType, param),
-            () => this.performSwitchScene(sceneType, param)
+            () => this.performSceneSwitch(sceneType, param, showLoading, message),
+            () => this.performSceneSwitch(sceneType, param, showLoading, message)
         );
         this._switchQueue = task.then(
             () => undefined,
@@ -136,7 +179,75 @@ export class SceneMgr implements IManager {
         return task;
     }
 
-    private async performSwitchScene(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
+    private async performSceneSwitch(
+        sceneType: SceneType,
+        param: any,
+        showLoading: boolean,
+        message: string
+    ): Promise<BaseScene | null> {
+        if (!showLoading) {
+            return this.performSwitchSceneCore(sceneType, param);
+        }
+
+        const previousSceneType = this._curScene?.sceneType ?? null;
+        const previousEnterParam = this._curScene?.enterParam;
+        let loadingProgress = 0.05;
+        let loadingText = message;
+        let loadingEnded = false;
+        let loadingCompletion: Promise<void> | null = null;
+
+        if (this._loadingService) {
+            loadingCompletion = this._loadingService.show({
+                onProcess: () => ({
+                    progress: loadingProgress,
+                    text: loadingText,
+                }),
+                isEnd: () => loadingEnded,
+                minShowTime: 300,
+            }).catch(error => {
+                console.error("[SceneMgr] Failed to start unified Loading:", error);
+            });
+        } else {
+            console.error("[SceneMgr] Loading service is not injected");
+        }
+
+        let scene: BaseScene | null = null;
+        try {
+            loadingProgress = 0.15;
+            loadingText = `${message}：正在切换场景`;
+            scene = await this.performSwitchSceneCore(sceneType, param);
+            loadingProgress = scene ? 0.8 : 0.4;
+            loadingText = scene
+                ? `${message}：正在准备界面`
+                : `${message}：正在恢复`;
+            const uiController = this._curScene?.scene === scene
+                ? this._curScene.uiController
+                : null;
+            if (scene && !await this.waitForTransitionReady(scene, uiController, DEFAULT_TRANSITION_TIMEOUT_MS)) {
+                const reason = scene.transitionError || uiController?.transitionError ||
+                    `timeout ${DEFAULT_TRANSITION_TIMEOUT_MS}ms`;
+                console.error(`[SceneMgr] 目标场景准备失败: ${SceneType[sceneType]}, reason=${reason}`);
+                scene = null;
+            }
+
+            if (!scene &&
+                previousSceneType !== null &&
+                previousSceneType !== sceneType &&
+                this._curScene?.sceneType !== previousSceneType) {
+                console.warn(`[SceneMgr] 回退到上一场景: ${SceneType[previousSceneType]}`);
+                await this.performSwitchSceneCore(previousSceneType, previousEnterParam);
+            }
+            loadingProgress = 1;
+            return scene;
+        } finally {
+            loadingEnded = true;
+            if (loadingCompletion) {
+                await loadingCompletion;
+            }
+        }
+    }
+
+    private async performSwitchSceneCore(sceneType: SceneType, param?: any): Promise<BaseScene | null> {
         const sceneName = SceneType[sceneType];
         console.log(`[SceneMgr] 开始切换场景: from=${this.curSceneName || "none"}, to=${sceneName || sceneType}, id=${sceneType}`);
 
@@ -163,11 +274,13 @@ export class SceneMgr implements IManager {
         if (cachedInstance) {
             this._cachedScenes.delete(sceneType);
             this._curScene = cachedInstance;
+            this._curScene.config = config;
             this._curScene.scene.setSceneConfig(config);
+            this._curScene.enterParam = param;
             this._curScene.scene.onEnter(param);
             
             // 打开关联 UI
-            await this.openSceneUI(config, param);
+            this._curScene.uiController = await this.openSceneUI(config, param);
             console.log(`[SceneMgr] 场景切换完成（缓存）: ${sceneName}`);
             return this._curScene.scene;
         }
@@ -184,7 +297,9 @@ export class SceneMgr implements IManager {
                 name: sceneName,
                 sceneType: sceneType,
                 scene: scene,
-                config: config
+                config: config,
+                enterParam: param,
+                uiController: null,
             };
 
             // 6. 进入场景
@@ -192,13 +307,56 @@ export class SceneMgr implements IManager {
             scene.onEnter(param);
 
             // 7. 打开关联 UI
-            await this.openSceneUI(config, param);
+            this._curScene.uiController = await this.openSceneUI(config, param);
             console.log(`[SceneMgr] 场景切换完成: ${sceneName}`);
             return scene;
         } catch (error) {
             console.error(`[SceneMgr] 切换场景异常: ${sceneName}`, error);
             return null;
         }
+    }
+
+    private waitForTransitionReady(
+        scene: BaseScene,
+        uiController: TransitionReady | null,
+        timeoutMs: number
+    ): Promise<boolean> {
+        if (this.hasTransitionError(scene, uiController)) return Promise.resolve(false);
+        if (this.areTransitionParticipantsReady(scene, uiController)) return Promise.resolve(true);
+
+        const startedAt = this.getMonotonicMilliseconds();
+        return new Promise<boolean>(resolve => {
+            const check = (): void => {
+                if (this._curScene?.scene !== scene || this.hasTransitionError(scene, uiController)) {
+                    resolve(false);
+                    return;
+                }
+                if (this.areTransitionParticipantsReady(scene, uiController)) {
+                    resolve(true);
+                    return;
+                }
+                if (this.getMonotonicMilliseconds() - startedAt >= timeoutMs) {
+                    resolve(false);
+                    return;
+                }
+                Laya.timer.frameOnce(1, this, check);
+            };
+            check();
+        });
+    }
+
+    private areTransitionParticipantsReady(
+        scene: TransitionReady,
+        uiController: TransitionReady | null
+    ): boolean {
+        return scene.isTransitionReady && (!uiController || uiController.isTransitionReady);
+    }
+
+    private hasTransitionError(
+        scene: TransitionReady,
+        uiController: TransitionReady | null
+    ): boolean {
+        return !!scene.transitionError || !!uiController?.transitionError;
     }
 
     /**
@@ -260,18 +418,28 @@ export class SceneMgr implements IManager {
     /**
      * 打开场景关联的 UI
      */
-    private async openSceneUI(config: any, param?: any): Promise<void> {
+    private async openSceneUI(config: any, param?: any): Promise<TransitionReady | null> {
         const uiName = config.uiName;
         if (!uiName) {
-            return;
+            return null;
         }
 
-        await UIManager.instance.open(uiName, {
+        const controller = await UIManager.instance.open(uiName, {
             ...(param || {}),
             fromScene: this._curScene?.name,
             scene: this._curScene?.scene,
             switchScene: (sceneType: SceneType, sceneParam?: any) => this.switchScene(sceneType, sceneParam),
         });
+        return this.asTransitionReady(controller);
+    }
+
+    private asTransitionReady(controller: any): TransitionReady | null {
+        if (!controller ||
+            typeof controller.isTransitionReady !== "boolean" ||
+            typeof controller.transitionError !== "string") {
+            return null;
+        }
+        return controller as TransitionReady;
     }
 
     /**
@@ -348,5 +516,12 @@ export class SceneMgr implements IManager {
         return performanceApi && typeof performanceApi.now === "function"
             ? performanceApi.now() / 1000
             : Date.now() / 1000;
+    }
+
+    private getMonotonicMilliseconds(): number {
+        const performanceApi = Laya.Browser.window?.performance;
+        return performanceApi && typeof performanceApi.now === "function"
+            ? performanceApi.now()
+            : Date.now();
     }
 }

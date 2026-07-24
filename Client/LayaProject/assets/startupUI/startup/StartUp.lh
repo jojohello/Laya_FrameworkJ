@@ -42,7 +42,7 @@
       "centerY": 431,
       "text": "正在初始化...",
       "fontSize": 40,
-      "color": "rgba(103, 167, 243, 1)",
+      "color": "#7777f1",
       "fitContent": "yes",
       "bold": true,
       "align": "center",

@@ -12,6 +12,7 @@ import { ExactIntegerInput, exactModuloRatio, formatCompactInteger } from "../co
 import { TopPrefab } from "./TopPrefab";
 import { ConfigMgr } from "../config/ConfigMgr";
 import { MainNavRouteRegistry } from "./MainNavRouteRegistry";
+import { UITextStyle } from "../ui/UITextStyle";
 
 const { regClass } = Laya;
 
@@ -37,10 +38,6 @@ enum MainShellMode {
 export class MainSceneView extends MainSceneViewBase {
     private static readonly BATTLE_FUNCTION_ID = 1001;
     private static readonly DEFAULT_SELECTED_INDEX = 2;
-    private static readonly NAV_LABEL_NORMAL_COLOR = "#f1dfbc";
-    private static readonly NAV_LABEL_NORMAL_STROKE_COLOR = "#4c4c44";
-    private static readonly NAV_LABEL_SELECTED_COLOR = "#ffd66b";
-    private static readonly NAV_LABEL_SELECTED_STROKE_COLOR = "#6a3e12";
     private static readonly GOLD_CURRENCY_ITEM_ID = 1001;
     private static readonly EXP_BAR_WIDTH = 106;
     private static readonly DISPLAY_EXP_PER_LEVEL = 100;
@@ -241,8 +238,7 @@ export class MainSceneView extends MainSceneViewBase {
         const loader = item.getChild("loader_1") as Laya.GLoader;
         if (name) {
             name.text = config?.label || `系统${index + 1}`;
-            name.color = MainSceneView.NAV_LABEL_NORMAL_COLOR;
-            name.strokeColor = MainSceneView.NAV_LABEL_NORMAL_STROKE_COLOR;
+            UITextStyle.apply(name, "nav.normal");
         }
         if (loader) loader.src = config?.icon || "";
         item.selected = false;
@@ -361,12 +357,7 @@ export class MainSceneView extends MainSceneViewBase {
             const name = button.getChild("name_1") as Laya.GTextField;
             button.selected = selected;
             if (name) {
-                name.color = selected
-                    ? MainSceneView.NAV_LABEL_SELECTED_COLOR
-                    : MainSceneView.NAV_LABEL_NORMAL_COLOR;
-                name.strokeColor = selected
-                    ? MainSceneView.NAV_LABEL_SELECTED_STROKE_COLOR
-                    : MainSceneView.NAV_LABEL_NORMAL_STROKE_COLOR;
+                UITextStyle.apply(name, selected ? "nav.selected" : "nav.normal");
             }
         }
         console.log(`[MainSceneView] 导航选中态已同步: index=${this._selectedButtonIndex}, selection=${this.btn_list.selection.index}`);

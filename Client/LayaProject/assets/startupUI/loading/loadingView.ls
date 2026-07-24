@@ -91,7 +91,8 @@
           "bold": true,
           "align": "center",
           "valign": "middle",
-          "stroke": 1
+          "stroke": 1,
+          "strokeColor": "#25345c"
         }
       ]
     },

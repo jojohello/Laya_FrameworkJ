@@ -1,4 +1,5 @@
 import { SceneType } from "../scene/SceneType";
+import { TransitionReady } from "../scene/TransitionReady";
 
 interface BattleViewOpenParam {
     scene?: {
@@ -10,7 +11,7 @@ interface BattleViewOpenParam {
     switchScene?: (sceneType: SceneType, param?: any) => Promise<any>;
 }
 
-export class BattleMainViewController {
+export class BattleMainViewController implements TransitionReady {
     private readonly _speedButton: Laya.GButton;
     private readonly _speedLabel: Laya.GTextField;
     private readonly _pauseButton: Laya.GButton;
@@ -18,6 +19,8 @@ export class BattleMainViewController {
     private readonly _pauseOverlay: Laya.GBox;
     private _param: BattleViewOpenParam | null = null;
     private _timeScale = 1;
+    private _isTransitionReady = false;
+    private _transitionError = "";
 
     constructor(view: Laya.Scene) {
         const toolbar = view.getChildByName("toolbar") as Laya.GBox;
@@ -32,19 +35,36 @@ export class BattleMainViewController {
 
     onOpened(param?: BattleViewOpenParam): void {
         this.unbindEvents();
+        this._isTransitionReady = false;
+        this._transitionError = "";
         this._param = param || null;
+        if (!this._speedButton || !this._speedLabel || !this._pauseButton ||
+            !this._backButton || !this._pauseOverlay) {
+            this._transitionError = "BattleMainView 控件不完整";
+            return;
+        }
         this.setTimeScale(1);
         this.setPaused(false);
         this._speedButton.on(Laya.Event.CLICK, this, this.toggleTimeScale);
         this._pauseButton.on(Laya.Event.CLICK, this, this.togglePause);
         this._backButton.on(Laya.Event.CLICK, this, this.backToStage);
+        this._isTransitionReady = true;
     }
 
     onClosed(): void {
+        this._isTransitionReady = false;
         this.unbindEvents();
         this.setPaused(false);
         this.setTimeScale(1);
         this._param = null;
+    }
+
+    get isTransitionReady(): boolean {
+        return this._isTransitionReady;
+    }
+
+    get transitionError(): string {
+        return this._transitionError;
     }
 
     private unbindEvents(): void {

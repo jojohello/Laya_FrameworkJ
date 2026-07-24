@@ -9,7 +9,7 @@ import type { LayerMgr } from "../start/utils/LayerMgr";
 import * as MessageIds from "./common/MessageIds";
 import { ItemMgr } from "./item/ItemMgr";
 import { BagMgr } from "./item/BagMgr";
-import { SceneMgr } from "./scene/SceneMgr";
+import { LoadingService, SceneMgr } from "./scene/SceneMgr";
 import { SkillMgr } from "./skill/SkillMgr";
 
 export class App {
@@ -31,6 +31,7 @@ export class App {
     static loginMgr: any;
 
     static systemProtocol: any;
+    static loadingMgr: LoadingService;
 
     // SceneMgr（Logic 分包，直接导入）
     static sceneMgr: SceneMgr;
@@ -66,6 +67,7 @@ export class App {
         this.networkManager = (Laya.Browser.window as any).networkManager;
         this.loginMgr = (Laya.Browser.window as any).loginMgr;
         this.systemProtocol = (Laya.Browser.window as any).systemProtocol;
+        this.loadingMgr = (Laya.Browser.window as any).loadingMgr as LoadingService;
 
         // Logic 分包的 Manager（直接导入单例）
         this.sceneMgr = SceneMgr.instance;

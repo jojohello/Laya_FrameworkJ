@@ -37,6 +37,10 @@ UsedSize,cs,c,s
 
 当前支持 `int`、`float`、`bool`、`str`。配置表应包含 `ID` 主键；工具兼容 `ID/id/Id/iD`，新增表统一使用 `ID`。
 
+编辑配置时先定义 CSV 输入字段及格式，再运行导出器生成 JSON、manifest 和 Java 类。禁止手工修改生成物。客户端专用表使用 `UsedSize=c`，服务器导出器会正常跳过，不要求生成 Java 类。
+
+`UITextStyle.csv` 是客户端 UI 语义文字样式表，记录字体、字号、颜色、粗体、描边像素、描边颜色和对齐方式；颜色统一使用 `#rrggbb`，`Stroke>0` 时必须填写 `StrokeColor`。
+
 ## 导出
 
 从仓库根目录运行：

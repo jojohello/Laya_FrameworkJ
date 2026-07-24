@@ -12,6 +12,9 @@ The CSV `UsedSize` row marks export ownership:
 
 - `MainNav.csv`: main-shell bottom navigation label, icon, order, function-open
   gate and stable route key. `routeArgs` is a JSON array string at runtime.
+- `UITextStyle.csv`: client-only semantic text styles used while assembling
+  `.ls/.lh` screens and by runtime-created/stateful text through `UITextStyle`.
+  It includes font, size, color, bold, stroke pixels, stroke color and alignment.
 - `BattleStage.csv`: battle-stage name, normal/Boss presentation, battle ID and
   enterability used by `BattleStageScene`.
 - `Skill.csv`: skill identity and level runtime values. Server needs `ID`,

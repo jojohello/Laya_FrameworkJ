@@ -159,7 +159,8 @@
               "color": "#292980",
               "fitContent": 1,
               "bold": true,
-              "align": "center"
+              "align": "center",
+              "valign": "middle"
             }
           ]
         }

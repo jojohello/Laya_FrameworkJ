@@ -1,57 +1,37 @@
-/**
- * Loading 管理器
- * 负责显示 Loading 界面，通过 process/isEnd 函数参数控制进度
- *
- * 设计原则：
- * - 放在首包（Start），Logic 分包加载时可用
- * - 调用者实现 process() 和 isEnd()，LoadingMgr 负责显示和控制
- * - 通过 window.loadingMgr 暴露给 Logic 分包使用
- *
- * 使用方式：
- * loadingMgr.show({
- *     onProcess: () => ({ progress: loadedCount / totalCount, text: "加载资源" }),
- *     isEnd: () => loadedCount >= totalCount    // 返回是否结束
- * });
- */
-
 import { LoadingView } from "./LoadingView";
 import { LayerMgr } from "../utils/LayerMgr";
 
-/**
- * Loading 配置参数
- */
-export interface LoadingOptions {
-    /** 进度计算函数，返回 0-1 的进度值和显示文本 */
-    onProcess: () => LoadingProcessInfo;
-    /** 结束判断函数，返回 true 表示加载完成 */
-    isEnd: () => boolean;
-    /** 最小显示时间（毫秒，避免闪烁） */
-    minShowTime?: number;
-}
-
-/**
- * Loading 进度信息
- */
 export interface LoadingProcessInfo {
-    /** 进度值，0-1 */
+    /** Current progress in [0, 1]. */
     progress: number;
-    /** 显示文本 */
+    /** Current phase text. */
     text?: string;
 }
 
-/**
- * Loading 状态
- */
+export interface LoadingOptions {
+    /** Supplied by the caller. LoadingMgr evaluates it once per frame. */
+    onProcess: () => LoadingProcessInfo;
+    /** Supplied by the caller. true means the caller's work is complete. */
+    isEnd: () => boolean;
+    /** Prevents a very short task from flashing the Loading view. */
+    minShowTime?: number;
+}
+
 interface LoadingState {
-    options: LoadingOptions;
-    startTime: number;
-    isShowing: boolean;
+    readonly id: number;
+    readonly options: LoadingOptions;
+    readonly startTime: number;
+    readonly completion: Promise<void>;
+    readonly resolve: () => void;
     isEnding: boolean;
-    resolve: (() => void) | null;
+    lastProcess: LoadingProcessInfo;
 }
 
 /**
- * Loading 管理器（单例）
+ * First-package Loading service.
+ *
+ * LoadingMgr owns only display, per-frame refresh and closing. The caller owns
+ * progress calculation and the completion condition through LoadingOptions.
  */
 export class LoadingMgr {
     private static _instance: LoadingMgr;
@@ -61,207 +41,186 @@ export class LoadingMgr {
         return this._instance;
     }
 
-    private constructor() {}
-
-    /** Loading 状态 */
-    private _state: LoadingState | null = null;
-
-    /** Loading UI 实例 */
-    private _loadingView: LoadingView | null = null;
-
-    /** Loading 资源路径 */
     private readonly LOADING_VIEW_PATH = "startupUI/loading/loadingView.ls";
-
-    /** 默认最小显示时间 */
     private readonly DEFAULT_MIN_SHOW_TIME = 300;
 
-    // ========== 公开方法 ==========
+    private _nextStateId = 1;
+    private _state: LoadingState | null = null;
+    private _loadingView: LoadingView | null = null;
+    private _fallbackOverlay: Laya.Sprite | null = null;
+
+    private constructor() {}
 
     /**
-     * 显示 Loading 界面
-     * @param options Loading 配置
+     * Starts one Loading session.
+     * The returned Promise resolves after the Loading view has fully closed.
      */
-    show(options: LoadingOptions): void {
-        if (this._state?.isShowing) {
-            console.warn("[LoadingMgr] Loading already showing");
-            return;
+    show(options: LoadingOptions): Promise<void> {
+        if (this._state) {
+            const error = new Error("[LoadingMgr] A Loading session is already active");
+            console.error(error.message);
+            return Promise.reject(error);
         }
 
-        // 初始化状态
-        this._state = {
+        let resolveCompletion!: () => void;
+        const completion = new Promise<void>(resolve => {
+            resolveCompletion = resolve;
+        });
+        const state: LoadingState = {
+            id: this._nextStateId++,
             options,
             startTime: Laya.Browser.now(),
-            isShowing: true,
+            completion,
+            resolve: resolveCompletion,
             isEnding: false,
-            resolve: null,
+            lastProcess: { progress: 0 },
         };
 
-        this.showLoadingUI();
-    }
-
-    /**
-     * 强制关闭 Loading（用于异常情况）
-     */
-    forceHide(): void {
-        if (!this._state?.isShowing) return;
-
-        this.endLoading();
-    }
-
-    /**
-     * 更新提示文本
-     * @param tip 新的提示文本
-     */
-    updateTip(tip: string): void {
-        if (this._loadingView) {
-            this._loadingView.updateTip(tip);
-        }
-    }
-
-    // ========== 内部方法 ==========
-
-    /**
-     * 加载并显示 Loading UI
-     */
-    private async showLoadingUI(): Promise<void> {
-        try {
-            // 使用 Laya.Scene.open 打开场景（返回场景实例）
-            const scene = await Laya.Scene.open(this.LOADING_VIEW_PATH) as LoadingView;
-            
-            if (scene) {
-                this._loadingView = scene;
-                
-                // 使用 LayerMgr 设置层级为 Top（最顶层）
-                LayerMgr.setLayer(scene, "Top");
-            } else {
-                console.warn("[LoadingMgr] Loading UI 创建失败，使用备用方案");
-                this.createFallbackUI();
-            }
-        } catch (error) {
-            console.error("[LoadingMgr] 加载 Loading UI 失败:", error);
-            this.createFallbackUI();
-        } finally {
-            this.update();
-            this.startUpdateLoop();
-        }
-    }
-
-    /**
-     * 创建备用 UI（当资源加载失败时）
-     */
-    private createFallbackUI(): void {
-        // 简单的备用 UI
-        this._loadingView = null;
-        
-        // 创建简单的遮罩层
-        const overlay = new Laya.Sprite();
-        overlay.name = "LoadingOverlay";
-        overlay.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#000000", null, 0.7);
-        Laya.stage.addChild(overlay);
-        
-    }
-
-    /**
-     * 启动更新循环
-     */
-    private startUpdateLoop(): void {
+        this._state = state;
+        this.stopUpdateLoop();
         Laya.timer.frameLoop(1, this, this.update);
+        this.update();
+        if (this._state === state) {
+            void this.showLoadingUI(state);
+        }
+        return completion;
     }
 
-    /**
-     * 更新循环（每帧调用）
-     */
+    /** Closes the active session regardless of the caller's isEnd result. */
+    forceHide(): Promise<void> {
+        const state = this._state;
+        return state ? this.endLoading(state) : Promise.resolve();
+    }
+
+    updateTip(tip: string): void {
+        if (!this._state) return;
+        this._state.lastProcess = {
+            ...this._state.lastProcess,
+            text: tip,
+        };
+        this._loadingView?.updateTip(tip);
+    }
+
+    isShowing(): boolean {
+        return this._state !== null;
+    }
+
+    getProgress(): number {
+        return this._state?.lastProcess.progress ?? 0;
+    }
+
+    private async showLoadingUI(state: LoadingState): Promise<void> {
+        try {
+            const scene = await Laya.Scene.open(this.LOADING_VIEW_PATH) as LoadingView;
+            if (!this.isCurrentState(state)) {
+                this.destroyStaleView(scene);
+                return;
+            }
+
+            this._loadingView = scene;
+            LayerMgr.setLayer(scene, "Top");
+            this.applyProcessToView(state.lastProcess);
+        } catch (error) {
+            if (!this.isCurrentState(state)) return;
+            console.error("[LoadingMgr] Failed to load Loading view:", error);
+            this.createFallbackUI();
+        }
+    }
+
     private update(): void {
-        if (!this._state?.isShowing) {
+        const state = this._state;
+        if (!state || state.isEnding) {
             this.stopUpdateLoop();
             return;
         }
 
-        const { onProcess, isEnd, minShowTime } = this._state.options;
+        try {
+            const process = state.options.onProcess() || { progress: 0 };
+            state.lastProcess = {
+                progress: this.clampProgress(process.progress),
+                text: process.text,
+            };
+            this.applyProcessToView(state.lastProcess);
 
-        // 获取当前进度
-        const processInfo = onProcess();
-        const progress = processInfo ? processInfo.progress : 0;
-        const text = processInfo ? processInfo.text : undefined;
-        this.updateProgressUI(progress, text);
-
-        // 判断是否结束
-        const elapsed = Laya.Browser.now() - this._state.startTime;
-        const minTime = minShowTime ?? this.DEFAULT_MIN_SHOW_TIME;
-        const canEnd = elapsed >= minTime && isEnd();
-
-        if (canEnd) {
-            this.endLoading();
+            const elapsed = Laya.Browser.now() - state.startTime;
+            const minShowTime = state.options.minShowTime ?? this.DEFAULT_MIN_SHOW_TIME;
+            if (elapsed >= minShowTime && state.options.isEnd()) {
+                void this.endLoading(state);
+            }
+        } catch (error) {
+            console.error("[LoadingMgr] Loading callback failed:", error);
+            void this.endLoading(state);
         }
     }
 
-    /**
-     * 更新进度 UI
-     * @param progress 进度值 (0-1)
-     */
-    private updateProgressUI(progress: number, text?: string): void {
-        if (this._loadingView) {
-            this._loadingView.updateProgress(progress, text);
-        }
+    private applyProcessToView(process: LoadingProcessInfo): void {
+        this._loadingView?.updateProgress(process.progress, process.text);
     }
 
-    /**
-     * 结束 Loading
-     */
-    private async endLoading(): Promise<void> {
-        if (!this._state || this._state.isEnding) return;
-        this._state.isEnding = true;
+    private async endLoading(state: LoadingState): Promise<void> {
+        if (!this.isCurrentState(state)) return state.completion;
+        if (state.isEnding) return state.completion;
 
-        // 停止更新循环
+        state.isEnding = true;
         this.stopUpdateLoop();
-
-        // 关闭 UI
         await this.hideLoadingUI();
 
-        // resolve Promise
-        if (this._state.resolve) {
-            this._state.resolve();
+        if (this._state === state) {
+            this._state = null;
         }
-
-        // 清理状态
-        this._state.isShowing = false;
-        this._state.resolve = null;
-        this._state = null;
+        state.resolve();
+        return state.completion;
     }
 
-    /**
-     * 停止更新循环
-     */
+    private async hideLoadingUI(): Promise<void> {
+        const view = this._loadingView;
+        this._loadingView = null;
+        if (view && !view.destroyed) {
+            await view.onLoadComplete();
+        }
+
+        const overlay = this._fallbackOverlay;
+        this._fallbackOverlay = null;
+        if (overlay && !overlay.destroyed) {
+            overlay.destroy();
+        }
+    }
+
+    private createFallbackUI(): void {
+        if (this._fallbackOverlay && !this._fallbackOverlay.destroyed) return;
+
+        const overlay = new Laya.Sprite();
+        overlay.name = "LoadingOverlay";
+        overlay.graphics.drawRect(
+            0,
+            0,
+            Laya.stage.width,
+            Laya.stage.height,
+            "#000000",
+            null,
+            0.7
+        );
+        overlay.mouseEnabled = true;
+        this._fallbackOverlay = overlay;
+        LayerMgr.setLayer(overlay, "Top");
+    }
+
+    private destroyStaleView(view: LoadingView | null): void {
+        if (!view || view.destroyed) return;
+        view.removeSelf();
+        view.destroy(true);
+    }
+
+    private isCurrentState(state: LoadingState): boolean {
+        return this._state === state && !state.isEnding;
+    }
+
+    private clampProgress(value: number): number {
+        if (!Number.isFinite(value)) return 0;
+        return Math.max(0, Math.min(1, value));
+    }
+
     private stopUpdateLoop(): void {
         Laya.timer.clear(this, this.update);
-    }
-
-    /**
-     * 隐藏 Loading UI
-     */
-    private async hideLoadingUI(): Promise<void> {
-        if (this._loadingView) {
-            await this._loadingView.onLoadComplete();
-            this._loadingView = null;
-        } else {
-            // 清理备用 UI
-            const overlay = Laya.stage.getChildByName("LoadingOverlay");
-            if (overlay) {
-                overlay.destroy();
-            }
-        }
-    }
-
-    // ========== 状态查询 ==========
-
-    /** 是否正在显示 */
-    isShowing(): boolean {
-        return this._state?.isShowing ?? false;
-    }
-
-    /** 当前进度 */
-    getProgress(): number {
-        if (!this._state?.isShowing) return 0;
-        return this._state.options.onProcess().progress;
     }
 }

@@ -13,6 +13,8 @@
 
 Start 创建的跨分包服务通过 `window` 暴露，由 Logic 的 `App` 统一取得。不要让 Logic 直接静态导入这里的实现类。
 
+`LoadingMgr.show(options)` 是全项目唯一的 Loading 显示入口。LoadingMgr 只负责界面显示、逐帧刷新、最短显示时间和关闭动画；调用模块通过 `onProcess()` 返回当前文字与 `0..1` 进度，通过 `isEnd()` 定义本次工作何时完成。`show()` 返回的 Promise 在界面完全关闭后完成。同一时刻只允许一个 Loading 会话，调用模块必须在自己的串行边界内使用。
+
 ## 启动顺序
 
 1. 初始化引擎、显示层和事件分发器。

@@ -68,6 +68,8 @@ UIManager.instance.close("MyUI");
 | **Tips** | 3 | 飘字、提示 | 奖励飘字、Toast |
 | **Loading** | 4 | 加载界面（最顶层）| 转圈圈、断线重连 |
 
+Loading 不属于 Logic UIManager。首包与 Logic 模块统一使用 `src/start/loading/LoadingMgr`；Logic 只通过 `App.loadingMgr` 或注入的 `LoadingService` 契约提交进度计算和完成条件，不创建第二套 Loading UI。
+
 ---
 
 ## 🔧 高级功能
@@ -341,6 +343,42 @@ if (bagUI) {
 ```
 
 ---
+
+## UI 文字样式配置
+
+`Config/csv/UITextStyle.csv` 是 UI 文字样式的唯一编辑入口，只导出到客户端。`assets/config/UITextStyle.json` 和 manifest 条目由 `Config/tools/exportClient.js` 生成，不得手工修改。
+
+每个样式使用稳定的语义 `Key`，例如：
+
+- `dialog.title`、`dialog.body`
+- `button.primary`、`button.secondary`
+- `hud.value`、`hud.entityName`
+- `nav.normal`、`nav.selected`
+- `battle.damage.normal`、`battle.heal`
+- `result.victory`、`result.defeat`
+
+“拼界面”时先在 CSV 中按语义选择样式，再把 `Font`、`FontSize`、`Color`、`Bold`、`Stroke`、`StrokeColor`、`Align` 和 `VAlign` 填入 LayaAir IDE。不要仅凭相近颜色复制其他节点，也不要在 PNG 中烘焙文字。
+
+运行时创建或切换状态的文字使用：
+
+```typescript
+import { UITextStyle } from "./UITextStyle";
+
+UITextStyle.apply(label, "nav.selected");
+```
+
+检查当前 `.ls/.lh` 文字是否缺少描边颜色或偏离现有语义样式：
+
+```powershell
+node tools/ui/audit-text-styles.js
+```
+
+CSV 输入约束：
+
+- `Color`、`StrokeColor` 使用 `#rrggbb`。
+- `Stroke` 是描边像素；大于 0 时 `StrokeColor` 必填。
+- 表为客户端专用，所有业务字段的 `UsedSize` 使用 `c`。
+- JSON、manifest 和 Java 等生成物只通过配置工具产生；客户端专用表不会生成 Java 类。
 
 ## ⚠️ 注意事项
 

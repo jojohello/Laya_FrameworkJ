@@ -258,7 +258,11 @@ export class BattleStageScene extends BaseScene {
         if (wallClockNowMs - this._lastStageActivationWallClockMs < 150) return;
         this._lastStageActivationWallClockMs = wallClockNowMs;
         console.log(`[BattleStageScene] 点击关卡: stageId=${stageId}, battleId=${battleId}`);
-        void SceneMgr.instance.switchScene(SceneType.BattleScene, { stageId, battleId }).then(scene => {
+        void SceneMgr.instance.switchSceneWithLoading(
+            SceneType.BattleScene,
+            { stageId, battleId },
+            "战斗加载中"
+        ).then(scene => {
             if (!scene) {
                 console.error(`[BattleStageScene] 进入战斗场景失败: stageId=${stageId}, battleId=${battleId}`);
             }
