@@ -2,6 +2,8 @@ import { BulletMoveType } from "../skill/SkillInfo";
 import { SkillMgr } from "../skill/SkillMgr";
 import { BulletSceneObj } from "../sceneObj/BulletSceneObj";
 import { ActionContext } from "./ActionRuntime";
+import { ActionType } from "./ActionInfo";
+import { registerAction } from "./ActionRegistry";
 import { BaseAction } from "./BaseAction";
 
 export class BulletAction extends BaseAction {
@@ -62,3 +64,5 @@ export class BulletAction extends BaseAction {
         return 0;
     }
 }
+
+registerAction(ActionType.Bullet, BulletAction);

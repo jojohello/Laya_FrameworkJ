@@ -1,9 +1,13 @@
-import { ActionInfo, ActionType } from "./ActionInfo";
+import { ActionInfo } from "./ActionInfo";
 import { BaseAction } from "./BaseAction";
-import { BuffAction } from "./BuffAction";
-import { BulletAction } from "./BulletAction";
-import { DamageAction } from "./DamageAction";
-import { AnimationAction } from "./AnimationAction";
+import { createRegisteredAction } from "./ActionRegistry";
+
+// Import action modules for their self-registration side effects. The factory
+// intentionally does not import or branch on concrete action classes.
+import "./AnimationAction";
+import "./BulletAction";
+import "./BuffAction";
+import "./DamageAction";
 
 export class ActionFactory {
     static parseActions(actionScript: string, withDelay: boolean = true): BaseAction[] {
@@ -46,29 +50,10 @@ export class ActionFactory {
     }
 
     static create(info: ActionInfo): BaseAction | null {
-        let action: BaseAction | null = null;
-
-        switch (info.actionType) {
-            case ActionType.Animation:
-                action = new AnimationAction();
-                break;
-            case ActionType.Bullet:
-                action = new BulletAction();
-                break;
-            case ActionType.Buff:
-                action = new BuffAction();
-                break;
-            case ActionType.Damage:
-            case ActionType.TrueDamage:
-            case ActionType.Effect:
-                action = new DamageAction();
-                break;
-            default:
-                console.warn(`[ActionFactory] Unknown action type: ${info.actionType}, raw=${info.raw}`);
-                return null;
+        const action = createRegisteredAction(info);
+        if (!action) {
+            console.warn(`[ActionFactory] Unknown action type: ${info.actionType}, raw=${info.raw}`);
         }
-
-        action.init(info);
         return action;
     }
 }

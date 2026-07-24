@@ -25,6 +25,12 @@ public class BattleStageConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 关卡ID
+     */
+    @JsonProperty("ID")
+    private final int ID;
+
+    /**
      * 战斗ID
      */
     @JsonProperty("battleId")
@@ -42,10 +48,16 @@ public class BattleStageConfig implements Serializable {
      */
     @JsonCreator
     public BattleStageConfig(
+            @JsonProperty("ID") int ID,
             @JsonProperty("battleId") int battleId,
             @JsonProperty("canEnter") boolean canEnter) {
+        this.ID = ID;
         this.battleId = battleId;
         this.canEnter = canEnter;
+    }
+
+    public int getID() {
+        return ID;
     }
 
     public int getBattleId() {
@@ -58,7 +70,7 @@ public class BattleStageConfig implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("BattleStageConfig{battleId=%s, canEnter=%s}",
-                battleId, canEnter);
+        return String.format("BattleStageConfig{ID=%s, battleId=%s, canEnter=%s}",
+                ID, battleId, canEnter);
     }
 }

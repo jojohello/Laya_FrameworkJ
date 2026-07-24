@@ -2,6 +2,8 @@ import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { SkillMgr } from "../skill/SkillMgr";
 import { DamageExecutor } from "../damage/DamageExecutor";
 import { ActionContext } from "./ActionRuntime";
+import { ActionType } from "./ActionInfo";
+import { registerAction } from "./ActionRegistry";
 import { BaseAction } from "./BaseAction";
 
 export class DamageAction extends BaseAction {
@@ -47,3 +49,8 @@ export class DamageAction extends BaseAction {
         return Math.max(0, Math.ceil(damage * effectScale));
     }
 }
+
+registerAction(
+    [ActionType.Damage, ActionType.TrueDamage, ActionType.Effect],
+    DamageAction
+);

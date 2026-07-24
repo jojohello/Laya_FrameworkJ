@@ -1,4 +1,6 @@
 import { ActionContext } from "./ActionRuntime";
+import { ActionType } from "./ActionInfo";
+import { registerAction } from "./ActionRegistry";
 import { BaseAction } from "./BaseAction";
 
 export class BuffAction extends BaseAction {
@@ -22,3 +24,5 @@ export class BuffAction extends BaseAction {
         return 0;
     }
 }
+
+registerAction(ActionType.Buff, BuffAction);

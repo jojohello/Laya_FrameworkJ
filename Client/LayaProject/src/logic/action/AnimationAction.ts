@@ -1,4 +1,6 @@
 import { ActionContext } from "./ActionRuntime";
+import { ActionType } from "./ActionInfo";
+import { registerAction } from "./ActionRegistry";
 import { BaseAction } from "./BaseAction";
 
 interface ActionAnimationOwner {
@@ -20,3 +22,5 @@ export class AnimationAction extends BaseAction {
         );
     }
 }
+
+registerAction(ActionType.Animation, AnimationAction);

@@ -1,25 +1,31 @@
 [
   {
+    "ID": 1001,
     "battleId": 1,
     "canEnter": true
   },
   {
+    "ID": 1002,
     "battleId": 2,
     "canEnter": true
   },
   {
+    "ID": 1003,
     "battleId": 3,
     "canEnter": true
   },
   {
+    "ID": 1004,
     "battleId": 4,
     "canEnter": true
   },
   {
+    "ID": 1005,
     "battleId": 5,
     "canEnter": true
   },
   {
+    "ID": 1006,
     "battleId": 6,
     "canEnter": true
   }

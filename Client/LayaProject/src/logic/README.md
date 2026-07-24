@@ -26,3 +26,5 @@
 | `battleScene` | `BattleStageScene`、`BattleScene`、`BattleMainViewController`；战斗内 HUD 的 1×/2×倍速、暂停与返回流程 |
 
 ManagerHub 当前注册位置是 [LogicMain.ts](LogicMain.ts)。新增 Manager 时先确认它确实需要全局生命周期，再在组合根注册。
+
+Action 类型由各自的 Action 文件在模块末尾注册到 `ActionRegistry`。`ActionFactory` 只负责脚本解析、排序和统一创建，不维护具体子类的分支；新增 Action 时在自身文件注册类型即可。多个配置别名可以注册到同一个 Action 构造器。

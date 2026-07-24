@@ -15,7 +15,7 @@ Scene、SceneObj 与时间驱动的基础设计已经形成，暂停/倍速和�
 
 - 主流程当前通过 `StartMain.enterGame()` 调用 `SceneMgr.switchScene(1)` 进入 `MainScene`。
 - 主界面已经通过 FunctionOpen `1001` 控制征战入口；玩家升至 2 级后可以进入 `BattleStageScene(ID=2)`。
-- `BattleStageScene` 使用 `bigImg/battle_stage_map_forest.png` 并支持竖向拖拽；第一关点击后进入 `BattleScene(ID=3)`，加载 `map/map002/fightmap.json`，尚未完成运行验收。
+- `BattleStageScene` 使用 `bigImg/battle_stage_map_forest.png` 并支持竖向拖拽；第一关点击后进入 `BattleScene(ID=3)`，加载 `map/map002/fightmap.json`，基础战斗、暂停/倍速和重复切场验证已通过。
 - `MainUI` 已作为跨场景壳层供 `MainScene` 与 `BattleStageScene` 共用：顶部玩家信息和底部导航保留，未来的左右活动栏仅在 `MainScene` 显示；进入真实 `BattleScene` 时关闭整套壳层。
 - 底部导航已拆出 `MainNav.json`：导航文字、图标、顺序和 routeKey 由导航表管理，开启条件仍由 FunctionOpen 管理；默认第 3 项显示为“主世界”。
 - `BattleStageScene` 已改为按 `SceneType.stagePrefab` 加载大关 prefab，并由 `BattleStage.json` 驱动节点图标和点击战斗；当前 `stage001.lh` 仅第一关具备独立有效位置，`stage1002`～`stage1005` 坐标重叠且缺少 `stage1006`，首次闭环只验收第一关，其余节点仍属于后续 prefab 化任务。
@@ -24,7 +24,6 @@ Scene、SceneObj 与时间驱动的基础设计已经形成，暂停/倍速和�
 ## 执行顺序
 
 - [ ] 在真实服务端连接下完成“登录 → 1级确认升级 → FunctionOpen 1001 开启 → 进入战斗 → 点击第一关 → 返回主城”的首次运行验收。
-- [ ] 连续执行至少 3 次“进入战斗 → 返回主城 → 再次进入”，验证 Manager、地图、相机、场景对象、按钮、事件和 UI 不重复、不残留。
 - [ ] 在真实场景验证征战底图的竖向拖拽边界、第一关点击和 TiledMap 加载。
 - [ ] 在 LayaAir IDE 验证 `MainScene → BattleStageScene → BattleScene` 三种状态下，顶部、底栏、左右活动栏的显示规则和底栏选中态均正确。
 - [ ] 在 LayaAir IDE 验证从征战界面点击背包、主世界、商店、设置后，回到主界面时选中态与点击项一致。
@@ -45,7 +44,6 @@ Scene、SceneObj 与时间驱动的基础设计已经形成，暂停/倍速和�
 - 战斗流程可连续执行“进入、退出、再次进入”，无重复节点、事件、空间索引或资源引用。
 - Map、Camera2D、HUD、碰撞和技能验证运行在同一个真实战斗场景生命周期内。
 - TypeScript 检查通过，并完成 LayaAir IDE 中的场景切换实测。
-- [ ] 完成连续三次进入战斗、暂停/恢复、返回/再次进入的生命周期验收。
 - [ ] 帧动画高性能方案评估：以 400 个角色、iOS 微信小游戏、30 FPS 为验收目标，记录 CPU 主线程、RenderNode、DrawCall、纹理内存、GPU 内存和 JS 内存基线。
 - [ ] 评估 2D Mesh + 自定义 Shader 的集中渲染队列与 GPU instancing 原型；验证微信 iOS 实际渲染后端、同 Mesh/材质/Shader 条件、队伍染色和帧 UV 更新能否保持批处理，并准备非 instancing fallback。
 - [ ] 实现高性能队列原型：按 atlas、shader variant、mask 资源和渲染层排序，使用可复用数组/TypedArray，禁止每帧创建对象、闭包和临时数组。
