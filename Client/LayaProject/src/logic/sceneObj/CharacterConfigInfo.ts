@@ -6,8 +6,6 @@ export interface CharacterConfigInfo {
     name: string;
     soldierType: SoldierType;
     sceneObjConfigId: number;
-    modelPath: string;
-    teamMaskPath: string;
     modelScale: number;
     /** Semicolon-separated Skill.SkillID values; empty until formal skills are assigned. */
     skillIds: string;

@@ -10,7 +10,7 @@
 
 ### 第一阶段：战斗 UI 与生命周期基础
 
-- [ ] 在现有 `BattleFlowState` 基础上补齐胜负判定来源、结果锁定和退出目标，保证 `Victory`、`Defeat` 与 `Exiting` 只能按合法顺序进入。
+- [ ] 由 LayaAir IDE 导入 `assets/ui/battlescene/imgs/defeat_title.png` 和 `assets/ui/battlescene/imgs/defeat_button.png` 并生成真实 UUID，按已确认概念稿完成 `BattleDefeatView.ls` 拼装；确认新的胜利界面整屏概念稿后再生产对应正式尺寸资源。随后验证队伍消灭或 `reportBattleResult()` 只触发一次 `Victory`/`Defeat`，确认后进入 `Exiting` 并串行返回征战界面。
 - [ ] 在 LayaAir IDE 验证统一的首包 `LoadingMgr`：登录后的分包加载和进入战斗使用同一 Loading 界面；战斗模块自行提供进度与结束条件，只有地图/战斗资源就绪且战场主界面完成显示与控件绑定后才关闭；加载失败或 15 秒超时会回退征战场景，重复进入时无残留会话或旧界面回流。
 - [ ] 战斗结束时只结算一次，并根据结果显示胜利或失败界面；结果界面确认后由 `SceneMgr` 串行退出并返回征战界面或约定场景。
 - [ ] 验证胜利、失败、主动退出、加载失败、暂停、倍速、连续点击和重复进入；事件、Timer、对象池、空间索引、资源引用与 UI 回调均无残留。

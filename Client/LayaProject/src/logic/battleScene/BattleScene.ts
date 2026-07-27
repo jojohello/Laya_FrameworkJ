@@ -2,7 +2,7 @@
 const { regClass } = Laya;
 import { BaseScene } from "../scene/BaseScene";
 import { ConfigMgr } from "../config/ConfigMgr";
-import { CharacterConfigInfo } from "../sceneObj/CharacterConfigInfo";
+import { CharacterAnimationConfigInfo } from "../sceneObj/CharacterAnimationConfigInfo";
 import { CharacterSceneObj } from "../sceneObj/CharacterSceneObj";
 import { CharacterTeamColorMaterial } from "../sceneObj/CharacterTeamColorMaterial";
 import { SceneTime, SceneTimeMode } from "../scene/SceneTime";
@@ -10,6 +10,9 @@ import { AIScheduler, AIOwnerResolver } from "../ai/AIScheduler";
 import { SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { BattleFlowState } from "./BattleFlowState";
+import { UIManager } from "../ui/UIManager";
+
+type BattleResultUIName = "BattleVictoryUI" | "BattleDefeatUI";
 
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
@@ -19,6 +22,8 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     private _battleUnitLoadToken = 0;
     private _transitionError = "";
     private _flowState = BattleFlowState.Preparing;
+    private _resultUIName: BattleResultUIName | null = null;
+    private _resultExitRequested = false;
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
@@ -34,7 +39,9 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._battleUnitsCreated = false;
         this._battleUnitsReady = false;
         this._transitionError = "";
-        this._flowState = BattleFlowState.Loading;
+        this.transitionFlowState(BattleFlowState.Loading);
+        this._resultUIName = null;
+        this._resultExitRequested = false;
         this._battleUnitLoadToken++;
         this.applyStageMapConfig(param);
         super.onEnter(param);
@@ -64,12 +71,18 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     }
 
     protected logicUpdate(logicDt: number, curTime: number, tick: number): void {
+        if (this._flowState === BattleFlowState.Victory ||
+            this._flowState === BattleFlowState.Defeat ||
+            this._flowState === BattleFlowState.Exiting) {
+            return;
+        }
         this._aiScheduler.update(curTime, tick, this);
         super.logicUpdate(logicDt, curTime, tick);
         if (this.isReady && !this._battleUnitsCreated) {
             this._battleUnitsCreated = true;
             void this.createBattleUnits();
         }
+        this.evaluateBattleResult();
         // Hud layer does not carry runtime nodes; battle controls belong to the formal UI layer.
         return;
         /*
@@ -100,7 +113,10 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     }
 
     onExit(): void {
-        this._flowState = BattleFlowState.Exiting;
+        this.transitionFlowState(BattleFlowState.Exiting);
+        if (this._resultUIName) UIManager.instance.close(this._resultUIName);
+        this._resultUIName = null;
+        this._resultExitRequested = false;
         this._battleUnitLoadToken++;
         this._battleUnitsCreated = false;
         this._battleUnitsReady = false;
@@ -121,6 +137,16 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         return this._transitionError;
     }
 
+    /**
+     * Allows an authoritative battle result to enter the same one-shot result
+     * flow as local team elimination.
+     */
+    reportBattleResult(result: "victory" | "defeat"): boolean {
+        if (this._flowState !== BattleFlowState.Running) return false;
+        this.finishBattle(result);
+        return true;
+    }
+
     getAIOwner(id: number): CharacterSceneObj | null {
         const obj = this.getLiveObject(id);
         return obj instanceof CharacterSceneObj ? obj : null;
@@ -139,10 +165,11 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     private async createBattleUnits(): Promise<void> {
         const token = this._battleUnitLoadToken;
         const configIds = [1001, 1002, 1003];
-        const paths = configIds.flatMap(cfgId => {
-            const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", cfgId);
-            return config ? [config.modelPath, config.teamMaskPath].filter(Boolean) : [];
-        });
+        const paths = [...new Set(configIds.flatMap(cfgId =>
+            ConfigMgr.instance
+                .getByField<CharacterAnimationConfigInfo>("CharacterAnimation", "characterId", cfgId)
+                .map(config => config.atlasPath)
+        ))];
 
         try {
             const [shaderReady] = await Promise.all([
@@ -154,7 +181,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
                 return;
             }
         } catch (error) {
-            this.failTransition("Failed to preload battle unit textures or shader", error);
+            this.failTransition("Failed to preload battle unit atlases or shader", error);
             return;
         }
         if (token !== this._battleUnitLoadToken || !this.isReady) return;
@@ -168,12 +195,112 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this.createTeamUnits(2, 220, columns, configIds);
         this.createTeamUnits(1, 1120, columns, configIds);
         this._battleUnitsReady = true;
-        this._flowState = BattleFlowState.Running;
+        this.transitionFlowState(BattleFlowState.Running);
     }
 
     private failTransition(message: string, error?: unknown): void {
         this._transitionError = message;
         console.error(`[BattleScene] ${message}`, error || "");
+    }
+
+    private evaluateBattleResult(): void {
+        if (this._flowState !== BattleFlowState.Running ||
+            !this._battleUnitsReady ||
+            this._resultUIName !== null ||
+            this._resultExitRequested) {
+            return;
+        }
+
+        let teamOneAlive = 0;
+        let teamTwoAlive = 0;
+        for (const obj of this._objMap.values()) {
+            if (obj.isRelease || obj.isDead || !(obj instanceof CharacterSceneObj)) continue;
+            if (obj.team === 1) teamOneAlive++;
+            if (obj.team === 2) teamTwoAlive++;
+        }
+
+        if (teamOneAlive === 0 && teamTwoAlive === 0) return;
+        if (teamTwoAlive === 0) {
+            this.finishBattle("victory");
+        } else if (teamOneAlive === 0) {
+            this.finishBattle("defeat");
+        }
+    }
+
+    private finishBattle(result: "victory" | "defeat"): void {
+        if (this._flowState !== BattleFlowState.Running) return;
+
+        const nextState = result === "victory"
+            ? BattleFlowState.Victory
+            : BattleFlowState.Defeat;
+        if (!this.transitionFlowState(nextState)) return;
+        this.setPaused(true);
+        void this.showBattleResult(result);
+    }
+
+    private transitionFlowState(nextState: BattleFlowState): boolean {
+        const allowed: Record<BattleFlowState, readonly BattleFlowState[]> = {
+            [BattleFlowState.Preparing]: [BattleFlowState.Loading],
+            [BattleFlowState.Loading]: [BattleFlowState.Running, BattleFlowState.Exiting],
+            [BattleFlowState.Running]: [
+                BattleFlowState.Victory,
+                BattleFlowState.Defeat,
+                BattleFlowState.Exiting,
+            ],
+            [BattleFlowState.Victory]: [BattleFlowState.Exiting],
+            [BattleFlowState.Defeat]: [BattleFlowState.Exiting],
+            [BattleFlowState.Exiting]: [BattleFlowState.Loading],
+        };
+        if (this._flowState === nextState) return true;
+        if (!allowed[this._flowState].includes(nextState)) {
+            console.warn(`[BattleScene] Illegal flow transition: ${this._flowState} -> ${nextState}`);
+            return false;
+        }
+        this._flowState = nextState;
+        return true;
+    }
+
+    private async showBattleResult(result: "victory" | "defeat"): Promise<void> {
+        const uiName: BattleResultUIName = result === "victory"
+            ? "BattleVictoryUI"
+            : "BattleDefeatUI";
+        this._resultUIName = uiName;
+        try {
+            const param = result === "victory"
+                ? {
+                    score: 345,
+                    rewards: [{
+                        name: "中级精石",
+                        iconPath: "ui/common/imgs/currency-crystal.png",
+                        quantity: 3,
+                        quality: 3,
+                        showRedPoint: false,
+                        selected: false,
+                    }],
+                    onConfirm: () => this.exitAfterBattleResult(),
+                }
+                : {
+                    onConfirm: () => this.exitAfterBattleResult(),
+                };
+            const controller = await UIManager.instance.open(uiName, param);
+            if (!controller) this.exitAfterBattleResult();
+        } catch (error) {
+            console.error(`[BattleScene] Failed to open ${uiName}`, error);
+            this.exitAfterBattleResult();
+        }
+    }
+
+    private exitAfterBattleResult(): void {
+        if (this._resultExitRequested) return;
+        if (!this.transitionFlowState(BattleFlowState.Exiting)) return;
+        this._resultExitRequested = true;
+        void this.setSceneBackToStage();
+    }
+
+    private async setSceneBackToStage(): Promise<void> {
+        const { SceneMgr } = await import("../scene/SceneMgr");
+        const { SceneType } = await import("../scene/SceneType");
+        await SceneMgr.instance.switchScene(SceneType.BattleStageScene);
     }
 
     private createTeamUnits(

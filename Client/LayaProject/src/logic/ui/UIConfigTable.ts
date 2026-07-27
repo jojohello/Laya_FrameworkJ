@@ -1,5 +1,7 @@
 import { UILayer } from "../core/LayerDef";
 import { BattleMainViewController } from "../battleScene/BattleMainViewController";
+import { BattleVictoryViewController } from "../battleScene/BattleVictoryViewController";
+import { BattleDefeatViewController } from "../battleScene/BattleDefeatViewController";
 
 /**
  * UI 配置表。
@@ -34,6 +36,24 @@ export const UIConfigTable: { [name: string]: any } = {
         singleton: true,
         autoDestroy: true,
         controllerClass: BattleMainViewController,
+    },
+
+    "BattleVictoryUI": {
+        path: "ui/battlescene/BattleVictoryView.ls",
+        layerName: "Pop",
+        zOrder: UILayer.Pop,
+        singleton: true,
+        autoDestroy: true,
+        controllerClass: BattleVictoryViewController,
+    },
+
+    "BattleDefeatUI": {
+        path: "ui/battlescene/BattleDefeatView.ls",
+        layerName: "Pop",
+        zOrder: UILayer.Pop,
+        singleton: true,
+        autoDestroy: true,
+        controllerClass: BattleDefeatViewController,
     },
 
     "BagUI": {

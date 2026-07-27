@@ -1,0 +1,78 @@
+{
+  "_$ver": 1,
+  "_$id": "common-item-view",
+  "_$type": "GBox",
+  "name": "ItemView",
+  "width": 112,
+  "height": 112,
+  "_$child": [
+    {
+      "_$id": "common-item-frame",
+      "_$type": "GImage",
+      "name": "bottomFrame",
+      "width": 112,
+      "height": 112,
+      "src": "res://f8e852e8-eb60-4560-8a87-ed2c76566927",
+      "autoSize": false
+    },
+    {
+      "_$id": "common-item-quality",
+      "_$type": "GBox",
+      "name": "qualityBackground",
+      "x": 10,
+      "y": 10,
+      "width": 92,
+      "height": 92,
+      "alpha": 0.72
+    },
+    {
+      "_$id": "common-item-icon",
+      "_$type": "GLoader",
+      "name": "icon",
+      "x": 18,
+      "y": 18,
+      "width": 76,
+      "height": 76,
+      "fit": "contain",
+      "align": "center",
+      "valign": "middle"
+    },
+    {
+      "_$id": "common-item-count",
+      "_$type": "GTextField",
+      "name": "countText",
+      "x": 56,
+      "y": 82,
+      "width": 48,
+      "height": 24,
+      "text": "99",
+      "fontSize": 17,
+      "color": "#fff3dc",
+      "bold": true,
+      "align": "center",
+      "valign": "middle",
+      "stroke": 2,
+      "strokeColor": "#2b1d16"
+    },
+    {
+      "_$id": "common-item-red-point",
+      "_$type": "GImage",
+      "name": "redPoint",
+      "x": 84,
+      "y": -2,
+      "width": 28,
+      "height": 28,
+      "visible": false,
+      "src": "res://1056779d-5606-4971-890c-636d90c58c7f",
+      "autoSize": false
+    },
+    {
+      "_$id": "common-item-selection",
+      "_$type": "GBox",
+      "name": "selectedFrame",
+      "width": 112,
+      "height": 112,
+      "visible": false
+    }
+  ]
+}

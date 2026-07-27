@@ -52,9 +52,9 @@ Laya.ClassUtils.regClass("MonsterObj", MonsterObj);
 const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 ```
 
-战斗角色的静态回退资源为 `assets/character/{cfgId}/idle.png` 和同尺寸的 `team_mask.png`。正式帧动画采用 LayaAir 标准的“单张 PNG + `.atlas`”资源；`CharacterAnimation` 表为每个动作配置 `actionName`、包含首尾的 `startFrameIndex/endFrameIndex` 和 `durationMs`。基础帧与对应队伍色蒙版帧共用逻辑索引，现有 atlas 子纹理按 `{actionName}_{localIndex}.png` 和 `{actionName}_mask_{localIndex}.png` 命名；循环性由 Idle/Run 或技能调用明确传入，不保存在动作配置中。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色默认由 `CharacterSceneObj` 根据 `team` ID 初始化，并在材质异步创建或重新绑定时重复应用；`setTeamColor(r, g, b)` 仅用于明确的运行时覆写。同一职业不复制红蓝两套完整资源。未配置帧动画的角色继续显示静态回退图。
+战斗角色直接使用 LayaAir 标准的“单张 PNG + `.atlas`”帧动画资源，不再维护独立的 idle 单图与队伍色蒙版。`CharacterAnimation` 表为每个动作配置 `actionName`、包含首尾的 `startFrameIndex/endFrameIndex` 和 `durationMs`。基础帧与对应队伍色蒙版帧共用逻辑索引，现有 atlas 子纹理按 `{actionName}_{localIndex}.png` 和 `{actionName}_mask_{localIndex}.png` 命名；循环性由 Idle/Run 或技能调用明确传入，不保存在动作配置中。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色默认由 `CharacterSceneObj` 根据 `team` ID 初始化，并在材质异步创建或重新绑定时重复应用；`setTeamColor(r, g, b)` 仅用于明确的运行时覆写。同一职业不复制红蓝两套完整资源。角色必须配置至少一个可播放的帧动画动作。
 
-角色模型、兵种、缩放和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔；技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`。
+角色兵种、缩放和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔；技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`。
 
 帧动画由角色 Entity 的每帧更新使用场景游戏时间驱动，暂停、加速和减速与场景逻辑保持一致；每个动画实例不再创建独立 Timer。Laya 仍逐帧提交场景渲染，只有动画帧索引变化时才重写主图、蒙版和对应 UV，角色位置变化不受换帧频率限制。
 

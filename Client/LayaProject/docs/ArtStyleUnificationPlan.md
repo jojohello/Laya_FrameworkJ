@@ -18,9 +18,9 @@ The target is not only "same prompt", but a repeatable art direction:
 
 Use the current better assets only as a structural reference, not as the final color/saturation target:
 
-- `assets/ui/battleScene/stage_node_*.png`
-- `assets/ui/battleScene/stage_reward_chest.png`
-- `assets/ui/battleScene/stage_route_flag.png`
+- `assets/ui/battlescene/imgs/stage_node_*.png`
+- `assets/ui/battlescene/imgs/stage_reward_chest.png`
+- `assets/ui/battlescene/imgs/stage_route_flag.png`
 - `assets/ui/common/imgs/btn-bg-yellow0.png`
 - `assets/ui/mainscene/imgs/icon-world.png`
 - `assets/ui/mainscene/imgs/icon-box.png`

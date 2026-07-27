@@ -19,17 +19,12 @@ const TEAM_COLORS: Readonly<Record<number, readonly [number, number, number]>> =
     2: [220, 50, 55],
 };
 
-/**
- * Battle character display adapter.
- * The first production pass uses one idle texture while keeping stable action names
- * so frame animation can replace the static renderer without changing battle code.
- */
+/** Battle character display adapter backed by atlas frame animation. */
 @regClass()
 export class CharacterSceneObj extends CreatureSceneObj {
     fsmStateName?: string;
     aiRuntime?: CharacterAIRuntime;
     private _animName: CharacterAnimName = "idle";
-    private _baseLayer: Laya.Sprite | null = null;
     private _teamMaterial: Laya.Material | null = null;
     private _frameAnimation: ResFrameAnimation | null = null;
     private readonly _animationDurationMap = new Map<string, number>();
@@ -64,32 +59,12 @@ export class CharacterSceneObj extends CreatureSceneObj {
         model.graphics.clear();
         model.filters = [];
         this.releaseFrameAnimation();
-
-        this.ensureRenderLayers(model);
-        this._baseLayer!.graphics.clear();
         this.releaseTeamMaterial();
 
         const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", this._cfgId);
-        const texture = config?.modelPath
-            ? Laya.loader.getRes(config.modelPath) as Laya.Texture
-            : null;
-        if (!texture) {
-            console.error(`[CharacterSceneObj] Character texture is not loaded: cfgId=${this._cfgId}, path=${config?.modelPath || ""}`);
+        if (!config) {
+            console.error(`[CharacterSceneObj] Character config is missing: cfgId=${this._cfgId}`);
             return;
-        }
-
-        // Logical position is the unit's foot point, not the bitmap center.
-        this._baseLayer!.graphics.drawTexture(texture, -texture.width * 0.5, -texture.height);
-        const mask = config.teamMaskPath
-            ? Laya.loader.getRes(config.teamMaskPath) as Laya.Texture
-            : null;
-        if (mask) {
-            this._teamMaterial = CharacterTeamColorMaterial.create(texture, mask, this.team);
-            this._baseLayer!.material = this._teamMaterial;
-            this.applyTeamColorToMaterial();
-        } else {
-            this._baseLayer!.material = null;
-            console.warn(`[CharacterSceneObj] Team mask is not loaded: cfgId=${this._cfgId}, path=${config.teamMaskPath || ""}`);
         }
         const scale = config.modelScale > 0 ? config.modelScale : 1;
         model.scale(scale, scale);
@@ -100,14 +75,6 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this._teamColor = [r, g, b];
         if (!this._teamMaterial) return;
         CharacterTeamColorMaterial.setTeamColor(this._teamMaterial, r, g, b);
-    }
-
-    private ensureRenderLayers(model: Laya.Sprite): void {
-        if (!this._baseLayer) {
-            this._baseLayer = new Laya.Sprite();
-            this._baseLayer.name = "CharacterBaseLayer";
-        }
-        if (this._baseLayer.parent !== model) model.addChild(this._baseLayer);
     }
 
     playAnim(
@@ -279,11 +246,9 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this.releaseTeamMaterial();
         this.releaseFrameAnimation();
         super.onDispose(scene);
-        this._baseLayer = null;
     }
 
     private releaseTeamMaterial(): void {
-        if (this._baseLayer) this._baseLayer.material = null;
         if (this._frameAnimation?.animation) this._frameAnimation.animation.material = null;
         this._teamMaterial?.destroy();
         this._teamMaterial = null;
@@ -300,7 +265,10 @@ export class CharacterSceneObj extends CreatureSceneObj {
             "characterId",
             characterId
         );
-        if (configs.length === 0) return;
+        if (configs.length === 0) {
+            console.error(`[CharacterSceneObj] Frame animation config is missing: cfgId=${characterId}`);
+            return;
+        }
 
         const atlasPath = configs[0].atlasPath;
         const animationFrameRoot = this.getAnimationFrameRoot(atlasPath);
@@ -388,12 +356,11 @@ export class CharacterSceneObj extends CreatureSceneObj {
         }
         const curTime = this.scene?.curTime ?? this._animStartTime;
         if (resource.play(this._animName, this._animStartTime, curTime, this._animLoop) >= 0) {
-            this._baseLayer!.visible = false;
-        } else {
-            console.error(`[CharacterSceneObj] Failed to play frame animation: cfgId=${characterId}, action=${this._animName}`);
-            this.releaseTeamMaterial();
-            this.releaseFrameAnimation();
+            return;
         }
+        console.error(`[CharacterSceneObj] Failed to play frame animation: cfgId=${characterId}, action=${this._animName}`);
+        this.releaseTeamMaterial();
+        this.releaseFrameAnimation();
     }
 
     private getAnimationFrameRoot(atlasPath: string): string {
@@ -420,6 +387,5 @@ export class CharacterSceneObj extends CreatureSceneObj {
             ResourceMgr.instance.recoverRes(this._frameAnimation);
             this._frameAnimation = null;
         }
-        if (this._baseLayer) this._baseLayer.visible = true;
     }
 }

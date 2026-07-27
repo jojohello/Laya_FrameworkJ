@@ -5,6 +5,15 @@
 | `ui/mainscene/systemBtn.lh` | `.lh` prefab | Main scene system-entry tab | Used by the `MainSceneView.ls` GList; `itemRenderer` assigns `loader_1.src` and `name_1.text` from each MainNav row; Radio selected state scales to `1.08` from the center |
 | `ui/battlescene/HealthBar.lh` | `.lh` prefab | Battle health bar | Reusable battle HUD component |
 | `ui/battlescene/BattleMainView.ls` | `.ls` scene | Full-screen battle HUD | Transparent screen UI; owns compact top-right 1×/2× speed, pause/back controls and pause overlay; clickable controls use GButton with static GImage children |
+| `ui/battlescene/BattleVictoryView.ls` | `.ls` modal scene | Battle victory result screen | Owns the victory emblem, score, reward Item and claim action; opened as `BattleVictoryUI` |
+| `ui/battlescene/BattleDefeatView.ls` | `.ls` modal scene | Battle defeat result screen | Owns the defeat gate, improvement suggestions and return action; opened as `BattleDefeatUI` |
+| `ui/battlescene/imgs/defeat_background.png` | PNG | Battle defeat result background | Pure-color `GImage` background stretched to the full result page; kept separate from the decorative defeat gate |
+| `ui/battlescene/imgs/defeat_title.png` | PNG | Battle defeat title plaque | Screen-specific blank `460x180` plaque; runtime title stays in a Laya text node |
+| `ui/battlescene/imgs/defeat_button.png` | PNG | Battle defeat primary button | Screen-specific blank `260x92` button background used inside a GButton |
+| `ui/battlescene/imgs/defeat_result_panel.png` | PNG | Battle-specific defeat suggestions panel | Fixed dark teal panel with honey-gold frame and cyan crystal accents; deliberately screen-specific rather than reusing the common parchment panel |
+| `ui/common/ItemView.lh` | `.lh` prefab | Reusable item slot | Layered bottom frame, quality background, dynamic icon, quantity, red point and selected frame; driven by `ItemViewController` |
+| `ui/battlescene/imgs/victory_emblem.png` | PNG | Victory result illustration | Fixed GImage winged shield on a dark teal magical vignette; UUID `bed03bfb-1c8d-481f-915f-ac13adb74a76`; text and score remain Laya nodes |
+| `ui/battlescene/imgs/defeat_gate.png` | PNG | Defeat result illustration | Transparent `380x380` crying Q-version wizard with broken wand and magic sparkles; existing UUID `42c88f84-2df9-49d0-a8ef-82b24472bc50` is preserved |
 | `ui/battlescene/imgs/btn_battle_speed.png` | PNG | Battle speed button background | Dedicated empty-center shield for runtime 1×/2× text; UUID `3b6045fd-fdd9-4783-bd8e-5ab994a6e4ac`, integrated by `BattleMainView.ls` |
 | `ui/battlescene/imgs/btn_pause.png` | PNG | Battle pause button | Battle-specific silhouette and sizing; keep under the battle module |
 | `ui/battlescene/imgs/btn_battle_back.png` | PNG | Return from battle to stage selection | Battle-specific navigation control; keep under the battle module |
@@ -33,5 +42,7 @@
 ## Selection rule
 
 Use `.lh` for reusable visual components and `.ls` for complete pages or modal layer containers. Do not invent `res://` UUIDs; inspect the neighboring `.meta` file first. Runtime resource paths omit `assets/`.
+
+Use one Controller to switch states only when the page keeps the same information structure. Victory and defeat use separate `.ls` scenes and Controllers because their content regions and future actions differ; shared visual units such as Item remain common `.lh` prefabs.
 
 Fixed local art uses `GImage`; `GLoader` is reserved for runtime-replaceable, asynchronous, or remote images. Any node with click semantics uses `GButton`, with fixed `GImage` or dynamic `GLoader` children as appropriate. Ordinary buttons shrink from their center when pressed: `0.92` for regular controls and `0.9` for compact icon controls. Selection-style tabs instead keep the active location visibly stronger; the main-navigation tab scales its Radio selected state to `1.08`. Create a shared button prefab or behavior only when the complete visual or compound behavior is reused across screens.

@@ -87,17 +87,17 @@ Rules:
 
 | Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `assets/ui/battleScene/stage_node_normal.png` | Normal stage node | generated v4 stage node | 368x270 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battleScene/stage_node_clear.png` | Cleared stage node | generated v4 cleared node | 344x342 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battleScene/stage_node_current.png` | Current selectable stage node | generated v4 current node | 355x363 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battleScene/stage_node_boss.png` | Boss stage node | generated v4 boss node | 363x411 | independent icon | replaced | Red remains reserved for danger/boss. |
-| `assets/ui/battleScene/stage_reward_chest.png` | Stage reward chest | generated v4 reward chest | 350x326 | independent icon | replaced | Final integrated asset only. |
-| `assets/ui/battleScene/battle_title_plate.png` | Battle title plate | existing v4-style formal asset | 502x296 | title bg | ready | Looks consistent with current style. Use Laya text for labels. |
-| `assets/ui/battleScene/btn_battle_start.png` | Battle start button | existing v4-style formal asset | 505x227 | button bg | ready | Center clean for Laya text. |
-| `assets/ui/battleScene/btn_battle_start_disabled.png` | Disabled battle start button | existing v4-style formal asset | 485x220 | button bg | ready | Center clean for Laya text. |
-| `assets/ui/battleScene/stage_lock.png` | Stage lock icon | existing v4-style formal asset | 268x327 | independent icon | ready | Consistent enough; no current replacement needed. |
-| `assets/ui/battleScene/stage_route_flag.png` | Stage route/marker flag | existing v4-style formal asset | 317x389 | independent icon | ready | Consistent enough; no current replacement needed. |
-| `assets/ui/battleScene/stage_star_small.png` | Stage star/reward star | existing v4-style formal asset | 292x280 | independent icon | ready | Consistent enough; no current replacement needed. |
+| `assets/ui/battlescene/imgs/stage_node_normal.png` | Normal stage node | generated v4 stage node | 368x270 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battlescene/imgs/stage_node_clear.png` | Cleared stage node | generated v4 cleared node | 344x342 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battlescene/imgs/stage_node_current.png` | Current selectable stage node | generated v4 current node | 355x363 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battlescene/imgs/stage_node_boss.png` | Boss stage node | generated v4 boss node | 363x411 | independent icon | replaced | Red remains reserved for danger/boss. |
+| `assets/ui/battlescene/imgs/stage_reward_chest.png` | Stage reward chest | generated v4 reward chest | 350x326 | independent icon | replaced | Final integrated asset only. |
+| `assets/ui/battlescene/imgs/battle_title_plate.png` | Battle title plate | existing v4-style formal asset | 502x296 | title bg | ready | Looks consistent with current style. Use Laya text for labels. |
+| `assets/ui/battlescene/imgs/btn_battle_start.png` | Battle start button | existing v4-style formal asset | 505x227 | button bg | ready | Center clean for Laya text. |
+| `assets/ui/battlescene/imgs/btn_battle_start_disabled.png` | Disabled battle start button | existing v4-style formal asset | 485x220 | button bg | ready | Center clean for Laya text. |
+| `assets/ui/battlescene/imgs/stage_lock.png` | Stage lock icon | existing v4-style formal asset | 268x327 | independent icon | ready | Consistent enough; no current replacement needed. |
+| `assets/ui/battlescene/imgs/stage_route_flag.png` | Stage route/marker flag | existing v4-style formal asset | 317x389 | independent icon | ready | Consistent enough; no current replacement needed. |
+| `assets/ui/battlescene/imgs/stage_star_small.png` | Stage star/reward star | existing v4-style formal asset | 292x280 | independent icon | ready | Consistent enough; no current replacement needed. |
 
 ## Battle HUD Assets
 
@@ -106,14 +106,20 @@ Rules:
 | `assets/ui/battlescene/imgs/btn_battle_speed.png` | Battle speed selector background | generated from the accepted battle HUD shield style | 96x108 | independent button background with runtime 1×/2× text | integrated | IDE-generated UUID `3b6045fd-fdd9-4783-bd8e-5ab994a6e4ac`; `BattleMainView.ls` renders the changing multiplier as Laya text. |
 | `assets/ui/battlescene/imgs/btn_pause.png` | Pause/resume battle | generated battle HUD production sheet | 96x108 | independent button icon | integrated | Dark teal-blue battle control with honey-gold rim and cyan magic accent; `BattleMainView.ls` uses the imported UUID. |
 | `assets/ui/battlescene/imgs/btn_battle_back.png` | Return to battle-stage selection | generated battle HUD production sheet | 96x108 | independent button icon | integrated | Matches the pause button; battle-only navigation semantics keep it out of common assets. |
+| `assets/ui/battlescene/imgs/victory_emblem.png` | Victory result illustration | generated from user result-screen reference in locked v4 direction | 1536x1024 | fixed GImage art | imported | UUID `bed03bfb-1c8d-481f-915f-ac13adb74a76`; opaque dark-teal magical vignette with no baked text or numbers; displayed at 650x434 without meaningful aspect distortion. |
+| `assets/ui/battlescene/imgs/defeat_gate.png` | Defeat result character illustration | generated v4 Q-version crying wizard with broken wand and cyan magic sparks | 380x380 | fixed GImage art | replaced | Transparent production-size cutout; existing UUID `42c88f84-2df9-49d0-a8ef-82b24472bc50` preserved. Filename is retained for resource compatibility even though the subject is no longer a gate. |
+| `assets/ui/battlescene/imgs/defeat_background.png` | Defeat result background | approved full-screen defeat concept background | 750x1334 | fixed GImage art | replaced | UUID `cc4c3978-3482-4da8-8d1e-06f61432a9de`; low-contrast teal star field with restrained corner decoration and clear UI zones. |
+| `assets/ui/battlescene/imgs/defeat_result_panel.png` | Battle-specific defeat suggestions panel | approved full-screen defeat concept | 600x450 | fixed GImage art | replaced | Existing UUID `b050d62e-1085-4b1a-9d2a-c76581c1a193` preserved; includes three blank rows and fixed formation, crown and equipment/skill medallions. |
+| `assets/ui/battlescene/imgs/defeat_title.png` | Defeat-specific blank title plaque | approved full-screen defeat concept | 460x180 | fixed GImage art | pending IDE import | Blue-gray leather, restrained honey-gold edge and cracked cyan crystal; no baked title. |
+| `assets/ui/battlescene/imgs/defeat_button.png` | Defeat-specific primary button | approved full-screen defeat concept | 260x92 | fixed GImage art | pending IDE import | Warm amber leather with cyan crystal accents; runtime label remains Laya text. |
 
 ## Battle Character Assets
 
 | Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `assets/character/1001/idle.png` | Warrior static idle sprite | unified battle-character production sheet | 128x160 | foot-anchored character texture | ready | Neutral base palette supports runtime RGB team tint. |
-| `assets/character/1002/idle.png` | Mage static idle sprite | unified battle-character production sheet | 128x160 | foot-anchored character texture | ready | Staff and pointed hat preserve class readability after tint. |
-| `assets/character/1003/idle.png` | Priest static idle sprite | unified battle-character production sheet | 128x160 | foot-anchored character texture | ready | Cream robe and healing staff preserve class readability after tint. |
+| `assets/character/1001/character-animation.png` | Warrior idle/walk/attack atlas texture | unified battle-character production sheet | 768x960 | `.atlas` frame animation with paired team masks | ready | Neutral base palette supports runtime RGB team tint. |
+| `assets/character/1002/character-animation.png` | Mage idle/walk/attack atlas texture | unified battle-character production sheet | 768x960 | `.atlas` frame animation with paired team masks | ready | Staff and pointed hat preserve class readability after tint. |
+| `assets/character/1003/character-animation.png` | Priest idle/walk/attack atlas texture | unified battle-character production sheet | 768x960 | `.atlas` frame animation with paired team masks | ready | Cream robe and healing staff preserve class readability after tint. |
 
 ## Cleanup Rule
 

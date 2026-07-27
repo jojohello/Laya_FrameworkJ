@@ -7,6 +7,7 @@ interface BattleViewOpenParam {
         setTimeScale?(value: number): void;
         isPaused?: boolean;
         timeScale?: number;
+        flowState?: string;
     };
     switchScene?: (sceneType: SceneType, param?: any) => Promise<any>;
 }
@@ -95,6 +96,10 @@ export class BattleMainViewController implements TransitionReady {
     }
 
     private backToStage(): void {
+        if (this._param?.scene?.flowState === "Victory" ||
+            this._param?.scene?.flowState === "Defeat") {
+            return;
+        }
         this.setPaused(false);
         void this._param?.switchScene?.(SceneType.BattleStageScene);
     }
