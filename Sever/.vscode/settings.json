@@ -3,6 +3,13 @@
     "files.autoGuessEncoding": false,
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "automatic",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "D:\\jdk-21.0.8.9-hotspot",
+            "default": true
+        }
+    ],
     "terminal.integrated.profiles.windows": {
         "PowerShell UTF-8": {
             "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
@@ -15,7 +22,17 @@
         }
     },
     "terminal.integrated.defaultProfile.windows": "PowerShell UTF-8",
+    "terminal.integrated.automationProfile.windows": {
+        "path": "C:\\Windows\\System32\\cmd.exe",
+        "args": [
+            "/D",
+            "/K",
+            "chcp 65001 >nul"
+        ]
+    },
     "terminal.integrated.env.windows": {
+        "JAVA_HOME": "D:\\jdk-21.0.8.9-hotspot",
+        "PATH": "D:\\jdk-21.0.8.9-hotspot\\bin;${env:PATH}",
         "JAVA_TOOL_OPTIONS": "-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
         "MAVEN_OPTS": "-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"
     }

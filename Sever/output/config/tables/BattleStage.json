@@ -2,31 +2,37 @@
   {
     "ID": 1001,
     "battleId": 1,
-    "canEnter": true
+    "canEnter": true,
+    "victoryRewards": "1001:100"
   },
   {
     "ID": 1002,
     "battleId": 2,
-    "canEnter": true
+    "canEnter": true,
+    "victoryRewards": "1001:120"
   },
   {
     "ID": 1003,
     "battleId": 3,
-    "canEnter": true
+    "canEnter": true,
+    "victoryRewards": "1001:140"
   },
   {
     "ID": 1004,
     "battleId": 4,
-    "canEnter": true
+    "canEnter": true,
+    "victoryRewards": "1001:160"
   },
   {
     "ID": 1005,
     "battleId": 5,
-    "canEnter": true
+    "canEnter": true,
+    "victoryRewards": "1001:180"
   },
   {
     "ID": 1006,
     "battleId": 6,
-    "canEnter": true
+    "canEnter": true,
+    "victoryRewards": "1001:300"
   }
 ]

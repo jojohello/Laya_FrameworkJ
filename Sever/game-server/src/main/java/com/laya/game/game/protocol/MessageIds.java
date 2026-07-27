@@ -23,6 +23,10 @@ public class MessageIds {
     public static final short PLAYER_INFO = 3011;
     public static final short PLAYER_LEVEL_UP_REQUEST = 3012;
     public static final short PLAYER_LEVEL_UP_RESPONSE = 3013;
+    public static final short BATTLE_ENTER_REQUEST = 3014;
+    public static final short BATTLE_ENTER_RESPONSE = 3015;
+    public static final short BATTLE_COMPLETE_REQUEST = 3016;
+    public static final short BATTLE_COMPLETE_RESPONSE = 3017;
     public static final short FUNCTION_OPEN_STATES = 4001;
     public static final short FUNCTION_OPEN_PUSH = 4002;
     public static final short GUIDE_PROGRESS_REQUEST = 4101;
@@ -54,6 +58,10 @@ public class MessageIds {
             case 3011: return "PLAYER_INFO";
             case 3012: return "PLAYER_LEVEL_UP_REQUEST";
             case 3013: return "PLAYER_LEVEL_UP_RESPONSE";
+            case 3014: return "BATTLE_ENTER_REQUEST";
+            case 3015: return "BATTLE_ENTER_RESPONSE";
+            case 3016: return "BATTLE_COMPLETE_REQUEST";
+            case 3017: return "BATTLE_COMPLETE_RESPONSE";
             case 4001: return "FUNCTION_OPEN_STATES";
             case 4002: return "FUNCTION_OPEN_PUSH";
             case 4101: return "GUIDE_PROGRESS_REQUEST";

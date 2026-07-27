@@ -43,6 +43,12 @@ public class BattleStageConfig implements Serializable {
     private final boolean canEnter;
 
     /**
+     * 胜利奖励(itemId:数量;itemId:数量)
+     */
+    @JsonProperty("victoryRewards")
+    private final String victoryRewards;
+
+    /**
      * 构造函数（Jackson反序列化使用）
      * <p>String类型使用intern()进行字符串池化，减少内存占用</p>
      */
@@ -50,10 +56,12 @@ public class BattleStageConfig implements Serializable {
     public BattleStageConfig(
             @JsonProperty("ID") int ID,
             @JsonProperty("battleId") int battleId,
-            @JsonProperty("canEnter") boolean canEnter) {
+            @JsonProperty("canEnter") boolean canEnter,
+            @JsonProperty("victoryRewards") String victoryRewards) {
         this.ID = ID;
         this.battleId = battleId;
         this.canEnter = canEnter;
+        this.victoryRewards = victoryRewards;
     }
 
     public int getID() {
@@ -68,9 +76,13 @@ public class BattleStageConfig implements Serializable {
         return canEnter;
     }
 
+    public String getVictoryRewards() {
+        return victoryRewards;
+    }
+
     @Override
     public String toString() {
-        return String.format("BattleStageConfig{ID=%s, battleId=%s, canEnter=%s}",
-                ID, battleId, canEnter);
+        return String.format("BattleStageConfig{ID=%s, battleId=%s, canEnter=%s, victoryRewards=%s}",
+                ID, battleId, canEnter, victoryRewards);
     }
 }

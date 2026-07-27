@@ -49,3 +49,15 @@ Guide eligibility is server-authoritative. `GuideConfig` supplies the shared tri
 Activation conditions are server-authoritative. The first time they match, the guide is persisted as `queued` with an activation order. The unfinished queue is FIFO; only its head may transition to `inProgress`. Client-only restriction conditions such as scene, UI, and dialog readiness decide when the queued head may start, but cannot activate or reorder guides.
 
 `player_guide_state` stores one row per player and guide with `queued/inProgress/completed`, activation order, monotonic `currentStepId`, and script version. Network handlers resolve authenticated `userId` to the selected `playerId` before repository access. Completed progress is idempotent and cannot be rolled back. Guide actions never grant gameplay state directly; level-up and other mutations continue through their normal validated handlers.
+
+## Battle settlement
+
+`BATTLE_ENTER_REQUEST` creates a `player_battle_session` owned by the authenticated `playerId`.
+`BATTLE_COMPLETE_REQUEST` locks that session, reads `BattleStage.victoryRewards`, writes its immutable
+`reward_snapshot`, and grants currency through `WalletRepository` or ordinary items through `BagRepository`
+inside the same transaction. A completed session returns its recorded snapshot and current wallet instead of
+granting again. The response is the only client source for the victory reward display and wallet refresh.
+
+The current client-side battle simulation can report victory, so this session contract establishes ownership,
+configuration authority and idempotency but is not anti-cheat proof. Do not treat client-reported victory as a
+production trust boundary; replace it with server simulation or a server-verifiable combat report before release.

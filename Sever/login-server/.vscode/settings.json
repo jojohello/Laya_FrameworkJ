@@ -1,6 +1,21 @@
 {
   "java.configuration.updateBuildConfiguration": "automatic",
-  "java.compile.nullAnalysis.mode": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "D:\\jdk-21.0.8.9-hotspot",
+            "default": true
+        }
+    ],
+    "terminal.integrated.automationProfile.windows": {
+        "path": "C:\\Windows\\System32\\cmd.exe",
+        "args": [
+            "/D",
+            "/K",
+            "chcp 65001 >nul"
+        ]
+    },
   "files.exclude": {
     "**/target": true,
     "**/.classpath": true,
