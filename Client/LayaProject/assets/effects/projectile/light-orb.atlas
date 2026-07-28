@@ -1,0 +1,11 @@
+{
+  "frames": {
+    "frame_00.png": { "frame": { "x": 0, "y": 0, "w": 48, "h": 48 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 48, "h": 48 } },
+    "frame_01.png": { "frame": { "x": 48, "y": 0, "w": 48, "h": 48 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 48, "h": 48 } },
+    "frame_02.png": { "frame": { "x": 96, "y": 0, "w": 48, "h": 48 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 48, "h": 48 } },
+    "frame_03.png": { "frame": { "x": 144, "y": 0, "w": 48, "h": 48 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 48, "h": 48 } },
+    "frame_04.png": { "frame": { "x": 192, "y": 0, "w": 48, "h": 48 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 48, "h": 48 } },
+    "frame_05.png": { "frame": { "x": 240, "y": 0, "w": 48, "h": 48 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 48, "h": 48 } }
+  },
+  "meta": { "image": "light-orb.png", "prefix": "effects/projectile/light-orb/", "scale": "1" }
+}

@@ -12,6 +12,7 @@ import {
 import { BulletCollisionHost, BulletMovementStartConfig } from "../bullet/BulletPolicyTypes";
 import { DisplaySceneObj } from "./DisplaySceneObj";
 import { SceneObjType } from "./SceneObjType";
+import { ResourceMgr } from "../resource/ResourceMgr";
 
 const { regClass } = Laya;
 
@@ -32,6 +33,19 @@ export interface BulletCollisionOptions {
     useTrailCollision?: boolean;
     useRangeCollision?: boolean;
     sortTrailCollision?: boolean;
+}
+
+/**
+ * Visual-only frame animation settings for a projectile.
+ * The default resource convention is `frame_00.png` through `frame_05.png`
+ * below the atlas path's sibling directory.
+ */
+export interface BulletFrameAnimationOptions {
+    atlasPath: string;
+    framePrefix?: string;
+    frameCount?: number;
+    intervalMs?: number;
+    displaySize?: number;
 }
 
 /**
@@ -59,11 +73,13 @@ export class BulletSceneObj extends DisplaySceneObj {
     protected _movementStarted: boolean = false;
     protected _movementFinishPending: boolean = false;
     protected _movementFinishDoHitAtEnd: boolean = false;
-    private _debugHitTargetUid: number = 0;
     protected _collisionPolicy: IBulletCollisionPolicy = new DefaultBulletCollisionPolicy();
     protected readonly _hitTargets: BaseSceneObj[] = [];
     protected _hitEffectScale: number = 1;
     protected _hitActions: readonly BaseAction[] = [];
+    private _visualAnimation: Laya.Animation | null = null;
+    private _visualAtlasPath: string = "";
+    private _visualLoadToken: number = 0;
 
     getObjType(): number {
         return SceneObjType.Bullet;
@@ -90,9 +106,9 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._movementStarted = false;
         this._movementFinishPending = false;
         this._movementFinishDoHitAtEnd = false;
-        this._debugHitTargetUid = 0;
         this._hitEffectScale = 1;
         this._hitActions = [];
+        this.clearVisualAnimation();
         // 子弹自身只发起轨迹查询，不进入队伍空间索引成为其他子弹的命中候选。
         this.setRange(8);
     }
@@ -103,6 +119,41 @@ export class BulletSceneObj extends DisplaySceneObj {
             this._model.graphics.clear();
             this._model.graphics.drawCircle(0, 0, 5, "#f5c542");
         }
+    }
+
+    /**
+     * Plays every configured atlas frame from start to finish in a loop.
+     * Collision size remains independent from the visual display size.
+     */
+    setVisualFrameAnimation(options: BulletFrameAnimationOptions): void {
+        const atlasPath = options.atlasPath?.trim() || "";
+        this.releaseVisualAtlas();
+        this.clearVisualAnimation();
+        this._visualAtlasPath = atlasPath;
+        const token = ++this._visualLoadToken;
+
+        if (!atlasPath) {
+            this.drawFallbackVisual();
+            return;
+        }
+
+        const framePrefix = options.framePrefix?.trim() || "frame_";
+        const frameCount = Math.max(1, Math.floor(options.frameCount ?? 6));
+        const intervalMs = Math.max(1, Math.floor(options.intervalMs ?? 90));
+        const displaySize = Math.max(1, Number(options.displaySize ?? 50));
+        void this.loadVisualFrameAnimation(
+            atlasPath,
+            framePrefix,
+            frameCount,
+            intervalMs,
+            displaySize,
+            token
+        );
+    }
+
+    /** Uses the standard six-frame, 90ms and 50px projectile visual defaults. */
+    setVisualResource(atlasPath: string): void {
+        this.setVisualFrameAnimation({ atlasPath });
     }
 
     initLineMovement(
@@ -184,6 +235,18 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._hitEffectScale = Number(effectScale) || 1;
     }
 
+    onRecycle(scene: BaseScene): void {
+        this.releaseVisualAtlas();
+        this.clearVisualAnimation();
+        super.onRecycle(scene);
+    }
+
+    onDispose(scene: BaseScene): void {
+        this.releaseVisualAtlas();
+        this.clearVisualAnimation(true);
+        super.onDispose(scene);
+    }
+
     getCasterId(): number {
         return this._casterId || this.uid;
     }
@@ -249,20 +312,9 @@ export class BulletSceneObj extends DisplaySceneObj {
     }
 
     protected tryHitTarget(target: BaseSceneObj, curTime: number): boolean {
-        if (!this.canHitTarget(this, target)) {
-            console.warn(
-                `[DBG-BULLET-HIT] rejected bullet=${this.uid}/team${this.team}` +
-                ` target=${target.uid}/team${target.team} dead=${target.isDead}`
-            );
-            return false;
-        }
+        if (!this.canHitTarget(this, target)) return false;
 
         this._collisionPolicy.recordHit(target, curTime);
-        this._debugHitTargetUid = target.uid;
-        console.log(
-            `[DBG-BULLET-HIT] hit bullet=${this.uid}/team${this.team}` +
-            ` target=${target.uid}/team${target.team} at=(${target.x.toFixed(1)},${target.y.toFixed(1)})`
-        );
         this.onHit(target, curTime);
         return true;
     }
@@ -310,13 +362,6 @@ export class BulletSceneObj extends DisplaySceneObj {
         if (doHitAtEnd) {
             this.updateCollision(this._lastUpdateTime);
         }
-        if (!this._debugHitTargetUid) {
-            console.warn(
-                `[DBG-BULLET-HIT] miss bullet=${this.uid}/team${this.team}` +
-                ` end=(${this.x.toFixed(1)},${this.y.toFixed(1)})` +
-                ` searchTeam=${this._searchTeam}`
-            );
-        }
         this.release();
     }
 
@@ -341,6 +386,78 @@ export class BulletSceneObj extends DisplaySceneObj {
         if (this._movementConfig) {
             this._movementPolicy.start(this, this._movementConfig, curTime);
         }
+    }
+
+    private async loadVisualFrameAnimation(
+        atlasPath: string,
+        framePrefix: string,
+        frameCount: number,
+        intervalMs: number,
+        displaySize: number,
+        token: number
+    ): Promise<void> {
+        try {
+            await ResourceMgr.instance.loadContent(atlasPath);
+        } catch (error) {
+            if (token === this._visualLoadToken) {
+                console.error(`[BulletSceneObj] Failed to load visual atlas: ${atlasPath}`, error);
+                this.drawFallbackVisual();
+            }
+            return;
+        }
+
+        if (token !== this._visualLoadToken || this.isRelease || !this._model) {
+            return;
+        }
+
+        const frameRoot = atlasPath.replace(/\.atlas$/i, "") + "/";
+        const frameUrls = Array.from(
+            { length: frameCount },
+            (_value, index) => `${frameRoot}${framePrefix}${String(index).padStart(2, "0")}.png`
+        );
+        const missingFrame = frameUrls.find(url => !Laya.loader.getRes(url));
+        if (missingFrame) {
+            console.error(`[BulletSceneObj] Visual frame is not cached: atlas=${atlasPath}, frame=${missingFrame}`);
+            ResourceMgr.instance.releaseRef(atlasPath);
+            this._visualAtlasPath = "";
+            this.drawFallbackVisual();
+            return;
+        }
+
+        const animation = this._visualAnimation || new Laya.Animation();
+        animation.stop();
+        animation.images = frameUrls;
+        animation.interval = intervalMs;
+        const scale = displaySize / 48;
+        animation.scale(scale, scale);
+        animation.pos(-displaySize * 0.5, -displaySize * 0.5);
+        animation.play(0, true);
+        this._model.graphics.clear();
+        this._model.addChild(animation);
+        this._visualAnimation = animation;
+    }
+
+    private releaseVisualAtlas(): void {
+        if (!this._visualAtlasPath) return;
+        ResourceMgr.instance.releaseRef(this._visualAtlasPath);
+        this._visualAtlasPath = "";
+        this._visualLoadToken++;
+    }
+
+    private clearVisualAnimation(destroy: boolean = false): void {
+        if (!this._visualAnimation) return;
+        this._visualAnimation.stop();
+        this._visualAnimation.removeSelf();
+        if (destroy) {
+            this._visualAnimation.destroy();
+            this._visualAnimation = null;
+        }
+    }
+
+    private drawFallbackVisual(): void {
+        if (!this._model) return;
+        this._model.graphics.clear();
+        this._model.graphics.drawCircle(0, 0, 5, "#f5c542");
     }
 
     getObject(uid: number): BaseSceneObj | null {

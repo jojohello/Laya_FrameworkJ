@@ -78,6 +78,13 @@ ID, MoveType, Speed, Range, PenetrateCount, FlyTime, CheckCollision, Resource, O
 `FlyTime` is authored in milliseconds and becomes
 `BulletInfo.flyTimeSeconds` before a projectile runtime is created.
 
+`Resource` is an optional client-only flight visual atlas path relative to
+`assets/`, for example `effects/projectile/fireball.atlas`. The standard
+projectile atlas contains `frame_00.png` through `frame_05.png`; the runtime
+loops them at its default visual size. This single fixed loop does not use a
+separate action-range/duration table. `Resource` affects only rendering, never
+collision `Range` or hit results.
+
 `OnHitAction` is the only configured hit-result entry. Damage, healing, buffs
 and debuffs should be actions with numeric config ids, not hardcoded fields on
 the bullet table.

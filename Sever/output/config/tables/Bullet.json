@@ -18,5 +18,25 @@
     "FlyTime": -1,
     "CheckCollision": true,
     "OnHitAction": "Damage;1002"
+  },
+  {
+    "ID": 1003,
+    "MoveType": "Line",
+    "Speed": 480,
+    "Range": 12,
+    "PenetrateCount": 0,
+    "FlyTime": -1,
+    "CheckCollision": true,
+    "OnHitAction": "Damage;1001"
+  },
+  {
+    "ID": 1004,
+    "MoveType": "Line",
+    "Speed": 480,
+    "Range": 12,
+    "PenetrateCount": 0,
+    "FlyTime": -1,
+    "CheckCollision": true,
+    "OnHitAction": "Damage;1001"
   }
 ]

@@ -97,7 +97,7 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | `setPos(x, y)` | 设置逻辑坐标 |
 | `setAngle(angle)` | 设置角度 |
 | `setZOffset(value)` | 设置显示高度偏移 |
-| `setCollisionBox(range)` | 开启碰撞盒并进入空间分割 |
+| `setCollisionBox(range)` | 设置命中候选半径；仅覆盖 `canEnterSpatialIndex()` 的实体会进入空间分割 |
 | `addModule(module)` | 添加跟随对象缓存的功能模块 |
 | `getModule(ModuleClass)` | 获取指定类型的功能模块 |
 | `hasModule(ModuleClass)` | 判断是否存在指定类型模块 |
@@ -147,7 +147,11 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | `initLineMovement(...)` | 初始化直线子弹 |
 | `initTraceMovement(..., flyTimeSeconds)` | 使用运行时秒初始化追踪子弹 |
 | `configureCollision(...)` | 配置实时/间隔、轨迹/范围、排序、排重/重复、命中计数等碰撞策略 |
+| `setVisualResource(atlasPath)` | 使用标准子弹图集默认播放全部 `frame_00..frame_05`，90ms 一帧、50px 显示并循环 |
+| `setVisualFrameAnimation(options)` | 自定义图集路径、帧前缀、帧数、帧间隔和显示尺寸；只控制表现，不改变命中范围 |
 | `getCasterId()` | 获取施法者 ID |
+
+子弹的 `Bullet.Resource` 可为空；为空时保留代码圆点兜底。正式图集使用一张透明 PNG 与同名 `.atlas`，帧键按 `frame_00.png` 递增命名。带朝向的飞行资源以“朝右”为源图基准；直线弹在起飞时、追踪弹在转向时旋转子弹模型，动画子节点继承该旋转，故拖尾始终位于运动后方。子弹只有一个固定循环动作，因此不建立 `CharacterAnimation` 风格的动作范围/时长配置表；需要特殊帧数、速度或尺寸时，由创建代码显式调用 `setVisualFrameAnimation(options)`。
 
 ---
 

@@ -5,5 +5,5 @@ UsedSize,cs,cs,cs,c,cs,cs,cs,cs,cs,cs,cs,cs,c
 ,100101,1001,1,TestFireball,2,Active,Position,260,1000,None,0,0;Bullet;1001,Step4 projectile skill test
 ,100102,1001,2,TestFireball,2,Active,Position,280,800,None,0,0;Bullet;1002,Step4 projectile skill test
 ,110101,1101,1,WarriorBasicAttack,1,Active,Target,80,900,None,0,0;Animation;attack|300;Damage;1003,Warrior normal attack skill
-,120101,1201,1,MageBasicAttack,1,Active,Target,260,1100,None,0,0;Animation;attack|300;Bullet;1001,Mage normal attack skill
-,130101,1301,1,PriestBasicAttack,1,Active,Target,220,1200,None,0,0;Animation;attack|300;Bullet;1001,Priest normal attack skill
+,120101,1201,1,MageBasicAttack,1,Active,Target,260,1100,None,0,0;Animation;attack|300;Bullet;1003,Mage normal attack skill
+,130101,1301,1,PriestBasicAttack,1,Active,Target,220,1200,None,0,0;Animation;attack|300;Bullet;1004,Priest normal attack skill
