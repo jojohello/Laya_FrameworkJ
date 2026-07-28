@@ -9,38 +9,108 @@
   "name": "BattleDefeatView",
   "width": 750,
   "height": 1334,
-  "mouseEnabled": true,
   "_$child": [
     {
-      "_$id": "battle-defeat-mask",
+      "_$id": "0gfwvrjg",
       "_$type": "GImage",
-      "name": "background",
-      "width": 750,
-      "height": 1334,
-      "src": "res://cc4c3978-3482-4da8-8d1e-06f61432a9de",
+      "name": "bg",
+      "x": -20,
+      "y": -25,
+      "width": 779,
+      "height": 1386,
+      "alpha": 0.88,
+      "_mouseState": 2,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "battle-defeat-root"
+          },
+          "data": [
+            1,
+            0,
+            2,
+            0
+          ]
+        }
+      ],
+      "src": "res://0a7c3be5-1c66-4281-be69-20cb3b133418",
       "autoSize": false
     },
     {
       "_$id": "battle-defeat-art",
       "_$type": "GImage",
       "name": "defeatArt",
-      "x": 185,
-      "y": 45,
-      "width": 380,
-      "height": 380,
+      "x": 210,
+      "y": 100,
+      "width": 330,
+      "height": 330,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "battle-defeat-root"
+          },
+          "data": [
+            6,
+            0,
+            13,
+            0
+          ]
+        }
+      ],
       "src": "res://42c88f84-2df9-49d0-a8ef-82b24472bc50",
+      "autoSize": false
+    },
+    {
+      "_$id": "battle-defeat-title-bg",
+      "_$type": "GImage",
+      "name": "titleBackground",
+      "x": 145,
+      "y": 440,
+      "width": 460,
+      "height": 82,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "battle-defeat-root"
+          },
+          "data": [
+            6,
+            0,
+            13,
+            0
+          ]
+        }
+      ],
+      "src": "res://cf489899-66ec-4629-ac3b-1b35ba20e78f",
       "autoSize": false
     },
     {
       "_$id": "battle-defeat-title",
       "_$type": "GTextField",
       "name": "titleText",
-      "x": 125,
-      "y": 475,
-      "width": 500,
-      "height": 80,
+      "x": 145,
+      "y": 450,
+      "width": 460,
+      "height": 60,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "battle-defeat-root"
+          },
+          "data": [
+            6,
+            0,
+            13,
+            0
+          ]
+        }
+      ],
       "text": "战斗失败",
-      "fontSize": 48,
+      "fontSize": 44,
       "color": "#f2a6a6",
       "bold": true,
       "align": "center",
@@ -52,100 +122,110 @@
       "_$id": "battle-defeat-tips",
       "_$type": "GBox",
       "name": "defeatTips",
-      "x": 75,
-      "y": 570,
-      "width": 600,
-      "height": 450,
+      "x": 95,
+      "y": 555,
+      "width": 560,
+      "height": 315,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "battle-defeat-root"
+          },
+          "data": [
+            6,
+            0,
+            13,
+            0
+          ]
+        }
+      ],
       "_$child": [
         {
           "_$id": "battle-defeat-panel-bg",
           "_$type": "GImage",
           "name": "panelBackground",
-          "width": 600,
-          "height": 450,
-          "src": "res://b050d62e-1085-4b1a-9d2a-c76581c1a193",
+          "width": 560,
+          "height": 315,
+          "src": "res://f4603d4f-ae2b-4e5d-8690-d0c0a1811e48",
           "autoSize": false
         },
         {
           "_$id": "battle-defeat-caption",
           "_$type": "GTextField",
           "name": "defeatCaption",
-          "x": 160,
-          "y": 42,
-          "width": 380,
-          "height": 40,
-          "text": "你可以通过以下方式提升实力",
-          "fontSize": 22,
+          "x": 70,
+          "y": 18,
+          "width": 420,
+          "height": 44,
+          "text": "提升战力建议",
+          "fontSize": 26,
           "color": "#4c4c44",
+          "bold": true,
           "align": "center",
           "valign": "middle"
         },
         {
-          "_$id": "battle-defeat-tip-one",
-          "_$type": "GBox",
-          "name": "tipOne",
-          "y": 100,
-          "width": 600,
-          "height": 95,
-          "_$child": [
-            {
-              "_$id": "battle-defeat-tip-one-text",
-              "_$type": "GTextField",
-              "name": "text",
-              "x": 205,
-              "width": 330,
-              "height": 95,
-              "text": "调整阵容",
-              "fontSize": 22,
-              "color": "#4c4c44",
-              "align": "center",
-              "valign": "middle"
-            }
-          ]
+          "_$id": "battle-defeat-suggestion-surface",
+          "_$type": "GImage",
+          "name": "suggestionSurface",
+          "x": 33,
+          "y": 72,
+          "width": 494,
+          "height": 214,
+          "alpha": 0.78,
+          "src": "res://43f87ea2-ca0d-4322-a165-4abb7bc183f6",
+          "autoSize": false
         },
         {
-          "_$id": "battle-defeat-tip-two",
-          "_$type": "GBox",
-          "name": "tipTwo",
-          "y": 215,
-          "width": 600,
-          "height": 95,
+          "_$id": "battle-defeat-suggestion-list",
+          "_$type": "GList",
+          "name": "suggestionList",
+          "x": 44,
+          "y": 88,
+          "width": 472,
+          "height": 182,
+          "_mouseState": 2,
+          "clipping": true,
+          "scroller": {
+            "_$type": "Scroller",
+            "direction": 0,
+            "barDisplay": 5,
+            "touchEffect": 1,
+            "bouncebackEffect": 1
+          },
+          "layout": {
+            "type": 1,
+            "rowGap": 6,
+            "align": 1
+          },
+          "_templateNode": {
+            "_$ref": "battle-defeat-suggestion-item",
+            "_$tmpl": "itemTemplate"
+          },
+          "_initItemNum": 5,
+          "_isDemo": true,
           "_$child": [
             {
-              "_$id": "battle-defeat-tip-two-text",
-              "_$type": "GTextField",
-              "name": "text",
-              "x": 205,
-              "width": 330,
-              "height": 95,
-              "text": "提高英雄等级",
-              "fontSize": 22,
-              "color": "#4c4c44",
-              "align": "center",
-              "valign": "middle"
-            }
-          ]
-        },
-        {
-          "_$id": "battle-defeat-tip-three",
-          "_$type": "GBox",
-          "name": "tipThree",
-          "y": 330,
-          "width": 600,
-          "height": 95,
-          "_$child": [
-            {
-              "_$id": "battle-defeat-tip-three-text",
-              "_$type": "GTextField",
-              "name": "text",
-              "x": 205,
-              "width": 330,
-              "height": 95,
-              "text": "强化装备与技能",
-              "fontSize": 22,
-              "color": "#4c4c44",
-              "align": "center",
-              "valign": "middle"
+              "_$id": "battle-defeat-suggestion-item",
+              "_$type": "GBox",
+              "name": "suggestionItem",
+              "width": 472,
+              "height": 50,
+              "_$child": [
+                {
+                  "_$id": "battle-defeat-suggestion-text",
+                  "_$type": "GTextField",
+                  "name": "text",
+                  "width": 472,
+                  "height": 50,
+                  "text": "调整阵容与站位",
+                  "fontSize": 28,
+                  "color": "#4c4c44",
+                  "align": "center",
+                  "valign": "middle"
+                }
+              ]
             }
           ]
         }
@@ -156,11 +236,25 @@
       "_$type": "GButton",
       "name": "confirmButton",
       "x": 375,
-      "y": 1070,
-      "width": 220,
-      "height": 86,
+      "y": 950,
+      "width": 260,
+      "height": 92,
       "anchorX": 0.5,
       "anchorY": 0.5,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "battle-defeat-root"
+          },
+          "data": [
+            6,
+            0,
+            13,
+            0
+          ]
+        }
+      ],
       "controllers": {
         "_$type": "Record",
         "button": {
@@ -210,8 +304,8 @@
           "_$id": "battle-defeat-confirm-bg",
           "_$type": "GImage",
           "name": "background",
-          "width": 220,
-          "height": 86,
+          "width": 260,
+          "height": 92,
           "src": "res://6890b76a-c99d-41e3-8691-fa263122ff18",
           "autoSize": false
         },
@@ -219,10 +313,10 @@
           "_$id": "battle-defeat-confirm-label",
           "_$type": "GTextField",
           "name": "label",
-          "width": 220,
-          "height": 86,
+          "width": 260,
+          "height": 92,
           "text": "返回征战",
-          "fontSize": 24,
+          "fontSize": 26,
           "color": "#ffffff",
           "bold": true,
           "align": "center",

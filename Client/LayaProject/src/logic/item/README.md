@@ -58,5 +58,6 @@ effect table.
 ## Runtime Notes
 
 `ItemData` only contains primitive fields. `ItemInfo` can contain helper methods.
-`ItemMgr` keeps local counts only for early gameplay and reward plumbing; server
-sync should replace or hydrate these counts when Bag is implemented.
+`ItemMgr` keeps local counts only for early gameplay and reward plumbing. Battle
+settlement already grants configured non-currency rewards through the server bag repository, but a general
+incremental bag snapshot/delta contract is still required before local bag state can be treated as authoritative.

@@ -76,6 +76,15 @@ When generating final production assets:
 2. Delete trial, review, source, contact-sheet, and comparison PNGs.
 3. Keep the style memory in this text document and `docs/ArtAssetReplacementMap.md`, not as extra image files.
 
+## 2026-07-27: Page Surface And Settlement Rule
+
+User decision:
+
+- Reference scenes establish the bright, clean western-magic world direction; result pages must feel like compact UI over that world, not separate dark Loading posters.
+- Full-screen art is reserved for Loading, login, map, or another page whose own scene is the content.
+- Functional pages, dialogs, settlement pages, and information panels default to host scene + translucent input mask + local panel.
+- Use plain or low-detail surfaces when they satisfy the role. Prefer verified nine-slice title bars, panels, and buttons over decorative full-screen art.
+
 ## V3 Production Interpretation
 
 V3 should not be copied directly as one-piece UI textures.

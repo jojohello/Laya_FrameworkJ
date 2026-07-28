@@ -28,6 +28,8 @@ export class SkillDebugScenario {
         caster.attrs.setBase("attack", 20);
         caster.setMaxHp(100);
         target.setMaxHp(200);
+        target.attrs.setBase("defense", 0);
+        target.attrs.setBase("magicDefense", 0);
 
         const castSuccess = caster.castSkill(
             SkillDebugScenario.TEST_SKILL_ID,

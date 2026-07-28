@@ -72,7 +72,7 @@
           "name": "panelBackground",
           "width": 640,
           "height": 428,
-          "src": "res://426d8b25-ac2e-4152-b43e-4029a9aa8f00",
+          "src": "res://f4603d4f-ae2b-4e5d-8690-d0c0a1811e48",
           "autoSize": false
         },
         {

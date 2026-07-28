@@ -90,6 +90,13 @@ Defines damage parameters for numeric tuning.
 ID, BaseDamage, AttackRate, FormulaID, DamageType, ElementType
 ```
 
+`FormulaID=1` uses `BaseDamage + attack * AttackRate / 100`, followed by the
+shared `DamageExecutor` defense curve. `DamageType` is `Physical`, `Magic` or
+`True`; it selects armor, magic resistance, or no defense respectively.
+`ElementType` is a separate label for elements such as Fire and does not imply
+an additional resistance calculation yet. See `../damage/DESIGN.md` for the
+fixed ordering and rounding rule.
+
 All HP-changing damage should enter the `DamageExecutor` path, normally through
 `DamageAction`.
 

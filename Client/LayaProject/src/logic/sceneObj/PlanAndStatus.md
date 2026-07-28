@@ -8,7 +8,6 @@
 
 - [ ] 在 LayaAir IDE 完成实体 ID 迁移验证：基础攻击和子弹命中已有初步运行结果；Buff 尚未验证。继续覆盖 HUD、Buff、Skill、Bullet、Camera follow 和 AI 调度在创建、延迟执行、caster release、移除、死亡、回池、销毁和再次复用后的行为，确认无旧 owner/caster/target 引用或计划 Action 残留；纯快照只使用展开的基础值。
 - [ ] 在战斗入口可重复进入后，增加示例对象注册与创建验证。
-- [ ] 在 LayaAir IDE 验证战法牧三套单图 atlas 的 `idle/walk/attack` 播放、攻击结束回 idle、逐帧红蓝染色和 `0.666667` 缩放，以及进入、退出、再次进入时动画、材质、对象表和空间索引无残留。
 - [ ] 补充验证角色动画与技能时序的极端路径：Realtime 大步长追帧、暂停、加速和回池复用后无旧状态残留；基础攻击、伤害/子弹触发及 Attack 回 Idle 主链路已通过运行验证。
 - [ ] 在 LayaAir IDE 验证共享 `SimpleCombatTree` 和 BattleScene 三组 `AIScheduler`：两队角色选择最近的同类敌方实体，按 `Skill.CastRange` 靠近，在 CD 可用时释放基础攻击，攻击期间不重复决策；死亡、切场和回池后调度 ID、目标、技能与 AI 时间状态无残留。
 - [ ] 验证 Camera2D 拖拽、跟随、地图边界、输入归属和场景切换。

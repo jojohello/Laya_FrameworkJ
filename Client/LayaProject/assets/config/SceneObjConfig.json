@@ -1,36 +1,39 @@
 [
   {
     "ID": 1001,
-    "name": "Monster",
+    "name": "Warrior",
     "objType": 2,
-    "hp": 100,
-    "speed": 50,
-    "attack": 10,
-    "defense": 5,
+    "hp": 320,
+    "speed": 52,
+    "attack": 24,
+    "defense": 30,
+    "magicDefense": 16,
     "resPath": "sceneObj/monster-01",
-    "description": "Basic monster"
+    "description": "Melee frontline with high HP and physical defense"
   },
   {
     "ID": 1002,
-    "name": "EliteMonster",
+    "name": "Mage",
     "objType": 2,
-    "hp": 500,
-    "speed": 40,
-    "attack": 50,
-    "defense": 20,
+    "hp": 190,
+    "speed": 58,
+    "attack": 42,
+    "defense": 10,
+    "magicDefense": 22,
     "resPath": "sceneObj/monster-02",
-    "description": "Elite monster"
+    "description": "Ranged magic damage dealer with low physical defense"
   },
   {
     "ID": 1003,
-    "name": "Boss",
+    "name": "Priest",
     "objType": 2,
-    "hp": 5000,
-    "speed": 30,
-    "attack": 200,
-    "defense": 100,
+    "hp": 240,
+    "speed": 54,
+    "attack": 24,
+    "defense": 16,
+    "magicDefense": 30,
     "resPath": "sceneObj/boss-01",
-    "description": "Stage boss"
+    "description": "Support caster with balanced survival and high magic defense"
   },
   {
     "ID": 2001,
@@ -40,6 +43,7 @@
     "speed": 0,
     "attack": 30,
     "defense": 50,
+    "magicDefense": 50,
     "resPath": "sceneObj/tower-01",
     "description": "Basic defense tower"
   },
@@ -51,6 +55,7 @@
     "speed": 300,
     "attack": 20,
     "defense": 0,
+    "magicDefense": 0,
     "resPath": "sceneObj/bullet-01",
     "description": "Basic bullet"
   },
@@ -62,6 +67,7 @@
     "speed": 200,
     "attack": 100,
     "defense": 0,
+    "magicDefense": 0,
     "resPath": "sceneObj/bullet-02",
     "description": "Area damage bullet"
   },
@@ -73,6 +79,7 @@
     "speed": 100,
     "attack": 50,
     "defense": 30,
+    "magicDefense": 30,
     "resPath": "sceneObj/player",
     "description": "Main character"
   }

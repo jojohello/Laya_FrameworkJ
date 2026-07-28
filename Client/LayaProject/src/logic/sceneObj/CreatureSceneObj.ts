@@ -185,6 +185,7 @@ export class CreatureSceneObj extends DisplaySceneObj {
         this._attrs.setBase("speed", Number(config.speed) || 0);
         this._attrs.setBase("attack", Number(config.attack) || 0);
         this._attrs.setBase("defense", Number(config.defense) || 0);
+        this._attrs.setBase("magicDefense", Number(config.magicDefense) || 0);
     }
 
     protected die(casterId: number): void {

@@ -6,7 +6,7 @@
     "sceneObjConfigId": 1001,
     "modelScale": 0.666667,
     "skillIds": "1101",
-    "description": "Melee frontline soldier"
+    "description": "Melee frontline: high HP and physical defense"
   },
   {
     "ID": 1002,
@@ -15,7 +15,7 @@
     "sceneObjConfigId": 1002,
     "modelScale": 0.666667,
     "skillIds": "1201",
-    "description": "Ranged magic soldier"
+    "description": "Ranged caster: highest attack and low HP"
   },
   {
     "ID": 1003,
@@ -24,6 +24,6 @@
     "sceneObjConfigId": 1003,
     "modelScale": 0.666667,
     "skillIds": "1301",
-    "description": "Healing support soldier"
+    "description": "Support caster: balanced survival and high magic defense"
   }
 ]

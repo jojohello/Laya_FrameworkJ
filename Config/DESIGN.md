@@ -60,6 +60,14 @@ CSV 是唯一编辑入口。JSON、manifest 和 Java 类是生成物。
 
 因此服务器热更入口应调用 `ConfigManager.reloadAll()` 或 `reloadTable()`，不能用 manifest 绕过类型结构变化。
 
+## 关卡胜利奖励
+
+`BattleStage.victoryRewards` 是前后端共用的奖励来源，使用 `cs` 字段，格式为
+`itemId:quantity;itemId:quantity`；空字符串表示无奖励。它不使用嵌入 JSON，避免 CSV
+转义、导出类型与服务端配置类不一致。`itemId` 与 `quantity` 都必须为正整数；重复 itemId
+由结算器合并，未知物品或非法条目必须拒绝结算。客户端可用它预览，但只能显示服务端结算
+回包，不能据此本地发奖。
+
 ## 错误防范
 
 - 导出前验证四行表头、ID、字段类型和 `UsedSize`，不要依赖运行时才发现格式错误。

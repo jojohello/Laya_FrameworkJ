@@ -5,6 +5,7 @@ import { BaseScene } from "../scene/BaseScene";
 import { SceneLayerType } from "../scene/SceneLayerType";
 import { SceneMgr } from "../scene/SceneMgr";
 import { SceneType } from "../scene/SceneType";
+import { BattleSettlementMgr } from "./BattleSettlementMgr";
 
 const BATTLE_UI_PATH = "ui/battlescene/imgs/";
 const STAGE_PREFAB_FALLBACK = "ui/battlescene/stage001.lh";
@@ -258,11 +259,17 @@ export class BattleStageScene extends BaseScene {
         if (wallClockNowMs - this._lastStageActivationWallClockMs < 150) return;
         this._lastStageActivationWallClockMs = wallClockNowMs;
         console.log(`[BattleStageScene] 点击关卡: stageId=${stageId}, battleId=${battleId}`);
-        void SceneMgr.instance.switchSceneWithLoading(
-            SceneType.BattleScene,
-            { stageId, battleId },
-            "战斗加载中"
-        ).then(scene => {
+        void BattleSettlementMgr.instance.requestEnter(stageId).then(enter => {
+            if (!enter.success || !enter.battleSessionId) {
+                console.warn(`[BattleStageScene] 服务器拒绝进入战斗: stageId=${stageId}, reason=${enter.reason || "unknown"}`);
+                return null;
+            }
+            return SceneMgr.instance.switchSceneWithLoading(
+                SceneType.BattleScene,
+                { stageId, battleId, battleSessionId: enter.battleSessionId },
+                "战斗加载中"
+            );
+        }).then(scene => {
             if (!scene) {
                 console.error(`[BattleStageScene] 进入战斗场景失败: stageId=${stageId}, battleId=${battleId}`);
             }

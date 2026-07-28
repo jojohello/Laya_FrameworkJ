@@ -29,6 +29,10 @@ export const GET_PLAYER_INFO = 3010;
 export const PLAYER_INFO = 3011;
 export const PLAYER_LEVEL_UP_REQUEST = 3012;
 export const PLAYER_LEVEL_UP_RESPONSE = 3013;
+export const BATTLE_ENTER_REQUEST = 3014;
+export const BATTLE_ENTER_RESPONSE = 3015;
+export const BATTLE_COMPLETE_REQUEST = 3016;
+export const BATTLE_COMPLETE_RESPONSE = 3017;
 export const FUNCTION_OPEN_STATES = 4001;
 export const FUNCTION_OPEN_PUSH = 4002;
 export const GUIDE_PROGRESS_REQUEST = 4101;
@@ -57,6 +61,10 @@ export const MessageIds = {
     PLAYER_INFO,
     PLAYER_LEVEL_UP_REQUEST,
     PLAYER_LEVEL_UP_RESPONSE,
+    BATTLE_ENTER_REQUEST,
+    BATTLE_ENTER_RESPONSE,
+    BATTLE_COMPLETE_REQUEST,
+    BATTLE_COMPLETE_RESPONSE,
     FUNCTION_OPEN_STATES,
     FUNCTION_OPEN_PUSH,
     GUIDE_PROGRESS_REQUEST,
@@ -93,6 +101,10 @@ export function getMessageName(id: number): string {
         case 3011: return "PLAYER_INFO";
         case 3012: return "PLAYER_LEVEL_UP_REQUEST";
         case 3013: return "PLAYER_LEVEL_UP_RESPONSE";
+        case 3014: return "BATTLE_ENTER_REQUEST";
+        case 3015: return "BATTLE_ENTER_RESPONSE";
+        case 3016: return "BATTLE_COMPLETE_REQUEST";
+        case 3017: return "BATTLE_COMPLETE_RESPONSE";
         case 4001: return "FUNCTION_OPEN_STATES";
         case 4002: return "FUNCTION_OPEN_PUSH";
         case 4101: return "GUIDE_PROGRESS_REQUEST";
@@ -126,6 +138,10 @@ export function getMessageId(name: string): number | null {
         case "PLAYER_INFO": return 3011;
         case "PLAYER_LEVEL_UP_REQUEST": return 3012;
         case "PLAYER_LEVEL_UP_RESPONSE": return 3013;
+        case "BATTLE_ENTER_REQUEST": return 3014;
+        case "BATTLE_ENTER_RESPONSE": return 3015;
+        case "BATTLE_COMPLETE_REQUEST": return 3016;
+        case "BATTLE_COMPLETE_RESPONSE": return 3017;
         case "FUNCTION_OPEN_STATES": return 4001;
         case "FUNCTION_OPEN_PUSH": return 4002;
         case "GUIDE_PROGRESS_REQUEST": return 4101;

@@ -19,6 +19,7 @@ import { WalletMgr } from "./wallet/WalletMgr";
 import { DialogMgr } from "./ui/dialog/DialogMgr";
 import { GuideMgr } from "./guide/GuideMgr";
 import { GuideCommandRegistry } from "./guide/GuideCommandRegistry";
+import { BattleSettlementMgr } from "./battleScene/BattleSettlementMgr";
 
 import { CharacterSceneObj } from "./sceneObj/CharacterSceneObj";
 import { BulletSceneObj } from "./sceneObj/BulletSceneObj";
@@ -64,6 +65,7 @@ export class LogicMain {
         ManagerHub.instance.register(FunctionOpenMgr.instance);
         ManagerHub.instance.register(PlayerMgr.instance);
         ManagerHub.instance.register(WalletMgr.instance);
+        ManagerHub.instance.register(BattleSettlementMgr.instance);
         ManagerHub.instance.register(SceneMgr.instance);  // 场景管理器
         ManagerHub.instance.register(UIManager.instance);
         ManagerHub.instance.register(DialogMgr.instance);

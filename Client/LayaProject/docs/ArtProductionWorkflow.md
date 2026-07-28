@@ -329,13 +329,12 @@ Reusable common UI assets based on the western magic cute style. Intermediate sh
 
 | Asset ID | Type | Purpose | State | Target Size | Format | Alpha | Output Path | Laya Usage | Text | Number | Style Notes | Avoid | Priority | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| panel-bg | panel | reusable common window panel | normal | flexible | PNG | yes | `assets/ui/common/imgs/panel-bg.png` | 9-slice/independent panel | no | no | western magic parchment panel, clean center | baked title crest, text | P0 | ready |
 | panel-crest | overlay | reusable top/title ornament | normal | fixed | PNG | yes | `assets/ui/common/imgs/panel-crest.png` | independent overlay | no | no | magic academy crest with crystal | text | P1 | ready |
 | btn-bg-yellow0 | button | reusable primary button | normal | flexible | PNG | yes | `assets/ui/common/imgs/btn-bg-yellow0.png` | 9-slice/button bg | no | no | honey-orange button | baked label | P0 | replaced |
 | btn-bg-cyan | button | reusable secondary button | normal | flexible | PNG | yes | `assets/ui/common/imgs/btn-bg-cyan.png` | 9-slice/button bg | no | no | teal-blue button | baked label | P0 | ready |
 | btn-bg-grey | button | reusable disabled button | disabled | flexible | PNG | yes | `assets/ui/common/imgs/btn-bg-grey.png` | 9-slice/button bg | no | no | grey-blue disabled state | baked label | P0 | ready |
 | title-bg | panel | reusable title bar/title plate | normal | flexible | PNG | yes | `assets/ui/common/imgs/title-bg.png` | 9-slice/title bg | no | no | blue center with gold trim | text | P0 | replaced |
-| view-bg-1 | panel | reusable horizontal information panel | normal | flexible | PNG | yes | `assets/ui/common/imgs/view-bg-1.png` | panel bg | no | no | clean magic panel | text | P0 | replaced |
+| view-bg-1 | panel | canonical reusable window and information panel | normal | flexible | PNG | yes | `assets/ui/common/imgs/view-bg-1.png` | 9-slice panel bg | no | no | clean magic panel | text | P0 | integrated |
 | view-bg-2 | frame | reusable reward/item frame | normal | fixed | PNG | yes | `assets/ui/common/imgs/view-bg-2.png` | item/reward frame | no | no | clean center for icon overlay | text | P0 | replaced |
 
 Review notes:

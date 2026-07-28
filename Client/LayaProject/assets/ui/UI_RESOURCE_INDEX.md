@@ -5,20 +5,18 @@
 | `ui/mainscene/systemBtn.lh` | `.lh` prefab | Main scene system-entry tab | Used by the `MainSceneView.ls` GList; `itemRenderer` assigns `loader_1.src` and `name_1.text` from each MainNav row; Radio selected state scales to `1.08` from the center |
 | `ui/battlescene/HealthBar.lh` | `.lh` prefab | Battle health bar | Reusable battle HUD component |
 | `ui/battlescene/BattleMainView.ls` | `.ls` scene | Full-screen battle HUD | Transparent screen UI; owns compact top-right 1×/2× speed, pause/back controls and pause overlay; clickable controls use GButton with static GImage children |
-| `ui/battlescene/BattleVictoryView.ls` | `.ls` modal scene | Battle victory result screen | Owns the victory emblem, score, reward Item and claim action; opened as `BattleVictoryUI` |
-| `ui/battlescene/BattleDefeatView.ls` | `.ls` modal scene | Battle defeat result screen | Owns the defeat gate, improvement suggestions and return action; opened as `BattleDefeatUI` |
-| `ui/battlescene/imgs/defeat_background.png` | PNG | Battle defeat result background | Pure-color `GImage` background stretched to the full result page; kept separate from the decorative defeat gate |
-| `ui/battlescene/imgs/defeat_title.png` | PNG | Battle defeat title plaque | Screen-specific blank `460x180` plaque; runtime title stays in a Laya text node |
-| `ui/battlescene/imgs/defeat_button.png` | PNG | Battle defeat primary button | Screen-specific blank `260x92` button background used inside a GButton |
-| `ui/battlescene/imgs/defeat_result_panel.png` | PNG | Battle-specific defeat suggestions panel | Fixed dark teal panel with honey-gold frame and cyan crystal accents; deliberately screen-specific rather than reusing the common parchment panel |
+| `ui/battlescene/BattleVictoryView.ls` | `.ls` modal scene | Battle victory result screen | Owns the victory emblem, score, reward GList and claim action; each reward reuses `ItemView.lh`; opened as `BattleVictoryUI` |
+| `ui/battlescene/BattleDefeatView.ls` | `.ls` modal scene | Battle defeat result screen | Owns the defeat gate, data-driven suggestion GList and return action; opened as `BattleDefeatUI` |
 | `ui/common/ItemView.lh` | `.lh` prefab | Reusable item slot | Layered bottom frame, quality background, dynamic icon, quantity, red point and selected frame; driven by `ItemViewController` |
-| `ui/battlescene/imgs/victory_emblem.png` | PNG | Victory result illustration | Fixed GImage winged shield on a dark teal magical vignette; UUID `bed03bfb-1c8d-481f-915f-ac13adb74a76`; text and score remain Laya nodes |
+| `ui/battlescene/imgs/victory_emblem.png` | PNG | Victory result illustration | Transparent compact blue-crystal shield; UUID `bed03bfb-1c8d-481f-915f-ac13adb74a76`; text and score remain Laya nodes |
 | `ui/battlescene/imgs/defeat_gate.png` | PNG | Defeat result illustration | Transparent `380x380` crying Q-version wizard with broken wand and magic sparkles; existing UUID `42c88f84-2df9-49d0-a8ef-82b24472bc50` is preserved |
 | `ui/battlescene/imgs/btn_battle_speed.png` | PNG | Battle speed button background | Dedicated empty-center shield for runtime 1×/2× text; UUID `3b6045fd-fdd9-4783-bd8e-5ab994a6e4ac`, integrated by `BattleMainView.ls` |
 | `ui/battlescene/imgs/btn_pause.png` | PNG | Battle pause button | Battle-specific silhouette and sizing; keep under the battle module |
 | `ui/battlescene/imgs/btn_battle_back.png` | PNG | Return from battle to stage selection | Battle-specific navigation control; keep under the battle module |
 | `ui/dialog/commonDialog.ls` | `.ls` modal layer | Full-screen modal mask and dialog panel | Open through `DialogMgr`; supports confirm-only and confirm/cancel callbacks |
-| `ui/common/imgs/panel-bg.png` | PNG | Western magic parchment panel | Reusable panel background; UUID must be read from `.meta` |
+| `ui/common/imgs/view-bg-1.png` | PNG | Canonical common window panel | Nine-slice outer panel reused by dialogs and battle-result information modules |
+| `ui/common/imgs/surface-bg-cream.png` | PNG | Canonical warm-ivory surface and victory-result mask | `32x32` pure-color nine-slice; use for lightweight section/list surfaces and the bright victory `bg:GImage` through `.ls/.lh` nodes |
+| `ui/common/imgs/surface-bg-blue.png` | PNG | Canonical cool defeat-result mask | `32x32` pure blue nine-slice; `BattleDefeatView` uses it at `alpha=0.88` to preserve a darker, low-saturation failure mood without adding a full-screen art background |
 | `ui/common/imgs/title-bg.png` | PNG | Dialog/title bar | Reusable title decoration; labels remain runtime text |
 | `ui/common/imgs/btn-bg-yellow0.png` | PNG | Primary action button | Confirm/positive action |
 | `ui/common/imgs/btn-bg-grey.png` | PNG | Disabled button | Do not use as an active cancel button |

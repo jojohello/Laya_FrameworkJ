@@ -6,6 +6,7 @@ export interface SceneObjConfigData {
     speed: number;
     attack: number;
     defense: number;
+    magicDefense: number;
     resPath: string;
     description: string;
 }

@@ -1,10 +1,13 @@
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { DamageContext } from "./DamageContext";
+import { DAMAGE_DEFENSE_CONSTANT, DamageType, normalizeDamageType } from "./DamageType";
 
 export interface DamageApplyOptions {
     casterId: number;
     target: BaseSceneObj;
     damage: number;
+    damageType?: DamageType | string;
+    elementType?: string;
     sourceType?: string;
     sourceId?: number;
     curTime: number;
@@ -17,7 +20,7 @@ export class DamageExecutor {
 
     static apply(options: DamageApplyOptions): number {
         const target = options.target;
-        const damage = Math.max(0, Math.ceil(Number(options.damage) || 0));
+        const damage = Math.max(0, Number(options.damage) || 0);
         if (!target || target.isRelease || target.isDead || damage <= 0) return 0;
 
         const casterId = options.casterId;
@@ -29,16 +32,21 @@ export class DamageExecutor {
             target,
             casterId,
             damage,
+            normalizeDamageType(options.damageType),
+            options.elementType || "None",
             options.sourceType || "",
             options.sourceId || 0,
             options.curTime
         );
 
         try {
+            this.applyDefenseMitigation(target, ctx);
             this.callBuffHook(caster, "onBeforeDamage", ctx);
             this.callBuffHook(target, "onBeforeBeDamaged", ctx);
 
-            if (!ctx.isCancelled && ctx.finalDamage > 0) {
+            const resolvedDamage = ctx.resolveFinalDamage();
+            ctx.finalDamage = resolvedDamage;
+            if (resolvedDamage > 0) {
                 this.applyHpDamage(target, ctx);
             }
 
@@ -68,6 +76,19 @@ export class DamageExecutor {
         }
 
         target.getDamage(ctx.casterId, ctx.finalDamage, ctx.curTime);
+    }
+
+    private static applyDefenseMitigation(target: BaseSceneObj, ctx: DamageContext): void {
+        if (ctx.damageType === DamageType.True) return;
+
+        const attrName = ctx.damageType === DamageType.Magic ? "magicDefense" : "defense";
+        const attrs = (target as any).attrs;
+        const defense = attrs && typeof attrs.get === "function"
+            ? Math.max(0, Number(attrs.get(attrName, 0)) || 0)
+            : 0;
+        const mitigated = ctx.rawDamage * DAMAGE_DEFENSE_CONSTANT / (DAMAGE_DEFENSE_CONSTANT + defense);
+        ctx.mitigatedDamage = mitigated;
+        ctx.finalDamage = mitigated;
     }
 
     private static callBuffHook(owner: BaseSceneObj | null, hookName: string, ctx: DamageContext): void {

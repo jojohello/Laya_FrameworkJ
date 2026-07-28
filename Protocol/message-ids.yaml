@@ -30,6 +30,10 @@ GET_PLAYER_INFO: { id: 3010, scope: game }
 PLAYER_INFO: { id: 3011, scope: game }
 PLAYER_LEVEL_UP_REQUEST: { id: 3012, scope: game }
 PLAYER_LEVEL_UP_RESPONSE: { id: 3013, scope: game }
+BATTLE_ENTER_REQUEST: { id: 3014, scope: game }
+BATTLE_ENTER_RESPONSE: { id: 3015, scope: game }
+BATTLE_COMPLETE_REQUEST: { id: 3016, scope: game }
+BATTLE_COMPLETE_RESPONSE: { id: 3017, scope: game }
 
 FUNCTION_OPEN_STATES: { id: 4001, scope: game }
 FUNCTION_OPEN_PUSH: { id: 4002, scope: game }

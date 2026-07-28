@@ -11,16 +11,19 @@ Before generating or replacing art assets, read this file first, then follow the
 1. `docs/ArtResourceGuide.md`
    - Quick entry point.
    - Use this to recover the current art direction, workflow, and cleanup rules.
-2. `docs/ArtProductionWorkflow.md`
+2. `docs/ui-references/README.md` and the matching approved reference images
+   - Read this before designing an independent UI or revising a page substantially.
+   - If no reference matches the target host scene, request a current screenshot from the user before deciding the visual direction.
+3. `docs/ArtProductionWorkflow.md`
    - Full production workflow.
    - Use this when planning a new screen or asset batch.
-3. `docs/ArtStyleDecisionLog.md`
+4. `docs/ArtStyleDecisionLog.md`
    - Style decisions and reasons.
    - Use this when deciding whether a generated result matches the locked style.
-4. `docs/ArtAssetReplacementMap.md`
+5. `docs/ArtAssetReplacementMap.md`
    - Current final asset list and status.
    - Use this before replacing an existing file or adding a new formal asset.
-5. `docs/ArtAssetAudit.md`
+6. `docs/ArtAssetAudit.md`
    - Historical audit.
    - Use only for context; the source of truth is now the replacement map.
 
@@ -86,6 +89,14 @@ Dock/panel base: pale cyan-cream or clean parchment with clear border, medium co
 Buttons/icons: medium contrast, stronger outline/shadow, warm gold or cyan accents
 Reward/important UI: highest contrast, but still not neon/high saturation
 ```
+
+## Screen Surface Default
+
+Full-screen raster backgrounds are reserved for Loading, login, maps, or pages whose independent world scene is the content. Ordinary functional pages, dialogs, settlement pages, and information panels keep the host scene visible behind an input-blocking translucent mask and a compact local panel. When a plain or low-detail surface is sufficient, do not generate decorative full-screen art; use an existing verified nine-slice title bar, panel, or button whenever its semantic role fits.
+
+## UI Reference Intake
+
+`docs/ui-references/` stores user-confirmed, non-runtime screenshots that establish the project's screen-level visual language. Use a descriptive filename such as `main-scene-approved.png` or `battle-stage-approved.png`, and record its scope and status in that directory's README. Do not place temporary AI concepts, comparison sheets, or generated production assets there. When the folder has no reference for the target host scene, request one from the user before designing a new independent UI; code assets alone cannot substitute for a confirmed visual reference.
 
 ## Nine-Slice Rule
 

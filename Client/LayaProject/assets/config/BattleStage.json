@@ -5,6 +5,7 @@
     "copyType": "normal",
     "battleId": 1,
     "canEnter": true,
+    "victoryRewards": "1001:100",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
   },
@@ -14,6 +15,7 @@
     "copyType": "normal",
     "battleId": 2,
     "canEnter": true,
+    "victoryRewards": "1001:120",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
   },
@@ -23,6 +25,7 @@
     "copyType": "normal",
     "battleId": 3,
     "canEnter": true,
+    "victoryRewards": "1001:140",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
   },
@@ -32,6 +35,7 @@
     "copyType": "normal",
     "battleId": 4,
     "canEnter": true,
+    "victoryRewards": "1001:160",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
   },
@@ -41,6 +45,7 @@
     "copyType": "normal",
     "battleId": 5,
     "canEnter": true,
+    "victoryRewards": "1001:180",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
   },
@@ -50,6 +55,7 @@
     "copyType": "boss",
     "battleId": 6,
     "canEnter": true,
+    "victoryRewards": "1001:300",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
   }

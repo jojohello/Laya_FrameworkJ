@@ -55,10 +55,16 @@ public class SceneObjConfigConfig implements Serializable {
     private final Integer attack;
 
     /**
-     * Defense server needed
+     * Physical defense server needed
      */
     @JsonProperty("defense")
     private final Integer defense;
+
+    /**
+     * Magic defense server needed
+     */
+    @JsonProperty("magicDefense")
+    private final Integer magicDefense;
 
     /**
      * 构造函数（Jackson反序列化使用）
@@ -71,13 +77,15 @@ public class SceneObjConfigConfig implements Serializable {
             @JsonProperty("hp") int hp,
             @JsonProperty("speed") float speed,
             @JsonProperty("attack") Integer attack,
-            @JsonProperty("defense") Integer defense) {
+            @JsonProperty("defense") Integer defense,
+            @JsonProperty("magicDefense") Integer magicDefense) {
         this.ID = ID;
         this.objType = objType;
         this.hp = hp;
         this.speed = speed;
         this.attack = attack;
         this.defense = defense;
+        this.magicDefense = magicDefense;
     }
 
     public int getID() {
@@ -102,6 +110,10 @@ public class SceneObjConfigConfig implements Serializable {
 
     public Integer getDefense() {
         return defense;
+    }
+
+    public Integer getMagicDefense() {
+        return magicDefense;
     }
 
     @Override

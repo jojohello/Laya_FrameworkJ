@@ -36,7 +36,7 @@
     "CD": 900,
     "CostType": "None",
     "CostValue": 0,
-    "Action": "0;Animation;attack|300;Damage;1001"
+    "Action": "0;Animation;attack|300;Damage;1003"
   },
   {
     "ID": 120101,

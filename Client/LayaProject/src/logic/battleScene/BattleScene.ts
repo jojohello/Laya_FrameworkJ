@@ -11,6 +11,9 @@ import { SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
 import { BattleFlowState } from "./BattleFlowState";
 import { UIManager } from "../ui/UIManager";
+import { BattleCompleteResult, BattleSettlementMgr } from "./BattleSettlementMgr";
+import { ItemMgr } from "../item/ItemMgr";
+import { ItemViewData } from "../ui/ItemViewController";
 
 type BattleResultUIName = "BattleVictoryUI" | "BattleDefeatUI";
 
@@ -24,6 +27,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     private _flowState = BattleFlowState.Preparing;
     private _resultUIName: BattleResultUIName | null = null;
     private _resultExitRequested = false;
+    private _battleSessionId = "";
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
@@ -42,6 +46,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this.transitionFlowState(BattleFlowState.Loading);
         this._resultUIName = null;
         this._resultExitRequested = false;
+        this._battleSessionId = typeof param?.battleSessionId === "string" ? param.battleSessionId : "";
         this._battleUnitLoadToken++;
         this.applyStageMapConfig(param);
         super.onEnter(param);
@@ -117,6 +122,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         if (this._resultUIName) UIManager.instance.close(this._resultUIName);
         this._resultUIName = null;
         this._resultExitRequested = false;
+        this._battleSessionId = "";
         this._battleUnitLoadToken++;
         this._battleUnitsCreated = false;
         this._battleUnitsReady = false;
@@ -164,8 +170,11 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
 
     private async createBattleUnits(): Promise<void> {
         const token = this._battleUnitLoadToken;
-        const configIds = [1001, 1002, 1003];
-        const paths = [...new Set(configIds.flatMap(cfgId =>
+        const playerConfigIds = [1001, 1002, 1003];
+        // 当前测试阵容：敌我双方均为战士、法师、牧师各一名。
+        const opponentConfigIds = [1001, 1002, 1003];
+        const preloadConfigIds = [...new Set([...playerConfigIds, ...opponentConfigIds])];
+        const paths = [...new Set(preloadConfigIds.flatMap(cfgId =>
             ConfigMgr.instance
                 .getByField<CharacterAnimationConfigInfo>("CharacterAnimation", "characterId", cfgId)
                 .map(config => config.atlasPath)
@@ -192,8 +201,8 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         console.log(`[BattleScene] 角色队伍色 Shader 已就绪: ${CharacterTeamColorMaterial.SHADER_NAME}`);
 
         const columns = [220, 384, 548];
-        this.createTeamUnits(2, 220, columns, configIds);
-        this.createTeamUnits(1, 1120, columns, configIds);
+        this.createTeamUnits(2, 220, columns, opponentConfigIds);
+        this.createTeamUnits(1, 1120, columns, playerConfigIds);
         this._battleUnitsReady = true;
         this.transitionFlowState(BattleFlowState.Running);
     }
@@ -235,7 +244,21 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
             : BattleFlowState.Defeat;
         if (!this.transitionFlowState(nextState)) return;
         this.setPaused(true);
-        void this.showBattleResult(result);
+        if (result === "victory") {
+            void this.resolveVictoryResult();
+        } else {
+            void this.showBattleResult(result);
+        }
+    }
+
+    private async resolveVictoryResult(): Promise<void> {
+        const settlement = await BattleSettlementMgr.instance.requestComplete(this._battleSessionId, "victory");
+        if (!settlement.success || !settlement.victory) {
+            console.error(`[BattleScene] 战斗胜利结算失败: ${settlement.reason || "unknown"}`);
+            await this.showBattleResult("defeat");
+            return;
+        }
+        await this.showBattleResult("victory", settlement);
     }
 
     private transitionFlowState(nextState: BattleFlowState): boolean {
@@ -260,7 +283,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         return true;
     }
 
-    private async showBattleResult(result: "victory" | "defeat"): Promise<void> {
+    private async showBattleResult(result: "victory" | "defeat", settlement?: BattleCompleteResult): Promise<void> {
         const uiName: BattleResultUIName = result === "victory"
             ? "BattleVictoryUI"
             : "BattleDefeatUI";
@@ -268,15 +291,8 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         try {
             const param = result === "victory"
                 ? {
-                    score: 345,
-                    rewards: [{
-                        name: "中级精石",
-                        iconPath: "ui/common/imgs/currency-crystal.png",
-                        quantity: 3,
-                        quality: 3,
-                        showRedPoint: false,
-                        selected: false,
-                    }],
+                    score: 0,
+                    rewards: this.toRewardViewData(settlement?.rewards || []),
                     onConfirm: () => this.exitAfterBattleResult(),
                 }
                 : {
@@ -288,6 +304,21 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
             console.error(`[BattleScene] Failed to open ${uiName}`, error);
             this.exitAfterBattleResult();
         }
+    }
+
+    private toRewardViewData(rewards: readonly { itemId: number; quantity: number }[]): ItemViewData[] {
+        return rewards.map(reward => {
+            const item = ItemMgr.instance.getItem(reward.itemId);
+            return {
+                name: item?.data.Name || `物品 ${reward.itemId}`,
+                // Item config has no icon field yet; retain the common currency placeholder until that table adds art mapping.
+                iconPath: "ui/common/imgs/currency-crystal.png",
+                quantity: reward.quantity,
+                quality: Math.max(1, Math.min(5, Number(item?.data.Quality) || 1)) as ItemViewData["quality"],
+                showRedPoint: false,
+                selected: false,
+            };
+        });
     }
 
     private exitAfterBattleResult(): void {
