@@ -14,6 +14,16 @@ export class BulletAction extends BaseAction {
         const caster = context.scene.getLiveObject(context.casterId);
         if (!caster) return 0;
 
+        const targetObj = context.targetId ? context.scene.getLiveObject(context.targetId) : null;
+        if (context.targetId && !targetObj) {
+            console.warn(
+                `[DBG-BULLET-HIT] cancel bullet=${bulletId}` +
+                ` caster=${caster.uid}/team${caster.team}` +
+                ` target=${context.targetId} reason=target_not_live`
+            );
+            return 0;
+        }
+
         const bullet = context.scene.addObjectToScene(
             "BulletSceneObj",
             bulletId,
@@ -27,8 +37,15 @@ export class BulletAction extends BaseAction {
         const data = bulletInfo.data;
         const targetX = context.targetX ?? caster.x;
         const targetY = context.targetY ?? caster.y;
-        const targetObj = context.targetId ? context.scene.getLiveObject(context.targetId) : null;
         const searchTeam = targetObj ? targetObj.team : caster.team;
+        console.log(
+            `[DBG-BULLET-HIT] create bullet=${bulletId} uid=${bullet.uid} move=${data.MoveType}` +
+            ` caster=${caster.uid}/team${caster.team}` +
+            ` target=${targetObj ? `${targetObj.uid}/team${targetObj.team}` : "none"}` +
+            ` searchTeam=${searchTeam}` +
+            ` from=(${caster.x.toFixed(1)},${caster.y.toFixed(1)})` +
+            ` to=(${targetX.toFixed(1)},${targetY.toFixed(1)})`
+        );
         const actionEffectScale = this.info.getNumberParam(1, 1);
         bullet.setRange(Math.max(0, Number(data.Range) || 0));
         bullet.setHitActions(bulletInfo.onHitActions, (context.effectScale || 1) * actionEffectScale);

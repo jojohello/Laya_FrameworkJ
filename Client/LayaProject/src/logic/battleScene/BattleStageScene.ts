@@ -153,7 +153,6 @@ export class BattleStageScene extends BaseScene {
                 stageId,
                 battleId: Number(config.battleId || stageId),
             });
-            console.log(`[BattleStageScene] 关卡节点已绑定: stageId=${stageId}, copyType=${copyType}, icon=${iconPath}`);
         }
     }
 
@@ -193,10 +192,8 @@ export class BattleStageScene extends BaseScene {
             || target?.name === "Scene2D"
             || target?.name === "MainUI";
         if (target && !isRootClick && !this.isDescendantOf(target, root)) {
-            console.log(`[BattleStageScene] 点击被 UI 子节点接收: target=${target.name || target.constructor?.name || "unknown"}`);
             return;
         }
-        console.log(`[BattleStageScene] 收到场景点击: target=${target?.name || target?.constructor?.name || "unknown"}, x=${Laya.stage.mouseX}, y=${Laya.stage.mouseY}`);
 
         const point = new Laya.Point(Laya.stage.mouseX, Laya.stage.mouseY);
         for (let i = this._stageHitTargets.length - 1; i >= 0; i--) {
@@ -224,7 +221,7 @@ export class BattleStageScene extends BaseScene {
 
     private onStagePointerTrace(event: Laya.Event): void {
         const target = event?.target as Laya.Node | null;
-        console.log(`[BattleStageScene] 指针事件: type=${event?.type || "unknown"}, target=${target?.name || target?.constructor?.name || "unknown"}, x=${Laya.stage.mouseX}, y=${Laya.stage.mouseY}`);
+
         if (event?.type === Laya.Event.MOUSE_DOWN) {
             this._pointerDownX = Laya.stage.mouseX;
             this._pointerDownY = Laya.stage.mouseY;
@@ -258,7 +255,7 @@ export class BattleStageScene extends BaseScene {
         const wallClockNowMs = Date.now();
         if (wallClockNowMs - this._lastStageActivationWallClockMs < 150) return;
         this._lastStageActivationWallClockMs = wallClockNowMs;
-        console.log(`[BattleStageScene] 点击关卡: stageId=${stageId}, battleId=${battleId}`);
+
         void BattleSettlementMgr.instance.requestEnter(stageId).then(enter => {
             if (!enter.success || !enter.battleSessionId) {
                 console.warn(`[BattleStageScene] 服务器拒绝进入战斗: stageId=${stageId}, reason=${enter.reason || "unknown"}`);

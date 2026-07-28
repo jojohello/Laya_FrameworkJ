@@ -424,17 +424,20 @@ export abstract class BaseSceneObj {
         }
     }
 
-    /** 设置碰撞盒半径，并让对象参与空间切割 */
+    /**
+     * 设置技能/子弹命中候选半径。
+     * 只有显式声明可参与空间索引的实体才会进入队伍空间切分。
+     */
     setCollisionBox(range: number): void {
         this._range = range;
         this.setCollisionBoxEnabled(range > 0);
     }
 
-    /** 设置是否参与空间切割；关闭时会立即从空间表移除 */
+    /** 设置是否参与技能/子弹的空间查询候选；关闭时会立即从空间表移除。 */
     setCollisionBoxEnabled(enabled: boolean): void {
-        this._hasCollisionBox = enabled;
+        this._hasCollisionBox = enabled && this.canEnterSpatialIndex();
 
-        if (!enabled) {
+        if (!this._hasCollisionBox) {
             if (this._spaceManager && this._lastGridBounds) {
                 this._spaceManager.removeObjectHash(this._uid, this._lastGridBounds);
                 this._lastGridBounds = null;
@@ -443,6 +446,14 @@ export abstract class BaseSceneObj {
         }
 
         this.updateSpaceHash();
+    }
+
+    /**
+     * Spatial indexes contain only entities that can be hit by skill or bullet queries.
+     * Display-only entities, effects and projectiles remain query initiators, not candidates.
+     */
+    protected canEnterSpatialIndex(): boolean {
+        return false;
     }
 
     // ========== 碰撞与伤害 ==========

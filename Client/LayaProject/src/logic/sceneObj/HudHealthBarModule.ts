@@ -7,11 +7,6 @@ export interface HudHealthBarOptions extends HealthBarViewOptions {
     offsetY?: number;
 }
 
-const TEAM_BAR_URLS: Record<number, string> = {
-    1: "ui/common/imgs/blood-blue.png",
-    2: "ui/common/imgs/blood-red.png",
-};
-
 /**
  * HUD health bar module. The owner is supplied per call and is never cached.
  */
@@ -33,7 +28,7 @@ export class HudHealthBarModule implements ISceneObjModule {
         this._offsetY = options.offsetY ?? this._offsetY;
         this.ensureView();
         this.attachToHudLayer(owner);
-        this.applyStyle(owner);
+        this.applyStyle();
         this.refresh(owner);
         this.updatePosition(owner);
     }
@@ -50,7 +45,9 @@ export class HudHealthBarModule implements ISceneObjModule {
         const creature = owner as any;
         const hp = Number(creature.hp);
         const maxHp = Number(creature.maxHp);
-        this._view.setProgress(maxHp > 0 ? hp / maxHp : 0);
+        const progress = maxHp > 0 ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
+        this._view.setProgress(progress);
+        this._view.visible = hp > 0 && progress < 1;
     }
 
     onOwnerInit(owner: BaseSceneObj): void {
@@ -91,13 +88,12 @@ export class HudHealthBarModule implements ISceneObjModule {
         }
     }
 
-    private applyStyle(owner: BaseSceneObj): void {
+    private applyStyle(): void {
         if (!this._view) return;
 
-        const teamBarUrl = TEAM_BAR_URLS[owner.team] || "ui/common/imgs/blood-red.png";
         this._view.setStyle({
             bgUrl: "ui/common/imgs/blood-bg.png",
-            barUrl: teamBarUrl,
+            barUrl: "ui/common/imgs/blood-red.png",
             ...this._options,
         });
     }

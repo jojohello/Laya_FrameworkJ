@@ -6,6 +6,7 @@ export interface HealthBarViewOptions {
     barUrl?: string;
     bgColor?: string;
     barColor?: string;
+    showMpBar?: boolean;
 }
 
 /**
@@ -17,6 +18,7 @@ export class HealthBarView extends Laya.Sprite {
     private _bar: Laya.Sprite;
     private _prefabRoot: Laya.Sprite | null = null;
     private _hpProgress: Laya.GProgressBar | null = null;
+    private _mpBg: Laya.Sprite | null = null;
     private _mpProgress: Laya.GProgressBar | null = null;
     private _title: Laya.GTextField | null = null;
     private _widthValue: number;
@@ -29,6 +31,7 @@ export class HealthBarView extends Laya.Sprite {
     private _barUrl: string;
     private _bgColor: string;
     private _barColor: string;
+    private _showMpBar: boolean;
     private _usingPrefab: boolean = false;
     private _loadToken: number = 0;
 
@@ -36,11 +39,12 @@ export class HealthBarView extends Laya.Sprite {
         super();
         this._widthValue = options.width ?? 54;
         this._heightValue = options.height ?? 8;
-        this._prefabUrl = options.prefabUrl ?? "ui/battleScene/HealthBar.lh";
+        this._prefabUrl = options.prefabUrl ?? "ui/battlescene/HealthBar.lh";
         this._bgUrl = options.bgUrl ?? "ui/common/imgs/blood-bg.png";
         this._barUrl = options.barUrl ?? "ui/common/imgs/blood-red.png";
         this._bgColor = options.bgColor ?? "#2b2b2b";
         this._barColor = options.barColor ?? "#d94a4a";
+        this._showMpBar = options.showMpBar ?? false;
         this.mouseEnabled = false;
 
         this._bg = new Laya.Sprite();
@@ -63,6 +67,7 @@ export class HealthBarView extends Laya.Sprite {
         }
         if (options.bgColor !== undefined) this._bgColor = options.bgColor;
         if (options.barColor !== undefined) this._barColor = options.barColor;
+        if (options.showMpBar !== undefined) this._showMpBar = options.showMpBar;
         if (options.bgUrl !== undefined && options.bgUrl !== this._bgUrl) {
             this._bgUrl = options.bgUrl;
             needLoad = true;
@@ -138,6 +143,7 @@ export class HealthBarView extends Laya.Sprite {
         const hpBg = root.getChildByName("hp_bg") as Laya.Sprite | null;
         const mpBg = root.getChildByName("mp_bg") as Laya.Sprite | null;
         this._hpProgress = hpBg ? hpBg.getChildByName("hp_process") as Laya.GProgressBar : null;
+        this._mpBg = mpBg;
         this._mpProgress = mpBg
             ? (mpBg.getChildByName("mp_process") || mpBg.getChildByName("hp_process")) as Laya.GProgressBar
             : null;
@@ -166,12 +172,15 @@ export class HealthBarView extends Laya.Sprite {
 
     private redraw(): void {
         if (this._usingPrefab) {
+            if (this._mpBg) {
+                this._mpBg.visible = this._showMpBar;
+            }
             if (this._hpProgress) {
                 this._hpProgress.min = 0;
                 this._hpProgress.max = 1;
                 this._hpProgress.value = this._progress;
             }
-            if (this._mpProgress) {
+            if (this._showMpBar && this._mpProgress) {
                 this._mpProgress.min = 0;
                 this._mpProgress.max = 1;
                 this._mpProgress.value = this._mpProgressValue;

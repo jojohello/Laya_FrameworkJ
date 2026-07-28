@@ -8,7 +8,7 @@ import { DamageExecutor } from "../damage/DamageExecutor";
 import { AttributeSet } from "./AttributeSet";
 import { BaseSceneObj } from "./BaseSceneObj";
 import { DisplaySceneObj } from "./DisplaySceneObj";
-import { HudHealthBarModule } from "./HudHealthBarModule";
+import { HudHealthBarModule, HudHealthBarOptions } from "./HudHealthBarModule";
 import { SceneObjConfigData } from "./SceneObjConfigData";
 import { SceneObjType } from "./SceneObjType";
 
@@ -25,6 +25,10 @@ export class CreatureSceneObj extends DisplaySceneObj {
 
     getObjType(): number {
         return SceneObjType.Monster;
+    }
+
+    protected canEnterSpatialIndex(): boolean {
+        return true;
     }
 
     protected onInit(uid: number, cfgId: number, scene: BaseScene, team: number, x: number, y: number, angle: number): void {
@@ -59,7 +63,7 @@ export class CreatureSceneObj extends DisplaySceneObj {
         this.refreshHealthBar();
     }
 
-    showHealthBar(show: boolean = true): void {
+    showHealthBar(show: boolean = true, options: HudHealthBarOptions = {}): void {
         if (!show) {
             this.getHudHealthBarModule().hide();
             return;
@@ -67,6 +71,7 @@ export class CreatureSceneObj extends DisplaySceneObj {
 
         this.getHudHealthBarModule().show(this, {
             offsetY: this._healthBarOffsetY,
+            ...options,
         });
         this.refreshHealthBar();
     }

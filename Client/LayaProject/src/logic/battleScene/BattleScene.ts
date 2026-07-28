@@ -170,9 +170,9 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
 
     private async createBattleUnits(): Promise<void> {
         const token = this._battleUnitLoadToken;
-        const playerConfigIds = [1001, 1002, 1003];
-        // 当前测试阵容：敌我双方均为战士、法师、牧师各一名。
-        const opponentConfigIds = [1001, 1002, 1003];
+        // 临时命中验证阵容：双方只生成法师，避免近战单位遮挡子弹轨迹。
+        const playerConfigIds = [1002];
+        const opponentConfigIds = [1002];
         const preloadConfigIds = [...new Set([...playerConfigIds, ...opponentConfigIds])];
         const paths = [...new Set(preloadConfigIds.flatMap(cfgId =>
             ConfigMgr.instance
@@ -341,7 +341,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         configIds: number[]
     ): void {
         for (let i = 0; i < configIds.length; i++) {
-            this.addObjectToScene(
+            const unit = this.addObjectToScene(
                 "CharacterSceneObj",
                 configIds[i],
                 team,
@@ -349,6 +349,11 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
                 y,
                 0
             );
+            if (unit instanceof CharacterSceneObj) {
+                unit.showHealthBar(true, {
+                    showMpBar: false,
+                });
+            }
         }
     }
 }

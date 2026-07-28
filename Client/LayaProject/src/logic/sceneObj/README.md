@@ -13,7 +13,7 @@
 | 类型 | 基类 | 用途 |
 |------|------|------|
 | 显示类 | `DisplaySceneObj` | 静态图片、动画、Spine 展示对象 |
-| 生物类 | `CreatureSceneObj` | 有模型、属性、血条、碰撞、技能入口的对象 |
+| 生物类 | `CreatureSceneObj` | 有模型、属性、血条、碰撞、技能入口的对象；默认作为技能和子弹的空间查询候选 |
 | 战斗角色 | `CharacterSceneObj` | 从 `Character` 表加载原图与局部队伍色蒙版，通过 2D Shader 替换蒙版像素并保留原始肤色和装备色调 |
 | 特效类 | `EffectSceneObj` | 播放后自动释放，不参与碰撞 |
 | 子弹类 | `BulletSceneObj` | 直线/追踪移动，轨迹碰撞，命中目标 |
@@ -127,7 +127,7 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | API | 说明 |
 |-----|------|
 | `setMaxHp(value)` | 设置最大生命，按差值同步当前生命 |
-| `showHealthBar(show)` | 显示/隐藏血条 |
+| `showHealthBar(show, options)` | 启用/关闭 HUD 血条；满血和死亡时隐藏、受伤后显示；战斗场景当前通过 `showMpBar: false` 关闭 MP 蓝条 |
 | `getDamage(casterId, damage, curTime)` | 受到伤害 |
 | `heal(value)` | 治疗 |
 | `castSkill(skillId, curTime, targetId, x, y, skillLevel)` | 技能入口，内部走 `SkillAgent` |

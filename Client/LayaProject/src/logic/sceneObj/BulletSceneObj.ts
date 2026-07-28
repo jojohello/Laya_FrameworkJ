@@ -59,6 +59,7 @@ export class BulletSceneObj extends DisplaySceneObj {
     protected _movementStarted: boolean = false;
     protected _movementFinishPending: boolean = false;
     protected _movementFinishDoHitAtEnd: boolean = false;
+    private _debugHitTargetUid: number = 0;
     protected _collisionPolicy: IBulletCollisionPolicy = new DefaultBulletCollisionPolicy();
     protected readonly _hitTargets: BaseSceneObj[] = [];
     protected _hitEffectScale: number = 1;
@@ -89,9 +90,11 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._movementStarted = false;
         this._movementFinishPending = false;
         this._movementFinishDoHitAtEnd = false;
+        this._debugHitTargetUid = 0;
         this._hitEffectScale = 1;
         this._hitActions = [];
-        this.setCollisionBox(8);
+        // 子弹自身只发起轨迹查询，不进入队伍空间索引成为其他子弹的命中候选。
+        this.setRange(8);
     }
 
     protected loadRes(): void {
@@ -246,9 +249,20 @@ export class BulletSceneObj extends DisplaySceneObj {
     }
 
     protected tryHitTarget(target: BaseSceneObj, curTime: number): boolean {
-        if (!this.canHitTarget(this, target)) return false;
+        if (!this.canHitTarget(this, target)) {
+            console.warn(
+                `[DBG-BULLET-HIT] rejected bullet=${this.uid}/team${this.team}` +
+                ` target=${target.uid}/team${target.team} dead=${target.isDead}`
+            );
+            return false;
+        }
 
         this._collisionPolicy.recordHit(target, curTime);
+        this._debugHitTargetUid = target.uid;
+        console.log(
+            `[DBG-BULLET-HIT] hit bullet=${this.uid}/team${this.team}` +
+            ` target=${target.uid}/team${target.team} at=(${target.x.toFixed(1)},${target.y.toFixed(1)})`
+        );
         this.onHit(target, curTime);
         return true;
     }
@@ -258,7 +272,10 @@ export class BulletSceneObj extends DisplaySceneObj {
     }
 
     protected canHitTarget = (master: BaseSceneObj, target: BaseSceneObj): boolean => {
-        return !target.isDead && target.team !== master.team;
+        return !target.isRelease
+            && !target.isDead
+            && target.getObjType() !== SceneObjType.Bullet
+            && target.team !== master.team;
     };
 
     protected onHit(target: BaseSceneObj, curTime: number): void {
@@ -292,6 +309,13 @@ export class BulletSceneObj extends DisplaySceneObj {
         if (this.isRelease) return;
         if (doHitAtEnd) {
             this.updateCollision(this._lastUpdateTime);
+        }
+        if (!this._debugHitTargetUid) {
+            console.warn(
+                `[DBG-BULLET-HIT] miss bullet=${this.uid}/team${this.team}` +
+                ` end=(${this.x.toFixed(1)},${this.y.toFixed(1)})` +
+                ` searchTeam=${this._searchTeam}`
+            );
         }
         this.release();
     }
