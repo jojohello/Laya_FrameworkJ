@@ -15,7 +15,7 @@
 | 显示类 | `DisplaySceneObj` | 静态图片、动画、Spine 展示对象 |
 | 生物类 | `CreatureSceneObj` | 有模型、属性、血条、碰撞、技能入口的对象；默认作为技能和子弹的空间查询候选 |
 | 战斗角色 | `CharacterSceneObj` | 从 `Character` 表加载原图与局部队伍色蒙版，通过 2D Shader 替换蒙版像素并保留原始肤色和装备色调 |
-| 特效类 | `EffectSceneObj` | 播放后自动释放，不参与碰撞 |
+| 特效类 | `EffectSceneObj` | 图集帧动画播放后自动释放，不参与碰撞；命中与有效恢复分别触发正式受击/恢复表现 |
 | 子弹类 | `BulletSceneObj` | 直线/追踪移动，轨迹碰撞，命中目标 |
 
 ---
@@ -54,7 +54,7 @@ const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 
 战斗角色直接使用 LayaAir 标准的“单张 PNG + `.atlas`”帧动画资源，不再维护独立的 idle 单图与队伍色蒙版。`CharacterAnimation` 表为每个动作配置 `actionName`、包含首尾的 `startFrameIndex/endFrameIndex` 和 `durationMs`。基础帧与对应队伍色蒙版帧共用逻辑索引，现有 atlas 子纹理按 `{actionName}_{localIndex}.png` 和 `{actionName}_mask_{localIndex}.png` 命名；循环性由 Idle/Run 或技能调用明确传入，不保存在动作配置中。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色默认由 `CharacterSceneObj` 根据 `team` ID 初始化，并在材质异步创建或重新绑定时重复应用；`setTeamColor(r, g, b)` 仅用于明确的运行时覆写。同一职业不复制红蓝两套完整资源。角色必须配置至少一个可播放的帧动画动作。
 
-角色兵种、缩放和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`skillIds` 使用分号分隔；技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`。
+角色兵种、缩放、战斗特效中心点和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`centerOffsetY` 是从逻辑脚底点到战斗受击/恢复特效中心的 Y 位移（负数向上）；`skillIds` 使用分号分隔。技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`，特效中心偏移均为 `-52`。
 
 帧动画由角色 Entity 的每帧更新使用场景游戏时间驱动，暂停、加速和减速与场景逻辑保持一致；每个动画实例不再创建独立 Timer。Laya 仍逐帧提交场景渲染，只有动画帧索引变化时才重写主图、蒙版和对应 UV，角色位置变化不受换帧频率限制。
 
@@ -129,8 +129,8 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | `setMaxHp(value)` | 设置最大生命，按差值同步当前生命 |
 | `showHealthBar(show, options)` | 启用/关闭 HUD 血条；满血和死亡时隐藏、受伤后显示；战斗场景当前通过 `showMpBar: false` 关闭 MP 蓝条 |
 | `getDamage(casterId, damage, curTime)` | 受到伤害 |
-| `heal(value)` | 治疗 |
-| `castSkill(skillId, curTime, targetId, x, y, skillLevel)` | 技能入口，内部走 `SkillAgent` |
+| `heal(value, curTime?)` | 治疗并返回实际恢复量；满血时返回 `0`，有效恢复会投递统一战斗跳字 |
+| `castSkill(skillId, curTime, targetId, x, y, skillLevel)` | 技能入口，内部走 `SkillAgent`；牧师 AI 优先对最近受伤友军使用 `TargetType=Ally` 的治疗技能 |
 | `canCastSkill(skillId, curTime)` | 检查技能 CD |
 | `getSkillCooldownRemainSeconds(skillId, curTime)` | 获取技能剩余 CD，单位秒 |
 | `isSkillExecuting()` | 当前是否仍在技能计划执行期 |
@@ -154,6 +154,10 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 子弹的 `Bullet.Resource` 可为空；为空时保留代码圆点兜底。正式图集使用一张透明 PNG 与同名 `.atlas`，帧键按 `frame_00.png` 递增命名。带朝向的飞行资源以“朝右”为源图基准；直线弹在起飞时、追踪弹在转向时旋转子弹模型，动画子节点继承该旋转，故拖尾始终位于运动后方。子弹只有一个固定循环动作，因此不建立 `CharacterAnimation` 风格的动作范围/时长配置表；需要特殊帧数、速度或尺寸时，由创建代码显式调用 `setVisualFrameAnimation(options)`。
 
 ---
+
+### EffectSceneObj
+
+`EffectSceneObj.setFrameAnimation(options, curTime)` 播放一次性 PNG + atlas 图集动画；默认不循环，并由场景逻辑时间释放。`EffectSceneObj.playCombatEffect(...)` 只接收场景、特效配置 ID、队伍和坐标快照；`CombatEffect.csv` 定义图集、时长、缩放和帧数，可由每个 `Damage` Action 指定，不持有目标实体。
 
 ## 坐标和 zOffset
 

@@ -42,7 +42,10 @@ export class BuffAgent implements ISceneObjModule {
         if (!caster) return false;
 
         const info = SkillMgr.instance.getBuff(buffId);
-        if (!info) return false;
+        if (!info) {
+            console.error(`[BuffAgent] buff config is missing: buffId=${buffId}`);
+            return false;
+        }
 
         let runtime = this._buffMap.get(buffId);
         if (runtime) {

@@ -8,6 +8,7 @@ import "./AnimationAction";
 import "./BulletAction";
 import "./BuffAction";
 import "./DamageAction";
+import "./HealAction";
 
 export class ActionFactory {
     static parseActions(actionScript: string, withDelay: boolean = true): BaseAction[] {

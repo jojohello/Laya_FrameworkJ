@@ -21,6 +21,7 @@ export enum SkillTargetType {
     Target = "Target",
     Position = "Position",
     Self = "Self",
+    Ally = "Ally",
 }
 
 export enum BulletMoveType {

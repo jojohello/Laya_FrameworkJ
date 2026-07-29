@@ -1,4 +1,6 @@
 import { BaseSceneObj } from "../sceneObj/BaseSceneObj";
+import { DEFAULT_HIT_EFFECT_ID, EffectSceneObj } from "../sceneObj/EffectSceneObj";
+import { CombatFeedbackMgr } from "../combatFeedback/CombatFeedbackMgr";
 import { DamageContext } from "./DamageContext";
 import { DAMAGE_DEFENSE_CONSTANT, DamageType, normalizeDamageType } from "./DamageType";
 
@@ -10,6 +12,8 @@ export interface DamageApplyOptions {
     elementType?: string;
     sourceType?: string;
     sourceId?: number;
+    /** Config/Action-selected hit effect. Undefined uses the shared default; 0 disables it. */
+    hitEffectId?: number;
     curTime: number;
 }
 
@@ -47,7 +51,19 @@ export class DamageExecutor {
             const resolvedDamage = ctx.resolveFinalDamage();
             ctx.finalDamage = resolvedDamage;
             if (resolvedDamage > 0) {
+                // Snapshot display values before damage can release the target; effects never keep entity references.
+                const scene = target.scene;
+                const team = target.team;
+                const x = target.x;
+                const y = target.getCombatEffectCenterY();
                 this.applyHpDamage(target, ctx);
+                CombatFeedbackMgr.instance.showDamage(target, ctx.finalDamage, ctx.curTime);
+                const hitEffectId = options.hitEffectId === undefined
+                    ? DEFAULT_HIT_EFFECT_ID
+                    : Math.max(0, Math.floor(options.hitEffectId));
+                if (scene && hitEffectId > 0) {
+                    EffectSceneObj.playCombatEffect(scene, hitEffectId, team, x, y, ctx.curTime);
+                }
             }
 
             this.callBuffHook(target, "onAfterBeDamaged", ctx);

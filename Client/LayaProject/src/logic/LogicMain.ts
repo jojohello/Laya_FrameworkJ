@@ -23,6 +23,7 @@ import { BattleSettlementMgr } from "./battleScene/BattleSettlementMgr";
 
 import { CharacterSceneObj } from "./sceneObj/CharacterSceneObj";
 import { BulletSceneObj } from "./sceneObj/BulletSceneObj";
+import { EffectSceneObj } from "./sceneObj/EffectSceneObj";
 
 
 
@@ -53,6 +54,7 @@ export class LogicMain {
         // @regClass binds the editor resource identity, so register the runtime lookup key explicitly.
         Laya.ClassUtils.regClass("CharacterSceneObj", CharacterSceneObj);
         Laya.ClassUtils.regClass("BulletSceneObj", BulletSceneObj);
+        Laya.ClassUtils.regClass("EffectSceneObj", EffectSceneObj);
 
         // 2. 初始化配置管理器（必须在其他 Manager 之前完成）
         await ConfigMgr.instance.init();

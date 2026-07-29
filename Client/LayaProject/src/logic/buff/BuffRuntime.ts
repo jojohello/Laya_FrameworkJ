@@ -144,6 +144,7 @@ export class BuffRuntime {
             action.execute({
                 scene,
                 casterId: this._casterId,
+                buffId: this.buffId,
                 targetId: target.uid,
                 targetX: target.x,
                 targetY: target.y,

@@ -1,0 +1,6 @@
+Title,ID,name,resource,durationMs,displayScale,frameCount,description
+Type,int,str,str,int,float,int,str
+Description,Combat effect ID,Client display name,Atlas path relative to assets,One playback duration ms,Display scale,Atlas frame count,Client description
+UsedSize,c,c,c,c,c,c,c
+,1001,DefaultHit,effects/combat/hit-impact.atlas,220,1.425,6,Compact default hit impact
+,1002,DefaultHeal,effects/combat/heal-recover.atlas,480,1.1,6,Default effective-heal impact

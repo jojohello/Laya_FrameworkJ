@@ -2,6 +2,7 @@ export enum ActionType {
     Animation = "Animation",
     Bullet = "Bullet",
     Buff = "Buff",
+    Heal = "Heal",
     Damage = "Damage",
     TrueDamage = "TrueDamage",
     Effect = "Effect",

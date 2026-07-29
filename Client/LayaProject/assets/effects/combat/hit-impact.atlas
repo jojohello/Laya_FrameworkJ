@@ -1,0 +1,11 @@
+{
+  "frames": {
+    "frame_00.png": { "frame": { "x": 0, "y": 0, "w": 64, "h": 128 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 64, "h": 128 } },
+    "frame_01.png": { "frame": { "x": 64, "y": 0, "w": 64, "h": 128 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 64, "h": 128 } },
+    "frame_02.png": { "frame": { "x": 128, "y": 0, "w": 64, "h": 128 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 64, "h": 128 } },
+    "frame_03.png": { "frame": { "x": 192, "y": 0, "w": 64, "h": 128 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 64, "h": 128 } },
+    "frame_04.png": { "frame": { "x": 256, "y": 0, "w": 64, "h": 128 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 64, "h": 128 } },
+    "frame_05.png": { "frame": { "x": 320, "y": 0, "w": 64, "h": 128 }, "spriteSourceSize": { "x": 0, "y": 0 }, "sourceSize": { "w": 64, "h": 128 } }
+  },
+  "meta": { "image": "hit-impact.png", "prefix": "effects/combat/hit-impact/", "scale": "1" }
+}

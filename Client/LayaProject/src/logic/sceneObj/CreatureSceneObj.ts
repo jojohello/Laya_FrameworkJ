@@ -5,6 +5,8 @@ import { SkillAgent } from "../skill/SkillAgent";
 import { BuffAgent } from "../buff/BuffAgent";
 import { DamageContext } from "../damage/DamageContext";
 import { DamageExecutor } from "../damage/DamageExecutor";
+import { CombatFeedbackMgr } from "../combatFeedback/CombatFeedbackMgr";
+import { DEFAULT_HEAL_EFFECT_ID, EffectSceneObj } from "./EffectSceneObj";
 import { AttributeSet } from "./AttributeSet";
 import { BaseSceneObj } from "./BaseSceneObj";
 import { DisplaySceneObj } from "./DisplaySceneObj";
@@ -99,10 +101,28 @@ export class CreatureSceneObj extends DisplaySceneObj {
         }
     }
 
-    heal(value: number): void {
-        if (this._isDead || value <= 0) return;
-        this._attrs.setValue("HP", Math.min(this.maxHp, this.hp + value));
+    heal(value: number, curTime: number = this._scene?.curTime || 0): number {
+        if (this._isDead || value <= 0) {
+            return 0;
+        }
+        const recovered = Math.max(0, Math.min(this.maxHp, this.hp + value) - this.hp);
+        if (recovered <= 0) {
+            return 0;
+        }
+        this._attrs.setValue("HP", this.hp + recovered);
         this.refreshHealthBar();
+        CombatFeedbackMgr.instance.showHeal(this, recovered, curTime);
+        if (this._scene) {
+            EffectSceneObj.playCombatEffect(
+                this._scene,
+                DEFAULT_HEAL_EFFECT_ID,
+                this.team,
+                this.x,
+                this.getCombatEffectCenterY(),
+                curTime
+            );
+        }
+        return recovered;
     }
 
     castSkill(

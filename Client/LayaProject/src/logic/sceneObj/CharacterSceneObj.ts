@@ -1,6 +1,6 @@
 import { ConfigMgr } from "../config/ConfigMgr";
 import { CreatureSceneObj } from "./CreatureSceneObj";
-import { CharacterConfigInfo } from "./CharacterConfigInfo";
+import { CharacterConfigInfo, SoldierType } from "./CharacterConfigInfo";
 import { CharacterTeamColorMaterial } from "./CharacterTeamColorMaterial";
 import { BaseScene } from "../scene/BaseScene";
 import { CharacterAnimationConfigInfo } from "./CharacterAnimationConfigInfo";
@@ -38,12 +38,16 @@ export class CharacterSceneObj extends CreatureSceneObj {
     private _lastRunUpdateTime = 0;
     private _hasRunTarget = false;
     private _skillIds: number[] = [];
+    private _combatEffectCenterOffsetY = 0;
+    private _soldierType: SoldierType = "warrior";
 
     protected onInit(uid: number, cfgId: number, scene: BaseScene, team: number, x: number, y: number, angle: number): void {
         super.onInit(uid, cfgId, scene, team, x, y, angle);
         this._teamColor = [...(TEAM_COLORS[team] || DEFAULT_TEAM_COLOR)];
         const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", cfgId);
         this._skillIds = this.parseSkillIds(config?.skillIds || "");
+        this._combatEffectCenterOffsetY = Number(config?.centerOffsetY) || 0;
+        this._soldierType = config?.soldierType || "warrior";
         SimpleCombatAIAgent.reset(this);
         CharacterActorFsm.reset(this);
         CharacterActorFsm.setState(CharacterStateName.Idle, this, scene.curTime);
@@ -98,6 +102,10 @@ export class CharacterSceneObj extends CreatureSceneObj {
 
     get animName(): CharacterAnimName {
         return this._animName;
+    }
+
+    getCombatEffectCenterY(): number {
+        return this.y + this._combatEffectCenterOffsetY;
     }
 
     changeState(stateName: CharacterStateNameValue, curTime: number, force: boolean = false): void {
@@ -201,6 +209,10 @@ export class CharacterSceneObj extends CreatureSceneObj {
         return this._skillIds;
     }
 
+    get soldierType(): SoldierType {
+        return this._soldierType;
+    }
+
     get isRunning(): boolean {
         return this.stateName === CharacterStateName.Run;
     }
@@ -231,6 +243,8 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this._lastRunUpdateTime = 0;
         this._hasRunTarget = false;
         this._skillIds.length = 0;
+        this._combatEffectCenterOffsetY = 0;
+        this._soldierType = "warrior";
         this._animationDurationMap.clear();
         this._animStartTime = 0;
         this._animLoop = true;

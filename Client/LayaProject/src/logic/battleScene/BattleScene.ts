@@ -14,8 +14,21 @@ import { UIManager } from "../ui/UIManager";
 import { BattleCompleteResult, BattleSettlementMgr } from "./BattleSettlementMgr";
 import { ItemMgr } from "../item/ItemMgr";
 import { ItemViewData } from "../ui/ItemViewController";
+import { CombatFeedbackMgr } from "../combatFeedback/CombatFeedbackMgr";
+import { EffectSceneObj } from "../sceneObj/EffectSceneObj";
 
 type BattleResultUIName = "BattleVictoryUI" | "BattleDefeatUI";
+
+interface BattleTestFormationRow {
+    configId: number;
+    count: number;
+    startY: number;
+    rowStepY: number;
+}
+
+const BATTLE_TEST_COLUMNS = 10;
+const BATTLE_TEST_START_X = 150;
+const BATTLE_TEST_COLUMN_STEP = 125;
 
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
@@ -83,6 +96,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         }
         this._aiScheduler.update(curTime, tick, this);
         super.logicUpdate(logicDt, curTime, tick);
+        CombatFeedbackMgr.instance.update(this, curTime);
         if (this.isReady && !this._battleUnitsCreated) {
             this._battleUnitsCreated = true;
             void this.createBattleUnits();
@@ -119,6 +133,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
 
     onExit(): void {
         this.transitionFlowState(BattleFlowState.Exiting);
+        CombatFeedbackMgr.instance.clear(this);
         if (this._resultUIName) UIManager.instance.close(this._resultUIName);
         this._resultUIName = null;
         this._resultExitRequested = false;
@@ -170,15 +185,18 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
 
     private async createBattleUnits(): Promise<void> {
         const token = this._battleUnitLoadToken;
-        const playerConfigIds = [1001, 1002, 1003];
-        // 当前测试阵容：敌我双方均为战士、法师、牧师各一名。
-        const opponentConfigIds = [1001, 1002, 1003];
+        // 100 单位战斗表现测试阵容：双方各 25 战士、25 牧师，不使用法师。
+        const playerConfigIds = [1001, 1003];
+        const opponentConfigIds = [1001, 1003];
         const preloadConfigIds = [...new Set([...playerConfigIds, ...opponentConfigIds])];
-        const paths = [...new Set(preloadConfigIds.flatMap(cfgId =>
-            ConfigMgr.instance
-                .getByField<CharacterAnimationConfigInfo>("CharacterAnimation", "characterId", cfgId)
-                .map(config => config.atlasPath)
-        ))];
+        const paths = [...new Set([
+            ...preloadConfigIds.flatMap(cfgId =>
+                ConfigMgr.instance
+                    .getByField<CharacterAnimationConfigInfo>("CharacterAnimation", "characterId", cfgId)
+                    .map(config => config.atlasPath)
+            ),
+            ...EffectSceneObj.getPreloadAtlasPaths(),
+        ])];
 
         try {
             const [shaderReady] = await Promise.all([
@@ -200,9 +218,14 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         }
         console.log(`[BattleScene] 角色队伍色 Shader 已就绪: ${CharacterTeamColorMaterial.SHADER_NAME}`);
 
-        const columns = [220, 384, 548];
-        this.createTeamUnits(2, 220, columns, opponentConfigIds);
-        this.createTeamUnits(1, 1120, columns, playerConfigIds);
+        this.createTestTeam(2, [
+            { configId: 1003, count: 25, startY: 100, rowStepY: 72 },
+            { configId: 1001, count: 25, startY: 400, rowStepY: 72 },
+        ]);
+        this.createTestTeam(1, [
+            { configId: 1001, count: 25, startY: 900, rowStepY: -72 },
+            { configId: 1003, count: 25, startY: 1200, rowStepY: -72 },
+        ]);
         this._battleUnitsReady = true;
         this.transitionFlowState(BattleFlowState.Running);
     }
@@ -334,25 +357,27 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         await SceneMgr.instance.switchScene(SceneType.BattleStageScene);
     }
 
-    private createTeamUnits(
+    private createTestTeam(
         team: number,
-        y: number,
-        columns: number[],
-        configIds: number[]
+        formation: readonly BattleTestFormationRow[]
     ): void {
-        for (let i = 0; i < configIds.length; i++) {
-            const unit = this.addObjectToScene(
-                "CharacterSceneObj",
-                configIds[i],
-                team,
-                columns[i],
-                y,
-                0
-            );
-            if (unit instanceof CharacterSceneObj) {
-                unit.showHealthBar(true, {
-                    showMpBar: false,
-                });
+        for (const row of formation) {
+            for (let index = 0; index < row.count; index++) {
+                const column = index % BATTLE_TEST_COLUMNS;
+                const line = Math.floor(index / BATTLE_TEST_COLUMNS);
+                const unit = this.addObjectToScene(
+                    "CharacterSceneObj",
+                    row.configId,
+                    team,
+                    BATTLE_TEST_START_X + column * BATTLE_TEST_COLUMN_STEP,
+                    row.startY + line * row.rowStepY,
+                    0
+                );
+                if (unit instanceof CharacterSceneObj) {
+                    unit.showHealthBar(true, {
+                        showMpBar: false,
+                    });
+                }
             }
         }
     }

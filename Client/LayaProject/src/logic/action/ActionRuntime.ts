@@ -3,6 +3,8 @@ import { BaseScene } from "../scene/BaseScene";
 export interface ActionContext {
     scene: BaseScene;
     casterId: number;
+    /** Present only when an Action is triggered by a Buff runtime. */
+    buffId?: number;
     skillId?: number;
     skillLevel?: number;
     targetId?: number;

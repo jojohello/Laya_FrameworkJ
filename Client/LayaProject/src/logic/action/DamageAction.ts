@@ -15,6 +15,9 @@ export class DamageAction extends BaseAction {
     execute(context: ActionContext): number {
         const damageId = this.info.getNumberParam(0);
         if (!damageId || !context.targetId) return 0;
+        const hitEffectId = this.info.params.length > 1
+            ? Math.max(0, Math.floor(this.info.getNumberParam(1)))
+            : undefined;
 
         const damageInfo = SkillMgr.instance.getDamage(damageId);
         if (!damageInfo) return 0;
@@ -42,6 +45,7 @@ export class DamageAction extends BaseAction {
             elementType: data.ElementType,
             sourceType: "damage",
             sourceId: damageId,
+            hitEffectId,
             curTime: context.executeTime,
         });
         return 0;

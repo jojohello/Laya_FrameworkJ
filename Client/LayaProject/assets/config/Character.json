@@ -5,6 +5,7 @@
     "soldierType": "warrior",
     "sceneObjConfigId": 1001,
     "modelScale": 0.666667,
+    "centerOffsetY": -52,
     "skillIds": "1101",
     "description": "Melee frontline: high HP and physical defense"
   },
@@ -14,6 +15,7 @@
     "soldierType": "mage",
     "sceneObjConfigId": 1002,
     "modelScale": 0.666667,
+    "centerOffsetY": -52,
     "skillIds": "1201",
     "description": "Ranged caster: highest attack and low HP"
   },
@@ -23,7 +25,8 @@
     "soldierType": "priest",
     "sceneObjConfigId": 1003,
     "modelScale": 0.666667,
-    "skillIds": "1301",
-    "description": "Support caster: balanced survival and high magic defense"
+    "centerOffsetY": -52,
+    "skillIds": "1302;1301",
+    "description": "Support caster: heal injured nearest ally before ranged attack"
   }
 ]

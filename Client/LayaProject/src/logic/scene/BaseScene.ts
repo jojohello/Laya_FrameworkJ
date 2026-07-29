@@ -344,8 +344,16 @@ export class BaseScene implements TransitionReady {
             return null;
         }
 
+        newObj.reset(this.curTime);
+        if (newObj.uid !== 0 || newObj.scene !== null) {
+            console.error(`[DBG-LIFECYCLE] pooled object was not reset: class=${className}, uid=${newObj.uid}`);
+        }
+
         // 初始化对象
         newObj.init(newId, cfgId, this, team, x, y, angle);
+        if (newObj.uid !== newId || newObj.isRelease) {
+            console.error(`[DBG-LIFECYCLE] object initialization invariant failed: class=${className}, expectedUid=${newId}, actualUid=${newObj.uid}`);
+        }
 
         // 添加到映射
         this._objMap.set(newId, newObj);
@@ -393,6 +401,29 @@ export class BaseScene implements TransitionReady {
         for (const candidate of this._objMap.values()) {
             if (candidate === source || candidate.isRelease || candidate.isDead
                 || candidate.team === source.team || candidate.getObjType() !== targetObjType) continue;
+            const dx = candidate.x - source.x;
+            const dy = candidate.y - source.y;
+            const distanceSq = dx * dx + dy * dy;
+            if (distanceSq < nearestDistanceSq) {
+                nearest = candidate;
+                nearestDistanceSq = distanceSq;
+            }
+        }
+        return nearest;
+    }
+
+    /** Finds the nearest living same-team unit with HP below its maximum, including source itself. */
+    findNearestDamagedAlly(source: BaseSceneObj, targetObjType: number = source.getObjType()): BaseSceneObj | null {
+        let nearest: BaseSceneObj | null = null;
+        let nearestDistanceSq = Number.POSITIVE_INFINITY;
+        for (const candidate of this._objMap.values()) {
+            const creature = candidate as BaseSceneObj & { hp?: number; maxHp?: number };
+            if (candidate.isRelease || candidate.isDead || candidate.team !== source.team
+                || candidate.getObjType() !== targetObjType
+                || !Number.isFinite(creature.hp) || !Number.isFinite(creature.maxHp)
+                || (creature.hp as number) >= (creature.maxHp as number)) {
+                continue;
+            }
             const dx = candidate.x - source.x;
             const dy = candidate.y - source.y;
             const distanceSq = dx * dx + dy * dy;

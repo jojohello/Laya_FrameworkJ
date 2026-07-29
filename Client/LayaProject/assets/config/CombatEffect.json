@@ -1,0 +1,20 @@
+[
+  {
+    "ID": 1001,
+    "name": "DefaultHit",
+    "resource": "effects/combat/hit-impact.atlas",
+    "durationMs": 220,
+    "displayScale": 1.425,
+    "frameCount": 6,
+    "description": "Compact default hit impact"
+  },
+  {
+    "ID": 1002,
+    "name": "DefaultHeal",
+    "resource": "effects/combat/heal-recover.atlas",
+    "durationMs": 480,
+    "displayScale": 1.1,
+    "frameCount": 6,
+    "description": "Default effective-heal impact"
+  }
+]

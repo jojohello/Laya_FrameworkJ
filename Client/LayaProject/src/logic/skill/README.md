@@ -62,10 +62,13 @@ Current action examples:
 - `0;Animation;attack`: immediately play the caster's configured `attack`
   animation.
 - `0;Bullet;1001`: immediately create bullet `1001`.
-- `200;Damage;1002`: after 200 ms, execute `DamageAction` with damage config
-  `1002`.
+- `200;Damage;1002;1001`: after 200 ms, execute `DamageAction` with damage config
+  `1002` and combat hit effect `1001`. The optional second parameter is a
+  `CombatEffect` ID; omit it for the default hit effect, or pass `0` to suppress it.
 - `0;Buff;3001;1;3000`: apply buff `3001`, stack `1`, duration override
   `3000` ms.
+- `0;Heal;16`: restore 16 HP to the current target. It is normally used by a
+  Buff tick, while duration and cadence remain in `Buff.csv`.
 
 ### Bullet
 
@@ -88,6 +91,11 @@ collision `Range` or hit results.
 `OnHitAction` is the only configured hit-result entry. Damage, healing, buffs
 and debuffs should be actions with numeric config ids, not hardcoded fields on
 the bullet table.
+
+`Damage` accepts an optional second parameter, `CombatEffect.ID`, so each skill,
+bullet or Buff action can choose its own hit visual. `CombatEffect.csv` defines
+the atlas resource, duration, display scale and frame count. The shipped default
+hit effect is `1001`; the default recovery effect is `1002`.
 
 ### Damage
 
@@ -122,6 +130,10 @@ wrapper is built.
 Buff is a time container. It can execute actions on add, tick and remove, and it
 will later gain explicit damage hooks for shield, reflect, reduction and life
 steal effects.
+
+`TargetType=Ally` selects the nearest living same-team unit whose HP is below
+maximum. The current priest first attempts `PriestRenew` (5 seconds, one heal
+per second, 6-second cooldown), then falls back to its normal attack.
 
 ## Runtime Pieces
 

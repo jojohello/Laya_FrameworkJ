@@ -41,7 +41,7 @@
     "CD": 900,
     "CostType": "None",
     "CostValue": 0,
-    "Action": "0;Animation;attack|300;Damage;1003",
+    "Action": "0;Animation;attack|300;Damage;1003;1001",
     "Desc": "Warrior normal attack skill"
   },
   {
@@ -73,5 +73,20 @@
     "CostValue": 0,
     "Action": "0;Animation;attack|300;Bullet;1004",
     "Desc": "Priest normal attack skill"
+  },
+  {
+    "ID": 130201,
+    "SkillID": 1302,
+    "Level": 1,
+    "Name": "PriestRenew",
+    "MaxLevel": 1,
+    "SkillType": "Active",
+    "TargetType": "Ally",
+    "CastRange": 300,
+    "CD": 6000,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Animation;attack|300;Buff;3002",
+    "Desc": "Heal nearest injured ally over time"
   }
 ]

@@ -20,8 +20,10 @@ UsedSize,c,c,c,c,c,c,c,c,c,c,c
 ,3102,nav.selected,主导航选中,,32,#ffd66b,true,5,#6a3e12,center,middle
 ,4001,battle.pause,战斗暂停标题,,38,#fff3d9,true,4,#172a35,center,middle
 ,4002,battle.speed,战斗速度数值,,27,#fff3d9,true,3,#234955,center,middle
-,4101,battle.damage.normal,普通伤害跳字,,30,#fff3d9,true,3,#3a2014,center,middle
+,4101,battle.damage.normal,普通伤害跳字,,30,#ff5a5a,true,3,#4a1820,center,middle
 ,4102,battle.damage.critical,暴击伤害跳字,,36,#ffd66b,true,4,#6a3e12,center,middle
 ,4103,battle.heal,治疗恢复跳字,,30,#8fe08a,true,3,#183d25,center,middle
+,4104,battle.status,特殊状态跳字,,30,#ffe36e,true,3,#4b3510,center,middle
+,4105,battle.immune,免疫状态跳字,,30,#91d8ff,true,3,#173e58,center,middle
 ,4201,result.victory,战斗胜利标题,,48,#ffe6a8,true,4,#6a3e12,center,middle
 ,4202,result.defeat,战斗失败标题,,48,#f2a6a6,true,4,#591f2a,center,middle

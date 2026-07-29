@@ -71,8 +71,8 @@ export class ResFrameAnimation extends ResBase {
             }
 
             for (let index = action.startFrameIndex; index <= action.endFrameIndex; index++) {
-                if (!this._frameUrls[index] || !this._maskFrameUrls[index]) {
-                    console.error(`[ResFrameAnimation] Missing logical base/mask frame URL: atlas=${this._url}, index=${index}`);
+                if (!this._frameUrls[index]) {
+                    console.error(`[ResFrameAnimation] Missing logical base frame URL: atlas=${this._url}, index=${index}`);
                     this._actions.clear();
                     this._actionFrameUrls.clear();
                     this._actionMaskFrameUrls.clear();

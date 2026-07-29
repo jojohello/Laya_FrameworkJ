@@ -369,6 +369,9 @@ export abstract class BaseSceneObj {
     /** 获取 Y 坐标 */
     get y(): number { return this._transform.y; }
 
+    /** Snapshot-friendly vertical anchor for hit, heal and other combat effects. */
+    getCombatEffectCenterY(): number { return this.y; }
+
     /** 获取角度 */
     get angle(): number { return this._transform.angle; }
 
