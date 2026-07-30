@@ -1,6 +1,11 @@
 import { ConfigMgr } from "../config/ConfigMgr";
 import { CreatureSceneObj } from "./CreatureSceneObj";
-import { CharacterConfigInfo, SoldierType } from "./CharacterConfigInfo";
+import {
+    CharacterConfigInfo,
+    DEFAULT_CHARACTER_RANGE,
+    MAX_CHARACTER_RANGE,
+    SoldierType,
+} from "./CharacterConfigInfo";
 import { CharacterTeamColorMaterial } from "./CharacterTeamColorMaterial";
 import { BaseScene } from "../scene/BaseScene";
 import { CharacterAnimationConfigInfo } from "./CharacterAnimationConfigInfo";
@@ -8,6 +13,7 @@ import { FrameAnimationAction, ResFrameAnimation } from "../resource/ResFrameAni
 import { ResourceMgr } from "../resource/ResourceMgr";
 import { CharacterActorFsm, CharacterStateName, CharacterStateNameValue } from "../actorFsm/CharacterActorFsm";
 import { CharacterAIRuntime, SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
+import type { SceneMoveVector } from "../scene/SceneMoveVector";
 
 const { regClass } = Laya;
 
@@ -18,7 +24,6 @@ const TEAM_COLORS: Readonly<Record<number, readonly [number, number, number]>> =
     1: [45, 110, 235],
     2: [220, 50, 55],
 };
-
 /** Battle character display adapter backed by atlas frame animation. */
 @regClass()
 export class CharacterSceneObj extends CreatureSceneObj {
@@ -40,6 +45,8 @@ export class CharacterSceneObj extends CreatureSceneObj {
     private _skillIds: number[] = [];
     private _combatEffectCenterOffsetY = 0;
     private _soldierType: SoldierType = "warrior";
+    private _didActivelyMoveThisTick = false;
+    private readonly _resolvedMove: SceneMoveVector = { dx: 0, dy: 0 };
 
     protected onInit(uid: number, cfgId: number, scene: BaseScene, team: number, x: number, y: number, angle: number): void {
         super.onInit(uid, cfgId, scene, team, x, y, angle);
@@ -48,12 +55,17 @@ export class CharacterSceneObj extends CreatureSceneObj {
         this._skillIds = this.parseSkillIds(config?.skillIds || "");
         this._combatEffectCenterOffsetY = Number(config?.centerOffsetY) || 0;
         this._soldierType = config?.soldierType || "warrior";
+        const configuredRange = Number(config?.range);
+        this.setCollisionBox(Number.isFinite(configuredRange) && configuredRange > 0
+            ? Math.min(MAX_CHARACTER_RANGE, configuredRange)
+            : DEFAULT_CHARACTER_RANGE);
         SimpleCombatAIAgent.reset(this);
         CharacterActorFsm.reset(this);
         CharacterActorFsm.setState(CharacterStateName.Idle, this, scene.curTime);
     }
 
     protected onLogicUpdate(_logicDt: number, curTime: number, _tick: number): void {
+        this._didActivelyMoveThisTick = false;
         CharacterActorFsm.update(this, curTime);
         this._frameAnimation?.update(curTime);
     }
@@ -183,26 +195,47 @@ export class CharacterSceneObj extends CreatureSceneObj {
 
         const moveDistance = this.attrs.getFinal("speed", 0) * deltaTime;
         const remainingDistance = Math.max(0, distance - this._runStopDistance);
-        if (moveDistance <= 0 || moveDistance >= remainingDistance) {
+        const stepDistance = moveDistance <= 0 ? 0 : Math.min(moveDistance, remainingDistance);
+        if (stepDistance <= 0) return;
+
+        // Arrival is defined only by the requested target range.  A local crowd
+        // policy may steer the travel segment, but it must not turn the final
+        // range-entry step sideways and leave the character orbiting outside of
+        // its cast distance.
+        if (moveDistance >= remainingDistance) {
             this.setPos(
                 this.x + dx / distance * remainingDistance,
                 this.y + dy / distance * remainingDistance
             );
+            this.recordActiveMove(remainingDistance);
             this._hasRunTarget = false;
             this.changeState(CharacterStateName.Idle, curTime);
             return;
         }
 
+        const move = this.scene?.resolveCharacterMove(
+            this,
+            dx / distance * stepDistance,
+            dy / distance * stepDistance,
+            this._resolvedMove
+        ) || this._resolvedMove;
         this.setPos(
-            this.x + dx / distance * moveDistance,
-            this.y + dy / distance * moveDistance
+            this.x + move.dx,
+            this.y + move.dy
         );
+        this.recordActiveMove(Math.hypot(move.dx, move.dy));
     }
 
     /** Called by StateRun when another state interrupts movement. */
     endRunState(): void {
         this._lastRunUpdateTime = 0;
         this._hasRunTarget = false;
+    }
+
+    private recordActiveMove(distance: number): void {
+        if (distance <= 0) return;
+        this._didActivelyMoveThisTick = true;
+        this.scene?.recordActiveMove(this.uid, distance);
     }
 
     get skillIds(): readonly number[] {
@@ -215,6 +248,14 @@ export class CharacterSceneObj extends CreatureSceneObj {
 
     get isRunning(): boolean {
         return this.stateName === CharacterStateName.Run;
+    }
+
+    get didActivelyMoveThisTick(): boolean {
+        return this._didActivelyMoveThisTick;
+    }
+
+    get canParticipateInCrowdSeparation(): boolean {
+        return true;
     }
 
     get isExecutingSkill(): boolean {

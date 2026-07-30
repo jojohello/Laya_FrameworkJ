@@ -5,7 +5,7 @@ Use this reference when creating simple LayaAir `.ls` scenes or `.lh` prefabs fo
 ## Directory Convention
 
 - Use `assets/testAndSample/` for verification scenes and example scenes.
-- Use `assets/testAndSample/editorResources/` for editor-only `.ls` scenes and their starter `.ts` scripts.
+- Use an `assets/testAndSample/testXxx/` topic package for editor-only `.ls` scenes and their starter `.ts` scripts.
 - Do not assume the directory is excluded from builds unless `settings/BuildSettings.json` or build output confirms it.
 
 ## Creation Workflow
@@ -31,7 +31,7 @@ A useful test scene usually contains:
 
 ## Runtime Script Guidelines
 
-- Keep scripts under the same editorResources area when they only drive editor/test scenes.
+- Keep scripts inside the same `testXxx/` package when they only drive editor/test scenes.
 - Use the script to call project managers or debug scenario entry points; avoid embedding production logic in the test scene.
 - If the script enters a real game flow, prefer calling the same public API production code will use.
 

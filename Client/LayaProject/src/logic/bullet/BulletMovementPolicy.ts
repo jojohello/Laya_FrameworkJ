@@ -97,8 +97,8 @@ export class TraceBulletMovementPolicy implements IBulletMovementPolicy {
     }
 
     update(host: BulletMovementHost, curTime: number): BulletMovementResult {
-        const target = host.getObject(this._targetId);
-        if (!target || target.isRelease) {
+        const target = host.getLiveObject(this._targetId);
+        if (!target) {
             return { moved: false, finished: true };
         }
 

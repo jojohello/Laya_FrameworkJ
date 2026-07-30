@@ -135,6 +135,14 @@ steal effects.
 maximum. The current priest first attempts `PriestRenew` (5 seconds, one heal
 per second, 6-second cooldown), then falls back to its normal attack.
 
+Targeted cast range is measured to the target's logical edge. Runtime legality
+uses `centerDistance <= Skill.CastRange + target.range + epsilon`. The shared
+geometry helpers live in `SkillInfo.ts`; callers must not reintroduce
+center-only range checks. Simple combat AI stops movement five world units
+inside that legal boundary, clamped at zero. This arrival inset prevents
+floating-point boundary oscillation and does not expand or reduce the actual
+skill range.
+
 ## Runtime Pieces
 
 - `SkillData.ts`: primitive config row data.

@@ -7,7 +7,6 @@
     "bigImg",
     "startupUI"
   ],
-  "excludeFilesRule": [],
   "enableVersion": true,
   "enableSubpackages": true,
   "subpackages": [

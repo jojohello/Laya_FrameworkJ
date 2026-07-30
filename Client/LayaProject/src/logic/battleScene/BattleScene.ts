@@ -16,6 +16,8 @@ import { ItemMgr } from "../item/ItemMgr";
 import { ItemViewData } from "../ui/ItemViewController";
 import { CombatFeedbackMgr } from "../combatFeedback/CombatFeedbackMgr";
 import { EffectSceneObj } from "../sceneObj/EffectSceneObj";
+import { LocalCrowdAvoidanceSystem } from "./LocalCrowdAvoidanceSystem";
+import { SceneMoveVector } from "../scene/SceneMoveVector";
 
 type BattleResultUIName = "BattleVictoryUI" | "BattleDefeatUI";
 
@@ -27,8 +29,8 @@ interface BattleTestFormationRow {
 }
 
 const BATTLE_TEST_COLUMNS = 10;
-const BATTLE_TEST_START_X = 150;
-const BATTLE_TEST_COLUMN_STEP = 125;
+const BATTLE_TEST_START_X = 90;
+const BATTLE_TEST_COLUMN_STEP = 65;
 
 /** 第一关实际战斗场景，加载配置指定的 TiledMap。 */
 @regClass()
@@ -44,6 +46,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
+    private readonly _crowdAvoidance = new LocalCrowdAvoidanceSystem();
 
     constructor() {
         super();
@@ -144,6 +147,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._transitionError = "";
         super.onExit();
         this._aiScheduler.clear();
+        this._crowdAvoidance.clear();
     }
 
     get flowState(): BattleFlowState {
@@ -181,13 +185,17 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
 
     protected onObjectRemoving(obj: BaseSceneObj): void {
         this._aiScheduler.unregister(obj.uid);
+        this._crowdAvoidance.forget(obj.uid);
+    }
+
+    resolveCharacterMove(owner: BaseSceneObj, desiredDx: number, desiredDy: number, out: SceneMoveVector): SceneMoveVector {
+        return this._crowdAvoidance.resolveMove(this, owner, desiredDx, desiredDy, out);
     }
 
     private async createBattleUnits(): Promise<void> {
         const token = this._battleUnitLoadToken;
-        // 100 单位战斗表现测试阵容：双方各 25 战士、25 牧师，不使用法师。
-        const playerConfigIds = [1001, 1003];
-        const opponentConfigIds = [1001, 1003];
+        const playerConfigIds = [1001, 1002, 1003];
+        const opponentConfigIds = [1001, 1002, 1003];
         const preloadConfigIds = [...new Set([...playerConfigIds, ...opponentConfigIds])];
         const paths = [...new Set([
             ...preloadConfigIds.flatMap(cfgId =>
@@ -219,12 +227,14 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         console.log(`[BattleScene] 角色队伍色 Shader 已就绪: ${CharacterTeamColorMaterial.SHADER_NAME}`);
 
         this.createTestTeam(2, [
-            { configId: 1003, count: 25, startY: 100, rowStepY: 72 },
-            { configId: 1001, count: 25, startY: 400, rowStepY: 72 },
+            { configId: 1003, count: 30, startY: 200, rowStepY: 45 },
+            { configId: 1002, count: 30, startY: 340, rowStepY: 45 },
+            { configId: 1001, count: 40, startY: 480, rowStepY: 45 },
         ]);
         this.createTestTeam(1, [
-            { configId: 1001, count: 25, startY: 900, rowStepY: -72 },
-            { configId: 1003, count: 25, startY: 1200, rowStepY: -72 },
+            { configId: 1003, count: 30, startY: 1144, rowStepY: -45 },
+            { configId: 1002, count: 30, startY: 1004, rowStepY: -45 },
+            { configId: 1001, count: 40, startY: 864, rowStepY: -45 },
         ]);
         this._battleUnitsReady = true;
         this.transitionFlowState(BattleFlowState.Running);

@@ -2,9 +2,11 @@ import { AIAgent, AIRuntime, DEFAULT_AI_THINK_INTERVAL_SECONDS } from "./AIAgent
 import { BActionNode, BConditionNode, BSelectorNode, BSequenceNode } from "../behaviorTree/BehaviorNodes";
 import type { CharacterSceneObj } from "../sceneObj/CharacterSceneObj";
 import { SkillMgr } from "../skill/SkillMgr";
-import { SkillTargetType } from "../skill/SkillInfo";
-
-export const AI_MOVE_STOP_TOLERANCE = 10;
+import {
+    getTargetCenterMoveStopRange,
+    isTargetInCastRange,
+    SkillTargetType,
+} from "../skill/SkillInfo";
 
 export interface CharacterAIRuntime extends AIRuntime {
     targetUid: number;
@@ -12,6 +14,8 @@ export interface CharacterAIRuntime extends AIRuntime {
     selectedSkillRange: number;
     selectedTargetUid: number;
 }
+
+export const AI_ATTACK_ARRIVAL_INSET = 5;
 
 function getRuntime(owner: CharacterSceneObj): CharacterAIRuntime {
     let runtime = owner.aiRuntime;
@@ -35,8 +39,8 @@ function getRuntime(owner: CharacterSceneObj): CharacterAIRuntime {
 
 function getTarget(owner: CharacterSceneObj) {
     const runtime = getRuntime(owner);
-    const target = runtime.targetUid ? owner.scene?.getObject(runtime.targetUid) : null;
-    if (!target || target.isRelease || target.isDead
+    const target = runtime.targetUid ? owner.scene?.getLiveObject(runtime.targetUid) : null;
+    if (!target || target.isDead
         || target.team === owner.team || target.getObjType() !== owner.getObjType()) {
         runtime.targetUid = 0;
         return null;
@@ -91,15 +95,27 @@ class TryPriestSupportNode extends BActionNode<CharacterSceneObj> {
                 if (!target) return false;
 
                 const range = Math.max(0, Number(skill.data.CastRange) || 0);
-                const dx = target.x - owner.x;
-                const dy = target.y - owner.y;
-                if (dx * dx + dy * dy <= range * range) {
-                    const castSuccess = owner.attack(skillId, curTime, target.uid, target.x, target.y, 1);
-                    if (castSuccess) {
-                    }
-                    return castSuccess;
+                if (isTargetInCastRange(
+                    owner.x,
+                    owner.y,
+                    target.x,
+                    target.y,
+                    range,
+                    target.range
+                )) {
+                    return owner.attack(skillId, curTime, target.uid, target.x, target.y, 1);
                 }
-                return owner.runTo(target.x, target.y, curTime, Math.max(0, range - AI_MOVE_STOP_TOLERANCE));
+                const stopDistance = getTargetCenterMoveStopRange(
+                    range,
+                    target.range,
+                    AI_ATTACK_ARRIVAL_INSET
+                );
+                return owner.runTo(
+                    target.x,
+                    target.y,
+                    curTime,
+                    stopDistance
+                );
             }
             return false;
         });
@@ -136,9 +152,14 @@ class IsSelectedSkillInRangeNode extends BConditionNode<CharacterSceneObj> {
             const target = getSelectedTarget(owner);
             if (!target) return false;
             const runtime = getRuntime(owner);
-            const dx = target.x - owner.x;
-            const dy = target.y - owner.y;
-            return dx * dx + dy * dy <= runtime.selectedSkillRange * runtime.selectedSkillRange;
+            return isTargetInCastRange(
+                owner.x,
+                owner.y,
+                target.x,
+                target.y,
+                runtime.selectedSkillRange,
+                target.range
+            );
         });
     }
 }
@@ -182,11 +203,16 @@ class ApproachTargetNode extends BActionNode<CharacterSceneObj> {
                 }
             }
             if (!Number.isFinite(desiredRange)) return false;
+            const stopDistance = getTargetCenterMoveStopRange(
+                desiredRange,
+                target.range,
+                AI_ATTACK_ARRIVAL_INSET
+            );
             return owner.runTo(
                 target.x,
                 target.y,
                 curTime,
-                Math.max(0, desiredRange - AI_MOVE_STOP_TOLERANCE)
+                stopDistance
             );
         });
     }

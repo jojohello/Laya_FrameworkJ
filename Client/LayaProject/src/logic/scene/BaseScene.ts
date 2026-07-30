@@ -19,6 +19,7 @@ import { BaseSceneMap } from "../map/BaseSceneMap";
 import { SceneMapFactory } from "../map/SceneMapFactory";
 import { inferSceneMapType, SceneMapConfig } from "../map/SceneMapTypes";
 import { TransitionReady } from "./TransitionReady";
+import type { SceneMoveVector } from "./SceneMoveVector";
 
 /**
  * 场景基类
@@ -61,6 +62,10 @@ export class BaseScene implements TransitionReady {
 
     /** 待删除对象 ID 集合，避免重复入队 */
     protected _delIdSet: Set<number> = new Set();
+
+    /** IDs that performed intentional movement during the current logic tick. */
+    private readonly _activeMoveIds: Set<number> = new Set();
+    private _maxActiveMoveDistance: number = 0;
 
     /** 按类型分类的对象 ID 映射（objType -> uid[]） */
     protected _typeMap: Map<number, number[]> = new Map();
@@ -169,6 +174,8 @@ export class BaseScene implements TransitionReady {
      * 倍速或时间模式。
      */
     protected logicUpdate(logicDt: number, curTime: number, tick: number): void {
+        this._activeMoveIds.clear();
+        this._maxActiveMoveDistance = 0;
         for (const obj of this._objMap.values()) {
             if (obj.isRelease) {
                 this.addDeleteId(obj.uid);
@@ -272,6 +279,28 @@ export class BaseScene implements TransitionReady {
 
     get tick(): number {
         return this._sceneTime.tick;
+    }
+
+    /** Records an intentional movement; passive displacement must not call this. */
+    recordActiveMove(uid: number, distance: number): void {
+        if (uid <= 0 || !Number.isFinite(distance) || distance <= 0) return;
+        this._activeMoveIds.add(uid);
+        this._maxActiveMoveDistance = Math.max(this._maxActiveMoveDistance, distance);
+    }
+
+    getActiveMoveIds(): ReadonlySet<number> {
+        return this._activeMoveIds;
+    }
+
+    get maxActiveMoveDistance(): number {
+        return this._maxActiveMoveDistance;
+    }
+
+    /** Scene-specific movement policy hook; ordinary scenes preserve the requested Run displacement. */
+    resolveCharacterMove(_owner: BaseSceneObj, desiredDx: number, desiredDy: number, out: SceneMoveVector): SceneMoveVector {
+        out.dx = desiredDx;
+        out.dy = desiredDy;
+        return out;
     }
 
     /**

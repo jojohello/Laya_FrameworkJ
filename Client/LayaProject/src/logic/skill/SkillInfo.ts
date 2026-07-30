@@ -6,6 +6,45 @@ import {
 } from "./SkillData";
 import type { BaseAction } from "../action/BaseAction";
 
+export const TARGET_RANGE_EPSILON = 1e-6;
+
+function toNonNegativeRange(value: number): number {
+    return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+/**
+ * 定向技能以目标边沿进入施法范围为可释放条件。
+ * 返回施法者中心到目标中心允许的最大距离。
+ */
+export function getTargetCenterCastRange(castRange: number, targetRange: number): number {
+    return toNonNegativeRange(castRange) + toNonNegativeRange(targetRange);
+}
+
+export function getTargetCenterMoveStopRange(
+    castRange: number,
+    targetRange: number,
+    arrivalInset: number
+): number {
+    return Math.max(
+        0,
+        getTargetCenterCastRange(castRange, targetRange) - toNonNegativeRange(arrivalInset)
+    );
+}
+
+export function isTargetInCastRange(
+    sourceX: number,
+    sourceY: number,
+    targetX: number,
+    targetY: number,
+    castRange: number,
+    targetRange: number
+): boolean {
+    const centerRange = getTargetCenterCastRange(castRange, targetRange) + TARGET_RANGE_EPSILON;
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+    return dx * dx + dy * dy <= centerRange * centerRange;
+}
+
 function toNonNegativeSeconds(milliseconds: unknown): number {
     const value = Number(milliseconds);
     return Number.isFinite(value) ? Math.max(0, value) / 1000 : 0;

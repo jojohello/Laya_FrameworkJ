@@ -8,7 +8,19 @@
     "AttrAdd": "attack:10",
     "AttrPercent": "",
     "OnAddAction": "",
-    "OnTickAction": "Damage;1001",
+    "OnTickAction": "Damage;1001;1001",
+    "OnRemoveAction": ""
+  },
+  {
+    "ID": 3002,
+    "Duration": 5000,
+    "TickInterval": 1000,
+    "MaxStack": 1,
+    "StackType": "Refresh",
+    "AttrAdd": "",
+    "AttrPercent": "",
+    "OnAddAction": "",
+    "OnTickAction": "Heal;16",
     "OnRemoveAction": ""
   }
 ]

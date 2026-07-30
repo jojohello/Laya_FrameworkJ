@@ -3,18 +3,21 @@
     "ID": 1001,
     "soldierType": "warrior",
     "sceneObjConfigId": 1001,
+    "range": 25,
     "skillIds": "1101"
   },
   {
     "ID": 1002,
     "soldierType": "mage",
     "sceneObjConfigId": 1002,
+    "range": 25,
     "skillIds": "1201"
   },
   {
     "ID": 1003,
     "soldierType": "priest",
     "sceneObjConfigId": 1003,
-    "skillIds": "1301"
+    "range": 25,
+    "skillIds": "1302;1301"
   }
 ]

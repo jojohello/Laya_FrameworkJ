@@ -6,7 +6,7 @@ export interface IBulletCollisionPolicy {
     reset(): void;
     configure(config: Partial<BulletCollisionConfig>): void;
     shouldCheck(host: BulletCollisionHost, curTime: number, moved: boolean): boolean;
-    collectHits(host: BulletCollisionHost, curTime: number, out: BaseSceneObj[]): void;
+    collectHitIds(host: BulletCollisionHost, curTime: number, out: number[]): void;
     recordHit(target: BaseSceneObj, curTime: number): void;
     shouldFinishAfterHit(): boolean;
 }
@@ -49,7 +49,7 @@ export class DefaultBulletCollisionPolicy implements IBulletCollisionPolicy {
         return this._config.realtimeCollision && moved;
     }
 
-    collectHits(host: BulletCollisionHost, curTime: number, out: BaseSceneObj[]): void {
+    collectHitIds(host: BulletCollisionHost, curTime: number, out: number[]): void {
         out.length = 0;
         this._collisionIds.length = 0;
 
@@ -60,9 +60,9 @@ export class DefaultBulletCollisionPolicy implements IBulletCollisionPolicy {
         }
 
         for (const uid of this._collisionIds) {
-            const target = host.scene ? host.scene.getObject(uid) : null;
+            const target = host.scene ? host.scene.getLiveObject(uid) : null;
             if (!target || !this.canHitByRule(target.uid, curTime)) continue;
-            out.push(target);
+            out.push(target.uid);
         }
     }
 
@@ -110,8 +110,8 @@ export class DefaultBulletCollisionPolicy implements IBulletCollisionPolicy {
 
         idsSet.forEach(uid => {
             if (!host.scene || uid === host.ownerId) return;
-            const target = host.scene.getObject(uid);
-            if (!target || target.isRelease || !target.hasCollisionBox || target.range <= 0) return;
+            const target = host.scene.getLiveObject(uid);
+            if (!target || !target.hasCollisionBox || target.range <= 0) return;
             if (!host.canHitTarget(target)) return;
 
             const hitRange = host.range + target.range;

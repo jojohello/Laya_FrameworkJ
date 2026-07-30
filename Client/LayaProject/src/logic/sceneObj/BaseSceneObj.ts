@@ -58,7 +58,7 @@ export abstract class BaseSceneObj {
     /** 功能模块列表，模块跟随 SceneObject 一起缓存 */
     protected _modules: ISceneObjModule[] = [];
 
-    /** 碰撞范围 */
+    /** Logical circular occupancy radius used by spatial queries and collision. */
     protected _range: number = 0;
 
     /** 是否带有碰撞盒；只有带碰撞盒的对象才进入空间切割表 */

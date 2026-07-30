@@ -32,11 +32,11 @@
     "MaxLevel": 1,
     "SkillType": "Active",
     "TargetType": "Target",
-    "CastRange": 80,
+    "CastRange": 40,
     "CD": 900,
     "CostType": "None",
     "CostValue": 0,
-    "Action": "0;Animation;attack|300;Damage;1003"
+    "Action": "0;Animation;attack|300;Damage;1003;1001"
   },
   {
     "ID": 120101,
@@ -63,5 +63,18 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Animation;attack|300;Bullet;1004"
+  },
+  {
+    "ID": 130201,
+    "SkillID": 1302,
+    "Level": 1,
+    "MaxLevel": 1,
+    "SkillType": "Active",
+    "TargetType": "Ally",
+    "CastRange": 300,
+    "CD": 6000,
+    "CostType": "None",
+    "CostValue": 0,
+    "Action": "0;Animation;attack|300;Buff;3002"
   }
 ]

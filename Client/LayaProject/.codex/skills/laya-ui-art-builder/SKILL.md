@@ -78,7 +78,7 @@ Read `references/test-ui-layouts.md` before creating a new test/sample `.ls` or 
 Project defaults:
 
 - Put verification and usage-example scenes under `assets/testAndSample/`.
-- Put editor-only test `.ls` scenes and their starter `.ts` scripts under `assets/testAndSample/editorResources/`.
+- Put editor-only test `.ls` scenes and starter `.ts` scripts in their own `assets/testAndSample/testXxx/` topic package.
 - Prefer `.ls` for a runnable test scene and `.lh` for a reusable panel/prefab.
 - Attach a small Runtime script to the root or explicit controller node when the scene exists to start a validation flow.
 - Do not manually create `.meta` files.

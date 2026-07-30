@@ -43,6 +43,12 @@ public class CharacterConfig implements Serializable {
     private final int sceneObjConfigId;
 
     /**
+     * Logical circular occupancy radius in world units
+     */
+    @JsonProperty("range")
+    private final int range;
+
+    /**
      * Semicolon separated skill IDs by priority
      */
     @JsonProperty("skillIds")
@@ -57,10 +63,12 @@ public class CharacterConfig implements Serializable {
             @JsonProperty("ID") int ID,
             @JsonProperty("soldierType") String soldierType,
             @JsonProperty("sceneObjConfigId") int sceneObjConfigId,
+            @JsonProperty("range") int range,
             @JsonProperty("skillIds") String skillIds) {
         this.ID = ID;
         this.soldierType = soldierType != null ? soldierType.intern() : null;
         this.sceneObjConfigId = sceneObjConfigId;
+        this.range = range;
         this.skillIds = skillIds;
     }
 
@@ -76,13 +84,17 @@ public class CharacterConfig implements Serializable {
         return sceneObjConfigId;
     }
 
+    public int getRange() {
+        return range;
+    }
+
     public String getSkillIds() {
         return skillIds;
     }
 
     @Override
     public String toString() {
-        return String.format("CharacterConfig{ID=%s, soldierType=%s, sceneObjConfigId=%s, skillIds=%s}",
-                ID, soldierType, sceneObjConfigId, skillIds);
+        return String.format("CharacterConfig{ID=%s, soldierType=%s, sceneObjConfigId=%s, range=%s, skillIds=%s}",
+                ID, soldierType, sceneObjConfigId, range, skillIds);
     }
 }

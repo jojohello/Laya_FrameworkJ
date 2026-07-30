@@ -54,7 +54,7 @@ const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 
 战斗角色直接使用 LayaAir 标准的“单张 PNG + `.atlas`”帧动画资源，不再维护独立的 idle 单图与队伍色蒙版。`CharacterAnimation` 表为每个动作配置 `actionName`、包含首尾的 `startFrameIndex/endFrameIndex` 和 `durationMs`。基础帧与对应队伍色蒙版帧共用逻辑索引，现有 atlas 子纹理按 `{actionName}_{localIndex}.png` 和 `{actionName}_mask_{localIndex}.png` 命名；循环性由 Idle/Run 或技能调用明确传入，不保存在动作配置中。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色默认由 `CharacterSceneObj` 根据 `team` ID 初始化，并在材质异步创建或重新绑定时重复应用；`setTeamColor(r, g, b)` 仅用于明确的运行时覆写。同一职业不复制红蓝两套完整资源。角色必须配置至少一个可播放的帧动画动作。
 
-角色兵种、缩放、战斗特效中心点和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`centerOffsetY` 是从逻辑脚底点到战斗受击/恢复特效中心的 Y 位移（负数向上）；`skillIds` 使用分号分隔。技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`，特效中心偏移均为 `-52`。
+角色兵种、缩放、逻辑占位半径、战斗特效中心点和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`range` 是以逻辑脚底点为圆心的世界单位半径，同时供空间切分、碰撞和同队局部避让使用；`centerOffsetY` 是从逻辑脚底点到战斗受击/恢复特效中心的 Y 位移（负数向上）；`skillIds` 使用分号分隔。技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`、`range` 均为 `25`、特效中心偏移均为 `-52`。
 
 帧动画由角色 Entity 的每帧更新使用场景游戏时间驱动，暂停、加速和减速与场景逻辑保持一致；每个动画实例不再创建独立 Timer。Laya 仍逐帧提交场景渲染，只有动画帧索引变化时才重写主图、蒙版和对应 UV，角色位置变化不受换帧频率限制。
 
@@ -86,6 +86,10 @@ const bullet = scene.addObjectToScene("BulletSceneObj", 1, 1, caster.x, caster.y
 bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 ```
 
+### 5. 运行对象池回归用例
+
+编辑器专用的无 UI 测试包位于 `assets/testAndSample/testBulletLifecycle/`，场景、脚本、公共夹具和用例都在该主题包内。直接挂载的 `HeadlessTestScene.ls` 入口保留为 IDE 兼容回退；正式调用式入口由 `assets/testAndSample/testBulletLifecycleEditorPlugin/` 提供，以 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 隔离编辑器脚本，正式入口不得导入测试脚本。其中 `BulletLiveTargetHitCase` 验证直线子弹正常命中存活目标并回收，`BulletReleaseRegressionCase` 使用真实 `BaseScene.update()` 验证目标在子弹更新前释放并回池复用后，追踪子弹必须取消，不能命中复用实例。运行方式见测试包 README；正式微信构建产物仍须搜索验证不含测试脚本或资源。
+
 ---
 
 ## 常用 API
@@ -97,7 +101,7 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 | `setPos(x, y)` | 设置逻辑坐标 |
 | `setAngle(angle)` | 设置角度 |
 | `setZOffset(value)` | 设置显示高度偏移 |
-| `setCollisionBox(range)` | 设置命中候选半径；仅覆盖 `canEnterSpatialIndex()` 的实体会进入空间分割 |
+| `setCollisionBox(range)` | 设置唯一逻辑圆半径；空间切分、碰撞和局部避让共同读取该值，仅覆盖 `canEnterSpatialIndex()` 的实体会进入空间分割 |
 | `addModule(module)` | 添加跟随对象缓存的功能模块 |
 | `getModule(ModuleClass)` | 获取指定类型的功能模块 |
 | `hasModule(ModuleClass)` | 判断是否存在指定类型模块 |

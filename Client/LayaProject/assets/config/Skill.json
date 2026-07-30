@@ -37,7 +37,7 @@
     "MaxLevel": 1,
     "SkillType": "Active",
     "TargetType": "Target",
-    "CastRange": 80,
+    "CastRange": 40,
     "CD": 900,
     "CostType": "None",
     "CostValue": 0,

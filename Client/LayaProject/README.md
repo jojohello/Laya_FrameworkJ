@@ -8,6 +8,7 @@ Framework-J 的 LayaAir 3.3 客户端工程，使用 TypeScript，目标平台�
 - `src/logic/`：进入逻辑分包后的游戏功能模块。
 - `src/logic/LogicMain.ts`：逻辑层启动入口和 ManagerHub 注册位置。
 - `assets/`：Laya 场景、预制体和运行时资源。
+- `assets/testAndSample/`：按主题划分的编辑器专用无 UI 测试包；每个 `testXxx/` 自带场景、脚本和 IDE 脚本集定义。测试脚本集允许编辑器加载，但禁止正式运行时加载；正式入口不得导入测试脚本。打开测试包 README 可按场景直接运行用例。
 - `settings/BuildSettings.json`：LayaAir 构建配置。
 
 ## 文档入口

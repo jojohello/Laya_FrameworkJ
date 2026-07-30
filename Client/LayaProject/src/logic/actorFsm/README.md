@@ -44,4 +44,4 @@ unit.runTo(targetX, targetY, curTime);
 unit.attack(skillId, curTime, targetId, targetX, targetY, skillLevel);
 ```
 
-`runTo()` 使用实体 `speed` 属性移动，进入 Run，到达后自动进入 Idle；状态被攻击等行为打断时清除旧移动目标。`attack()` 复用 `SkillAgent`，只有技能实际释放成功才进入 Attack。技能动作名来自 Action 配置，状态机不判断 `"attack"`，也不监听动画完成回调；`SkillAgent` 在到期 Action 执行后按计划结束时间退出 Attack。AI 通常不需要直接调用 `changeState()`，除非它表达的是没有移动或技能行为的纯状态控制。
+`runTo()` 使用实体 `speed` 属性移动，进入 Run，并按调用方给出的 `stopDistance` 判断到达后自动进入 Idle；Run 只执行移动和场景局部绕行，不选择目标或技能。状态被攻击等行为打断时清除旧移动目标。`attack()` 复用 `SkillAgent`，只有技能实际释放成功才进入 Attack。技能动作名来自 Action 配置，状态机不判断 `"attack"`，也不监听动画完成回调；`SkillAgent` 在到期 Action 执行后按计划结束时间退出 Attack。AI 通常不需要直接调用 `changeState()`，除非它表达的是没有移动或技能行为的纯状态控制。

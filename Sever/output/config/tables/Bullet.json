@@ -7,7 +7,7 @@
     "PenetrateCount": 0,
     "FlyTime": -1,
     "CheckCollision": true,
-    "OnHitAction": "Damage;1001"
+    "OnHitAction": "Damage;1001;1001"
   },
   {
     "ID": 1002,
@@ -17,7 +17,7 @@
     "PenetrateCount": 0,
     "FlyTime": -1,
     "CheckCollision": true,
-    "OnHitAction": "Damage;1002"
+    "OnHitAction": "Damage;1002;1001"
   },
   {
     "ID": 1003,
@@ -27,7 +27,7 @@
     "PenetrateCount": 0,
     "FlyTime": -1,
     "CheckCollision": true,
-    "OnHitAction": "Damage;1001"
+    "OnHitAction": "Damage;1001;1001"
   },
   {
     "ID": 1004,
@@ -37,6 +37,6 @@
     "PenetrateCount": 0,
     "FlyTime": -1,
     "CheckCollision": true,
-    "OnHitAction": "Damage;1001"
+    "OnHitAction": "Damage;1001;1001"
   }
 ]

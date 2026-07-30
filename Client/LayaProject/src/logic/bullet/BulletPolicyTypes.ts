@@ -21,7 +21,7 @@ export interface BulletMovementHost {
     readonly scene: BaseScene | null;
     readonly x: number;
     readonly y: number;
-    getObject(uid: number): BaseSceneObj | null;
+    getLiveObject(uid: number): BaseSceneObj | null;
     setMovePos(x: number, y: number): void;
     pointTo(x: number, y: number): void;
     turnToDirection(dx: number, dy: number, curTime: number): void;

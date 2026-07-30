@@ -74,7 +74,7 @@ export class BulletSceneObj extends DisplaySceneObj {
     protected _movementFinishPending: boolean = false;
     protected _movementFinishDoHitAtEnd: boolean = false;
     protected _collisionPolicy: IBulletCollisionPolicy = new DefaultBulletCollisionPolicy();
-    protected readonly _hitTargets: BaseSceneObj[] = [];
+    protected readonly _hitTargetIds: number[] = [];
     protected _hitEffectScale: number = 1;
     protected _hitActions: readonly BaseAction[] = [];
     private _visualAnimation: Laya.Animation | null = null;
@@ -96,7 +96,7 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._lastUpdateTime = -1;
         this._penetrateCount = 0;
         this.resetCollisionPolicy();
-        this._hitTargets.length = 0;
+        this._hitTargetIds.length = 0;
         this._startPos.setTo(x, y);
         this._lastPos.setTo(x, y);
         this._endPos.setTo(x, y);
@@ -302,12 +302,18 @@ export class BulletSceneObj extends DisplaySceneObj {
     }
 
     protected updateCollision(curTime: number): void {
-        this._collisionPolicy.collectHits(this.getCollisionHost(), curTime, this._hitTargets);
-        for (const target of this._hitTargets) {
-            if (this.tryHitTarget(target, curTime) && this.shouldFinishAfterHit()) {
-                this.finish(false);
-                return;
+        this._collisionPolicy.collectHitIds(this.getCollisionHost(), curTime, this._hitTargetIds);
+        try {
+            for (const targetId of this._hitTargetIds) {
+                const target = this._scene?.getLiveObject(targetId);
+                if (!target) continue;
+                if (this.tryHitTarget(target, curTime) && this.shouldFinishAfterHit()) {
+                    this.finish(false);
+                    return;
+                }
             }
+        } finally {
+            this._hitTargetIds.length = 0;
         }
     }
 
@@ -460,8 +466,8 @@ export class BulletSceneObj extends DisplaySceneObj {
         this._model.graphics.drawCircle(0, 0, 5, "#f5c542");
     }
 
-    getObject(uid: number): BaseSceneObj | null {
-        return this._scene ? this._scene.getObject(uid) : null;
+    getLiveObject(uid: number): BaseSceneObj | null {
+        return this._scene ? this._scene.getLiveObject(uid) : null;
     }
 
     setMovePos(x: number, y: number): void {

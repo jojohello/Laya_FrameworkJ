@@ -72,4 +72,4 @@ SimpleCombatBehaviorNode (Selector)
 └─ EnterIdleNode
 ```
 
-可复用条件节点包括 `IsRunningNode`、`HasReachedTargetNode`、`IsExecutingSkillNode`、`IsIdleNode`。技能按 `Character.skillIds` 顺序选择，CD 和 `CastRange` 来自 Skill 表；普通攻击也是技能。移动停止容差是代码常量 10 像素，不建立 AI JSON 或模板配置。
+可复用条件节点包括 `IsRunningNode`、`HasReachedTargetNode`、`IsExecutingSkillNode`、`IsIdleNode`。技能按 `Character.skillIds` 顺序选择，CD 和 `CastRange` 来自 Skill 表；普通攻击也是技能。定向技能以目标边沿进入技能范围为可释放条件，即 `中心距离 <= CastRange + target.range + 浮点容差`。AI 的 `runTo()` 停止距离在该边界内缩 5 个世界单位并限制为非负数，避免角色停在浮点临界线上反复切换 Run/Idle；这 5 个单位是移动到达余量，不改变技能合法范围。

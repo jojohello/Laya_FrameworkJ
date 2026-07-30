@@ -1,0 +1,4 @@
+interface:
+  display_name: "Laya Runtime Update Debugging"
+  short_description: "Trace AI, FSM, movement, and skill update failures"
+  default_prompt: "Use $laya-runtime-update-debugging to diagnose this Laya runtime update-chain bug with focused logs."
