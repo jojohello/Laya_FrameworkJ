@@ -1,5 +1,7 @@
 # BehaviorTree 模块
 
+基础节点与领域 AI 节点的归属、以及新增 AI 表现前的拆分门槛见 [DESIGN.md](DESIGN.md)。
+
 ## 设计选择
 
 当前先迁移旧项目 boolean 行为树，不使用三态。
@@ -29,10 +31,12 @@ monsterTree.execute(monsterB, curTime);
 
 ## AI 调度
 
-`AIAgent` 是共享 AI 定义，内部持有共享行为树和思考间隔。每个实体只在 `owner.aiRuntime` 上保存：
+`AIAgent` 是共享 AI 定义，内部持有共享行为树和思考间隔。每个实体在自身可回收的标量字段上保存：
 
-- `stopped`
-- `nextThinkTime`
+- `aiStopped`
+- `nextAIThinkTime`
+
+角色 AI 的目标 UID 与本次技能选择字段也保存在 `CharacterSceneObj` 上；不为每轮对象池生命周期创建 Runtime 对象。共享节点不得保存任何实体运行态。
 
 思考时间与 `SceneTime` 一致使用秒；当前代码常量为 `0.1` 秒，不从配置读取。
 

@@ -22,7 +22,12 @@ class HeadlessAIProbeResolver implements AIOwnerResolver<HeadlessAIProbe> {
 }
 
 function createProbe(uid: number): HeadlessAIProbe {
-    return { uid, thinkCount: 0 };
+    return {
+        uid,
+        thinkCount: 0,
+        aiStopped: false,
+        nextAIThinkTime: 0,
+    };
 }
 
 function getThinkCount(probe: HeadlessAIProbe): number {
@@ -56,6 +61,10 @@ export class AISchedulerLifecycleRegressionCase implements HeadlessTestCase {
             const firstProbe = createProbe(first.uid);
             const releasedProbe = createProbe(released.uid);
             const thirdProbe = createProbe(third.uid);
+            agent.stop(firstProbe);
+            agent.reset(firstProbe);
+            assertHeadless(!firstProbe.aiStopped && firstProbe.nextAIThinkTime === 0,
+                "AI reset did not clear the pooled owner's scalar scheduling state");
             probes.set(first.uid, firstProbe);
             probes.set(released.uid, releasedProbe);
             probes.set(third.uid, thirdProbe);

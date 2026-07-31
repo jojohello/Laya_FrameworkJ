@@ -12,7 +12,7 @@ import { CharacterAnimationConfigInfo } from "./CharacterAnimationConfigInfo";
 import { FrameAnimationAction, ResFrameAnimation } from "../resource/ResFrameAnimation";
 import { ResourceMgr } from "../resource/ResourceMgr";
 import { CharacterActorFsm, CharacterStateName, CharacterStateNameValue } from "../actorFsm/CharacterActorFsm";
-import { CharacterAIRuntime, SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
+import { SimpleCombatAIAgent } from "../ai/SimpleCombatAI";
 import type { SceneMoveVector } from "../scene/SceneMoveVector";
 
 const { regClass } = Laya;
@@ -28,7 +28,13 @@ const TEAM_COLORS: Readonly<Record<number, readonly [number, number, number]>> =
 @regClass()
 export class CharacterSceneObj extends CreatureSceneObj {
     fsmStateName?: string;
-    aiRuntime?: CharacterAIRuntime;
+    /** AI scalar state stays on the pooled owner; do not replace it with a per-life Runtime object. */
+    aiStopped = false;
+    nextAIThinkTime = 0;
+    aiTargetUid = 0;
+    aiSelectedSkillId = 0;
+    aiSelectedSkillRange = 0;
+    aiSelectedTargetUid = 0;
     private _animName: CharacterAnimName = "idle";
     private _teamMaterial: Laya.Material | null = null;
     private _frameAnimation: ResFrameAnimation | null = null;
@@ -276,6 +282,12 @@ export class CharacterSceneObj extends CreatureSceneObj {
     reset(curTime: number): void {
         super.reset(curTime);
         this._animName = "idle";
+        this.aiStopped = false;
+        this.nextAIThinkTime = 0;
+        this.aiTargetUid = 0;
+        this.aiSelectedSkillId = 0;
+        this.aiSelectedSkillRange = 0;
+        this.aiSelectedTargetUid = 0;
         CharacterActorFsm.reset(this);
         this._teamColor = [...DEFAULT_TEAM_COLOR];
         this._runTargetX = 0;

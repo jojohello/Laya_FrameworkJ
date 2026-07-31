@@ -2,6 +2,6 @@ Title,ID,name,soldierType,sceneObjConfigId,modelScale,range,centerOffsetY,skillI
 Type,int,str,str,int,float,int,int,str,str
 Description,Character config ID,Client display name,Soldier class,Base scene object config ID,Display scale,Logical circular occupancy radius in world units,Combat effect center offset from foot point (negative is upward),Semicolon separated skill IDs by priority,Client description
 UsedSize,cs,c,cs,cs,c,cs,c,cs,c
-,1001,Warrior,warrior,1001,0.666667,25,-52,1101,Melee frontline: high HP and physical defense
-,1002,Mage,mage,1002,0.666667,25,-52,1201,Ranged caster: highest attack and low HP
-,1003,Priest,priest,1003,0.666667,25,-52,1302;1301,Support caster: heal injured nearest ally before ranged attack
+,1001,Warrior,warrior,1001,0.67,25,-52,1101,Melee frontline: high HP and physical defense
+,1002,Mage,mage,1002,0.67,25,-52,1201,Ranged caster: highest attack and low HP
+,1003,Priest,priest,1003,0.67,25,-52,1302;1301,Support caster: heal injured nearest ally before ranged attack

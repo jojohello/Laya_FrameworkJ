@@ -1,4 +1,4 @@
-import { AIAgent, AIRuntime, DEFAULT_AI_THINK_INTERVAL_SECONDS } from "./AIAgent";
+import { AIAgent, DEFAULT_AI_THINK_INTERVAL_SECONDS } from "./AIAgent";
 import { BActionNode, BConditionNode, BSelectorNode, BSequenceNode } from "../behaviorTree/BehaviorNodes";
 import type { CharacterSceneObj } from "../sceneObj/CharacterSceneObj";
 import { SkillMgr } from "../skill/SkillMgr";
@@ -8,48 +8,20 @@ import {
     SkillTargetType,
 } from "../skill/SkillInfo";
 
-export interface CharacterAIRuntime extends AIRuntime {
-    targetUid: number;
-    selectedSkillId: number;
-    selectedSkillRange: number;
-    selectedTargetUid: number;
-}
-
 export const AI_ATTACK_ARRIVAL_INSET = 5;
 
-function getRuntime(owner: CharacterSceneObj): CharacterAIRuntime {
-    let runtime = owner.aiRuntime;
-    if (!runtime) {
-        runtime = {
-            stopped: false,
-            nextThinkTime: 0,
-            targetUid: 0,
-            selectedSkillId: 0,
-            selectedSkillRange: 0,
-            selectedTargetUid: 0,
-        };
-        owner.aiRuntime = runtime;
-    }
-    runtime.targetUid ||= 0;
-    runtime.selectedSkillId ||= 0;
-    runtime.selectedSkillRange ||= 0;
-    runtime.selectedTargetUid ||= 0;
-    return runtime;
-}
-
 function getTarget(owner: CharacterSceneObj) {
-    const runtime = getRuntime(owner);
-    const target = runtime.targetUid ? owner.scene?.getLiveObject(runtime.targetUid) : null;
+    const target = owner.aiTargetUid ? owner.scene?.getLiveObject(owner.aiTargetUid) : null;
     if (!target || target.isDead
         || target.team === owner.team || target.getObjType() !== owner.getObjType()) {
-        runtime.targetUid = 0;
+        owner.aiTargetUid = 0;
         return null;
     }
     return target;
 }
 
 function getSelectedTarget(owner: CharacterSceneObj) {
-    const targetUid = getRuntime(owner).selectedTargetUid;
+    const targetUid = owner.aiSelectedTargetUid;
     return targetUid ? owner.scene?.getLiveObject(targetUid) || null : null;
 }
 
@@ -74,7 +46,7 @@ class EnsureNearestTargetNode extends BActionNode<CharacterSceneObj> {
         super((owner, curTime) => {
             if (getTarget(owner)) return true;
             const target = owner.scene?.findNearestEnemy(owner) || null;
-            getRuntime(owner).targetUid = target?.uid || 0;
+            owner.aiTargetUid = target?.uid || 0;
             return !!target;
         });
     }
@@ -125,10 +97,9 @@ class TryPriestSupportNode extends BActionNode<CharacterSceneObj> {
 class SelectReadySkillNode extends BActionNode<CharacterSceneObj> {
     constructor() {
         super((owner, curTime) => {
-            const runtime = getRuntime(owner);
-            runtime.selectedSkillId = 0;
-            runtime.selectedSkillRange = 0;
-            runtime.selectedTargetUid = 0;
+            owner.aiSelectedSkillId = 0;
+            owner.aiSelectedSkillRange = 0;
+            owner.aiSelectedTargetUid = 0;
             for (const skillId of owner.skillIds) {
                 const skill = SkillMgr.instance.getSkillLevel(skillId, 1);
                 if (!skill || !owner.canCastSkill(skillId, curTime)) continue;
@@ -136,9 +107,9 @@ class SelectReadySkillNode extends BActionNode<CharacterSceneObj> {
                     ? owner.scene?.findNearestDamagedAlly(owner) || null
                     : getTarget(owner) || owner.scene?.findNearestEnemy(owner) || null;
                 if (!target) continue;
-                runtime.selectedSkillId = skillId;
-                runtime.selectedSkillRange = Math.max(0, Number(skill.data.CastRange) || 0);
-                runtime.selectedTargetUid = target.uid;
+                owner.aiSelectedSkillId = skillId;
+                owner.aiSelectedSkillRange = Math.max(0, Number(skill.data.CastRange) || 0);
+                owner.aiSelectedTargetUid = target.uid;
                 return true;
             }
             return false;
@@ -151,13 +122,12 @@ class IsSelectedSkillInRangeNode extends BConditionNode<CharacterSceneObj> {
         super((owner, curTime) => {
             const target = getSelectedTarget(owner);
             if (!target) return false;
-            const runtime = getRuntime(owner);
             return isTargetInCastRange(
                 owner.x,
                 owner.y,
                 target.x,
                 target.y,
-                runtime.selectedSkillRange,
+                owner.aiSelectedSkillRange,
                 target.range
             );
         });
@@ -168,9 +138,8 @@ class CastSelectedSkillNode extends BActionNode<CharacterSceneObj> {
     constructor() {
         super((owner, curTime) => {
             const target = getSelectedTarget(owner);
-            const runtime = getRuntime(owner);
-            return !!target && runtime.selectedSkillId > 0
-                && owner.attack(runtime.selectedSkillId, curTime, target.uid, target.x, target.y, 1);
+            return !!target && owner.aiSelectedSkillId > 0
+                && owner.attack(owner.aiSelectedSkillId, curTime, target.uid, target.x, target.y, 1);
         });
     }
 }
@@ -191,9 +160,8 @@ class ApproachTargetNode extends BActionNode<CharacterSceneObj> {
             const target = getTarget(owner);
             if (!target) return false;
 
-            const runtime = getRuntime(owner);
-            let desiredRange = runtime.selectedSkillRange > 0
-                ? runtime.selectedSkillRange
+            let desiredRange = owner.aiSelectedSkillRange > 0
+                ? owner.aiSelectedSkillRange
                 : Number.POSITIVE_INFINITY;
             if (!Number.isFinite(desiredRange)) {
                 for (const skillId of owner.skillIds) {

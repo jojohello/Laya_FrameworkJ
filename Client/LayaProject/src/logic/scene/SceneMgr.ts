@@ -21,7 +21,7 @@ import "../mainScene/MainScene";
 import "../battleScene/BattleStageScene";
 import "../battleScene/BattleScene";
 
-const DEFAULT_TRANSITION_TIMEOUT_MS = 15000;
+const SLOW_TRANSITION_WARNING_THRESHOLD_MS = 15000;
 
 /** Structural bridge to the first-package LoadingMgr. */
 export interface LoadingService {
@@ -152,7 +152,7 @@ export class SceneMgr implements IManager {
 
     /**
      * Switches scenes under a top-layer Loading UI and rolls back when the
-     * target scene reports a preparation error or cannot become ready in time.
+     * target scene reports a preparation error or its lifecycle is invalidated.
      */
     switchSceneWithLoading(
         sceneType: SceneType,
@@ -223,9 +223,13 @@ export class SceneMgr implements IManager {
             const uiController = this._curScene?.scene === scene
                 ? this._curScene.uiController
                 : null;
-            if (scene && !await this.waitForTransitionReady(scene, uiController, DEFAULT_TRANSITION_TIMEOUT_MS)) {
+            if (scene && !await this.waitForTransitionReady(
+                scene,
+                uiController,
+                SLOW_TRANSITION_WARNING_THRESHOLD_MS
+            )) {
                 const reason = scene.transitionError || uiController?.transitionError ||
-                    `timeout ${DEFAULT_TRANSITION_TIMEOUT_MS}ms`;
+                    "transition lifecycle was invalidated";
                 console.error(`[SceneMgr] 目标场景准备失败: ${SceneType[sceneType]}, reason=${reason}`);
                 scene = null;
             }
@@ -319,12 +323,13 @@ export class SceneMgr implements IManager {
     private waitForTransitionReady(
         scene: BaseScene,
         uiController: TransitionReady | null,
-        timeoutMs: number
+        slowWarningThresholdMs: number
     ): Promise<boolean> {
         if (this.hasTransitionError(scene, uiController)) return Promise.resolve(false);
         if (this.areTransitionParticipantsReady(scene, uiController)) return Promise.resolve(true);
 
         const startedAt = this.getMonotonicMilliseconds();
+        let hasWarnedSlowTransition = false;
         return new Promise<boolean>(resolve => {
             const check = (): void => {
                 if (this._curScene?.scene !== scene || this.hasTransitionError(scene, uiController)) {
@@ -335,9 +340,14 @@ export class SceneMgr implements IManager {
                     resolve(true);
                     return;
                 }
-                if (this.getMonotonicMilliseconds() - startedAt >= timeoutMs) {
-                    resolve(false);
-                    return;
+                const elapsedMs = this.getMonotonicMilliseconds() - startedAt;
+                if (!hasWarnedSlowTransition && elapsedMs >= slowWarningThresholdMs) {
+                    hasWarnedSlowTransition = true;
+                    // Slow downloads are not failures. Keep the Loading session alive until
+                    // a participant reports an explicit error or this scene is invalidated.
+                    console.warn(
+                        `[SceneMgr] 场景准备超过 ${slowWarningThresholdMs}ms，继续等待: ${scene.constructor.name}`
+                    );
                 }
                 Laya.timer.frameOnce(1, this, check);
             };
