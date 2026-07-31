@@ -61,3 +61,12 @@ renderUpdate(renderDt, curTime, tick, interpolationAlpha)
 ## 场景缓存
 
 进入 Scene 缓存只复用 Scene 类实例，不保留运行态。退出时必须清空对象、地图实例、Camera、Layer 引用、空间索引、异步令牌和全部时间状态；缓存恢复按新一轮 `onEnter()` 完整初始化。底层资源复用属于 ResourceMgr/Laya.loader，不属于 Scene 运行态缓存。
+
+## Camera2D 边界
+
+- `SceneCamera2D` 的 `x/y` 始终表示世界空间中的视口左上角；`lookAt()` 和 `setTarget()` 接收需要位于视口中心的世界点语义，不得混用两套坐标定义。边界裁剪作用于视口左上角；地图小于视口时对应轴固定为 0。
+- Fixed、Drag、Follow 三种模式互斥。`BaseScene` 默认选择 Fixed，具体 Scene 只能通过 `configureCamera()` 显式取得拖拽输入所有权或进入其他模式。
+- Follow 跨帧只保存实体 `uid`，每次更新通过当前 Scene 的 `getLiveObject(uid)` 解析；对象不存在或已释放时退出 Follow 并保留最后一个合法视口。
+- 原生 `Camera2D` 位移与场景根节点平移是二选一的渲染后端。切换后端时必须把未使用的一方归零，禁止两者同时施加视口位移。
+- 场景拖拽只接受 Scene2D 根节点子树或 Stage 空白处发起的指针，不接管 UI、弹窗或其他 LayerMgr 根节点。按下后移动不足 12 像素仍视为点击，超过阈值才取得拖拽所有权。
+- Camera、拖拽监听和 Stage resize 监听属于单次 Scene 运行态。场景退出或销毁时必须解绑；Stage 尺寸变化和地图就绪后必须重新计算视口边界。

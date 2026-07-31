@@ -73,11 +73,13 @@ BattleScene 的 Entity 动画与战斗状态已完成 LayaAir IDE 的暂停/恢�
 ### 3. Camera2D 跟随对象
 
 ```typescript
-const monster = scene.getObject(uid);
+const monster = scene.getLiveObject(uid);
 if (monster && scene.camera) {
-    scene.camera.follow(monster.uid);
+    scene.camera.setTarget(monster.uid);
 }
 ```
+
+Camera 跨帧只保存 UID；目标离开当前生命周期后自动停止跟随。完整镜头模式、输入边界和验收方法见 [Scene README](../scene/README.md)。
 
 ### 4. 创建子弹
 

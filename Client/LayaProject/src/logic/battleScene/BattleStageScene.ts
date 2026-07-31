@@ -3,6 +3,7 @@ const { regClass } = Laya;
 import { ConfigMgr } from "../config/ConfigMgr";
 import { BaseScene } from "../scene/BaseScene";
 import { SceneLayerType } from "../scene/SceneLayerType";
+import { SceneCamera2D } from "../scene/SceneCamera2D";
 import { SceneMgr } from "../scene/SceneMgr";
 import { SceneType } from "../scene/SceneType";
 import { BattleSettlementMgr } from "./BattleSettlementMgr";
@@ -32,10 +33,16 @@ export class BattleStageScene extends BaseScene {
     onEnter(param?: any): void {
         super.onEnter(param);
         this._stageLoadToken++;
-        this.camera?.enableDrag(false, true);
         if (this.camera) this.camera.camera2D.mouseEnabled = false;
         this._initialPositioned = false;
         this._lastStageActivationWallClockMs = 0;
+    }
+
+    protected configureCamera(camera: SceneCamera2D): void {
+        camera.enableDrag({
+            horizontal: false,
+            vertical: true,
+        });
     }
 
     protected logicUpdate(logicDt: number, curTime: number, tick: number): void {
@@ -185,6 +192,10 @@ export class BattleStageScene extends BaseScene {
     private onStageClick(event: Laya.Event): void {
         const root = this._stageRoot;
         if (!root || !this._stageHitTargets.length) return;
+
+        const pointerDx = Laya.stage.mouseX - this._pointerDownX;
+        const pointerDy = Laya.stage.mouseY - this._pointerDownY;
+        if (pointerDx * pointerDx + pointerDy * pointerDy > 12 * 12) return;
 
         const target = event?.target as Laya.Node | null;
         const isRootClick = target === Laya.stage

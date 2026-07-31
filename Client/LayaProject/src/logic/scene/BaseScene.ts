@@ -117,6 +117,8 @@ export class BaseScene implements TransitionReady {
         if (this._camera) {
             this._camera.setActive(true);
         }
+        Laya.stage.off(Laya.Event.RESIZE, this, this.onStageResize);
+        Laya.stage.on(Laya.Event.RESIZE, this, this.onStageResize);
 
         this._sceneTime.start();
         this.loadSceneMap();
@@ -129,6 +131,7 @@ export class BaseScene implements TransitionReady {
         this._isReady = false;
         this._sceneTime.stop();
         this._mapLoadToken++;
+        Laya.stage.off(Laya.Event.RESIZE, this, this.onStageResize);
         this.clearRuntimeState();
         this._sceneConfig = null;
     }
@@ -139,6 +142,7 @@ export class BaseScene implements TransitionReady {
     onDestroy(): void {
         this._isReady = false;
         this._sceneTime.stop();
+        Laya.stage.off(Laya.Event.RESIZE, this, this.onStageResize);
         this.clearRuntimeState();
         this._sceneConfig = null;
     }
@@ -552,6 +556,14 @@ export class BaseScene implements TransitionReady {
     protected onObjectRemoving(_obj: BaseSceneObj): void {}
 
     /**
+     * Selects camera ownership for this Scene. The default is fixed so a Scene
+     * never consumes global pointer input unless its own policy opts into drag.
+     */
+    protected configureCamera(camera: SceneCamera2D): void {
+        camera.setFixed();
+    }
+
+    /**
      * A cached Scene retains only its reusable class instance. Runtime objects,
      * map instances, camera/layer bindings and time state are rebuilt on enter.
      */
@@ -836,6 +848,15 @@ export class BaseScene implements TransitionReady {
         this._camera.setBounds(0, Math.max(0, this._spaceMapWidth - Laya.stage.width), 0, Math.max(0, this._spaceMapHeight - Laya.stage.height));
     }
 
+    /**
+     * Camera bounds use the logical Stage viewport, so the listener must follow
+     * scene ownership and be detached before this scene releases its camera.
+     */
+    private onStageResize(): void {
+        this.refreshCameraBounds();
+        this.updateSceneMapViewPort();
+    }
+
     private toPositiveNumber(value: any): number | undefined {
         const num = Number(value);
         return isFinite(num) && num > 0 ? num : undefined;
@@ -929,7 +950,7 @@ export class BaseScene implements TransitionReady {
         if (!this._layerRoot || this._camera) return;
         this._camera = new SceneCamera2D(this._layerRoot);
         this._camera.setBounds(0, Math.max(0, this._spaceMapWidth - Laya.stage.width), 0, Math.max(0, this._spaceMapHeight - Laya.stage.height));
-        this._camera.enableDrag(true, false);
+        this.configureCamera(this._camera);
     }
 
     private destroySceneCamera(): void {

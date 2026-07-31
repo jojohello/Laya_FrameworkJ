@@ -28,3 +28,5 @@
 ManagerHub 当前注册位置是 [LogicMain.ts](LogicMain.ts)。新增 Manager 时先确认它确实需要全局生命周期，再在组合根注册。
 
 Action 类型由各自的 Action 文件在模块末尾注册到 `ActionRegistry`。`ActionFactory` 只负责脚本解析、排序和统一创建，不维护具体子类的分支；新增 Action 时在自身文件注册类型即可。多个配置别名可以注册到同一个 Action 构造器。
+
+BattleScene 的胜利/失败结算生命周期已通过 LayaAir IDE 运行验收：队伍消灭或 `reportBattleResult()` 只进入一次结果状态，结果层正确拦截战斗输入，确认后进入 `Exiting` 并由 `SceneMgr` 串行返回征战场景。

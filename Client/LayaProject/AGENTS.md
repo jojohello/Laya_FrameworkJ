@@ -40,3 +40,9 @@
 - 文本格式检查：`powershell -ExecutionPolicy Bypass -File tools/docs/validate-text-format.ps1`
 - 文档系统检查：`powershell -ExecutionPolicy Bypass -File tools/docs/validate-doc-system.ps1`
 - 运行、预览和发布通过 LayaAir IDE 3.3 完成；不要假设本目录存在 `npm run dev` 或 `npm run build`。
+
+## 契约型代码注释
+
+- 当代码正确性依赖非显然的更新顺序、状态所有权、数值边界或容差、生命周期清理、回池复用、兼容性取舍时，必须在最容易被误改的执行边界旁添加简洁的契约型注释。
+- 契约型注释说明“为什么这样实现”“必须保持什么约束”以及“破坏约束会产生什么风险”，不得只复述语句、循环、赋值或已经由命名和类型清楚表达的机械行为。
+- 修改相关实现时必须同步核对并更新注释；失效注释不得保留。若约束跨越多个模块或具有长期架构价值，还必须写入最近有效作用域的 `DESIGN.md`，源码旁仍保留防止局部误改所需的最小注释。
