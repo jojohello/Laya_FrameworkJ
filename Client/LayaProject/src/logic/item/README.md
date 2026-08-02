@@ -11,7 +11,10 @@ The first item step is a client-side foundation:
 
 `BagMgr` provides the first local Bag foundation. It owns runtime counts,
 stack-aware slot capacity, and primitive snapshot import/export. It does not
-create UI or load art resources.
+create UI or load art resources. `BagViewController` presents that state as a
+read-only main-scene page: category tabs (`All`, `Material`, `Consumable`,
+`Equipment`) and the shared `ItemView` grid. It refreshes whenever `BagMgr`
+accepts a snapshot or a local bag mutation.
 
 ## Bag API
 

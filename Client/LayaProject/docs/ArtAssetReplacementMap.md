@@ -55,6 +55,13 @@ Rules:
 | `assets/ui/mainscene/imgs/player-profile-bg.png` | Compact top-HUD support strip | unified top-HUD production sheet | 520x54 | fixed horizontal background | replaced | Desaturated teal-blue center with shared honey-gold/cyan treatment; existing UUID preserved. |
 | `assets/ui/mainscene/imgs/player-level-badge.png` | Empty level badge | unified top-HUD production sheet | 36x36 | independent overlay | replaced | Level text is rendered by Laya. |
 
+## Bag UI Assets
+
+| Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `assets/ui/bag/imgs/tab-selected.png` | Selected Bag category-tab background | Generated dedicated embedded-page tab in locked v4 direction | 180x72 | Fixed-size `GLoader` background | integrated | IDE UUID `578c564c-160c-4f86-b94c-ac3bf78fbf93`; cyan open-page surface with soft gold rim, rendered at the same position and size as inactive tabs. Laya renders labels. |
+| `assets/ui/bag/imgs/tab-normal.png` | Unselected Bag category-tab background | Generated dedicated embedded-page tab in locked v4 direction | 180x72 | Fixed-size `GLoader` background | integrated | IDE UUID `83a1cbfa-a91d-4875-a718-0003495e0762`; muted brown closed-page surface, rendered at the same position and size as the selected tab. Laya renders labels. |
+
 ## Big Image Assets
 
 | Final Asset | Purpose | Replacement Source | Size | Laya Usage | Status | Notes |

@@ -11,7 +11,8 @@
  * │ Tips (400) - 飘字/Toast/奖励提示                                 │
  * │ Pop (300) - 模态弹窗/确认框                                       │
  * │ Window (200) - 弹出的界面窗口                                     │
- * │ MainUI (100) - 主界面层                                          │
+ * │ MainUI (100) - 主界面 HUD、底部导航等跨页面壳层                  │
+ * │ MainContent (90) - 主界面内页内容（背包、征战等）                │
  * │ === Scene 层级区域 ===                                           │
  * │ AboveScene (30) - 场景上层/血条/调试显示                          │
  * │ Scene (10) - 主场景层/地表/物件/角色/子弹/特效                     │
@@ -30,7 +31,8 @@ export enum GlobalLayer {
     AboveScene = 30,    // 场景上层（血条、调试显示）
 
     // === UI 层级区域 ===
-    MainUI = 100,       // 主界面层（全屏UI）
+    MainContent = 90,   // 主界面内页内容；必须让 MainUI 壳层保持可见且可点
+    MainUI = 100,       // 主界面 HUD 与底部导航等跨页面壳层
     UIWindow = 200,     // 弹出的界面窗口（背包、商店）
     TipWindow = 400,    // 非模态提示（飘字、Toast）
 
@@ -46,6 +48,7 @@ export enum GlobalLayer {
  */
 export enum UILayer {
     Pop = 300,
+    MainContent = GlobalLayer.MainContent,
     MainUI = GlobalLayer.MainUI,          // 100
     UIWindow = GlobalLayer.UIWindow,      // 200
     TipWindow = GlobalLayer.TipWindow,    // 400
@@ -71,6 +74,7 @@ export const LayerNames: { [key: number]: string } = {
     [GlobalLayer.BelowScene]: "BelowScene",
     [GlobalLayer.Scene]: "Scene",
     [GlobalLayer.AboveScene]: "AboveScene",
+    [GlobalLayer.MainContent]: "MainContent",
     [GlobalLayer.MainUI]: "MainUI",
     [UILayer.Pop]: "Pop",
     [GlobalLayer.UIWindow]: "UIWindow",

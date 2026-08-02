@@ -2,6 +2,7 @@ import { UILayer } from "../core/LayerDef";
 import { BattleMainViewController } from "../battleScene/BattleMainViewController";
 import { BattleVictoryViewController } from "../battleScene/BattleVictoryViewController";
 import { BattleDefeatViewController } from "../battleScene/BattleDefeatViewController";
+import { BagViewController } from "../item/BagViewController";
 
 /**
  * UI 配置表。
@@ -58,11 +59,13 @@ export const UIConfigTable: { [name: string]: any } = {
 
     "BagUI": {
         path: "ui/bag/bagUI.ls",
-        layerName: "UIWindow",
-        zOrder: UILayer.UIWindow,
+        // 背包是主界面内页，不是覆盖 HUD/底部导航的弹窗。
+        layerName: "MainContent",
+        zOrder: UILayer.MainContent,
         singleton: true,
         autoDestroy: false,
         mutex: ["ShopUI", "SkillUI"],
+        controllerClass: BagViewController,
     },
 
     "ShopUI": {

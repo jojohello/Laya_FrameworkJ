@@ -187,7 +187,6 @@ collision = x / y / range
 ## 相关文件
 
 - [DESIGN.md](DESIGN.md) - 技术设计、方案取舍、技术债务
-- [PlanAndStatus.md](PlanAndStatus.md) - 当前未完成工作与验收条件
 - [BaseSceneObj.ts](BaseSceneObj.ts) - 场景对象基类
 - [DisplaySceneObj.ts](DisplaySceneObj.ts) - 显示类对象
 - [CreatureSceneObj.ts](CreatureSceneObj.ts) - 生物类对象

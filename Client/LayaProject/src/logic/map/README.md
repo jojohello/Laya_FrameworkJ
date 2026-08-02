@@ -59,4 +59,4 @@
 - 每帧 Camera2D 更新后，会同步 TileMap viewport。
 - 当前 `SceneType.map` 为空时，行为与旧版本一致，不加载地图。
 
-真实地图、Camera2D 和 HUD 的联合验证属于当前战斗场景工作，统一记录在根目录与 SceneObj 的 `PlanAndStatus.md`，不在本使用文档维护第二份进度。
+真实地图、Camera2D 和 HUD 的联合工作优先级统一记录在根目录 `PlanAndStatus.md`，不在本使用文档维护第二份进度。

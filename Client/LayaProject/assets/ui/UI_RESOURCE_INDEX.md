@@ -36,6 +36,7 @@
 | `ui/common/imgs/exp-track.png` | PNG | Compact experience track | Used with a separately clipped/scaled fill image |
 | `ui/common/imgs/exp-fill.png` | PNG | Compact green experience fill | The maximum experience source still needs a formal level configuration |
 | `ui/mainscene/MainSceneView.ls` | `.ls` scene | Main scene container | Loads `playerProfile.lh`, passes player data to `TopPrefab`, and owns main-scene system-entry behavior |
+| `ui/bag/bagUI.ls` | `.ls` scene | Main-scene bag content page | Root-Relation gray-blue backdrop sits below a warm-gold window panel; the panel and 5-column `ItemView.lh` list keep their confirmed root Relations, while equal-sized embedded-page tabs remain on one baseline and switch art without movement. The page stays below the persistent MainUI HUD and navigation |
 
 ## Selection rule
 
