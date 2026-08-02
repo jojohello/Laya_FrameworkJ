@@ -10,7 +10,7 @@
 - [ ] 补充验证角色动画与技能时序的极端路径：Realtime 大步长追帧、暂停、加速和回池复用后无旧状态残留；基础攻击、伤害/子弹触发及 Attack 回 Idle 主链路已通过运行验证。
 - [ ] 在 LayaAir IDE 验证共享 `SimpleCombatTree` 和 BattleScene 三组 `AIScheduler`：两队角色选择最近的同类敌方实体，按 `Skill.CastRange` 靠近，在 CD 可用时释放基础攻击，攻击期间不重复决策；死亡、切场和回池后调度 ID、目标、技能与 AI 时间状态无残留。
 - [ ] 验证对象 release、回池、再次复用后无模型、事件、动画、坐标和空间 hash 残留。
-- [ ] 确认生物、子弹配置字段及 Spine 的 ResourceMgr 适配方式；图片和标准 atlas 帧动画已分别使用 `ResImage`、`ResFrameAnimation`。
+- [ ] 确认 Spine 的 ResourceMgr 适配方式；图片和标准 atlas 帧动画已分别使用 `ResImage`、`ResFrameAnimation`。
 - [ ] 在 400 对象场景记录空间查询、碰撞、HUD 更新和 GC 表现。
 
 ## 依赖与验收

@@ -2,22 +2,56 @@
   {
     "ID": 1001,
     "soldierType": "warrior",
-    "sceneObjConfigId": 1001,
+    "hp": 320,
+    "speed": 52,
+    "attack": 24,
+    "defense": 30,
+    "magicDefense": 16,
     "range": 25,
     "skillIds": "1101"
   },
   {
     "ID": 1002,
     "soldierType": "mage",
-    "sceneObjConfigId": 1002,
+    "hp": 190,
+    "speed": 58,
+    "attack": 42,
+    "defense": 10,
+    "magicDefense": 22,
     "range": 25,
     "skillIds": "1201"
   },
   {
     "ID": 1003,
     "soldierType": "priest",
-    "sceneObjConfigId": 1003,
+    "hp": 240,
+    "speed": 54,
+    "attack": 24,
+    "defense": 16,
+    "magicDefense": 30,
     "range": 25,
     "skillIds": "1302;1301"
+  },
+  {
+    "ID": 2001,
+    "soldierType": "tower",
+    "hp": 1000,
+    "speed": 0,
+    "attack": 30,
+    "defense": 50,
+    "magicDefense": 50,
+    "range": 25,
+    "skillIds": ""
+  },
+  {
+    "ID": 4001,
+    "soldierType": "player",
+    "hp": 1000,
+    "speed": 100,
+    "attack": 50,
+    "defense": 30,
+    "magicDefense": 30,
+    "range": 25,
+    "skillIds": ""
   }
 ]

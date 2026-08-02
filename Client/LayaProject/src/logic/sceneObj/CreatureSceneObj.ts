@@ -11,7 +11,7 @@ import { AttributeSet } from "./AttributeSet";
 import { BaseSceneObj } from "./BaseSceneObj";
 import { DisplaySceneObj } from "./DisplaySceneObj";
 import { HudHealthBarModule, HudHealthBarOptions } from "./HudHealthBarModule";
-import { SceneObjConfigData } from "./SceneObjConfigData";
+import { CharacterConfigInfo } from "./CharacterConfigInfo";
 import { SceneObjType } from "./SceneObjType";
 
 const { regClass } = Laya;
@@ -203,9 +203,12 @@ export class CreatureSceneObj extends DisplaySceneObj {
     }
 
     protected applyConfigAttrs(cfgId: number): void {
-        const config = ConfigMgr.instance.getConfig<SceneObjConfigData>("SceneObjConfig", cfgId);
+        const config = ConfigMgr.instance.getConfig<CharacterConfigInfo>("Character", cfgId);
         if (!config) return;
 
+        // Every Creature config is authoritative in Character.csv. Do not add
+        // an indirect attribute table: it lets a visible unit and its combat
+        // stats drift into separate rows.
         this.setMaxHp(Number(config.hp) || 100);
         this._attrs.setBase("speed", Number(config.speed) || 0);
         this._attrs.setBase("attack", Number(config.attack) || 0);

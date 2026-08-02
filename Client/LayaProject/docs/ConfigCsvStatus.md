@@ -29,11 +29,10 @@ The CSV `UsedSize` row marks export ownership:
   `OnAddAction`, `OnTickAction` and `OnRemoveAction` are shared action scripts.
 - `Item.csv`: item identity and basic use config. Server needs `ID`, `Type`,
   `Quality`, `MaxStack` and `UseAction`. `Name` and `Desc` are client-only.
-- `SceneObjConfig.csv`: scene object base attributes. `CreatureSceneObj` reads
-  this table on init and applies `hp`, `speed`, `attack` and `defense`.
-- `Character.csv`: battle character display and behavior references, including
-  soldier type, base scene-object ID, model and team-mask paths, display scale,
-  skill IDs and AI template ID.
+- `Character.csv`: all creature base attributes, display and behavior,
+  including soldier type, `hp`, `speed`, unified `attack`, physical/magic
+  defense, display scale and skill IDs. `CreatureSceneObj` reads this table
+  directly; towers, players and formal monsters use their own Character IDs.
 - `SceneType.csv`: scene class and map config.
 
 ## Skill Table Direction
@@ -58,8 +57,13 @@ The CSV `UsedSize` row marks export ownership:
 - `SkillEffectDamage.csv` was renamed to `Damage.csv`.
 - `SkillEffectGroup.csv` was removed. Action queues now provide composition.
 - `SkillEffectBuff.csv` was removed. `BuffAction` applies `Buff` directly.
+- `SceneObjConfig.csv` was merged into `Character.csv`; all creature base
+  attributes now have one authoritative row per Character ID.
 
 ## Verification
 
-- Client export was run after the latest table cleanup.
-- Export result: `Success: 7`, `Failed: 0`.
+- Client export was run after the Character attribute merge: `Success: 13`,
+  `Failed: 0`.
+- Server export generated all 8 shared tables; 5 client-only tables were
+  intentionally skipped.
+- LayaAir IDE completed an initial run with the updated client configuration.

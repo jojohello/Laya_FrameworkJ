@@ -163,7 +163,8 @@ export class BulletSceneObj extends DisplaySceneObj {
         speed: number,
         damage: number,
         searchTeam: number,
-        penetrateCount: number = 0
+        penetrateCount: number = 0,
+        flyTimeSeconds: number = -1
     ): void {
         this._moveType = BulletMoveType.Line;
         this._casterId = casterId;
@@ -187,7 +188,10 @@ export class BulletSceneObj extends DisplaySceneObj {
             targetX,
             targetY,
             speed,
-            flyTime: -1,
+            // A configured duration is an explicit lifecycle boundary. Keep
+            // the speed-derived fallback only for legacy `-1` rows; otherwise
+            // a straight projectile can outlive its intended presentation.
+            flyTime: flyTimeSeconds,
         };
         this._movementStarted = false;
     }

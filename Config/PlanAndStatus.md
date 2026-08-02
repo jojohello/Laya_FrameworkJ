@@ -9,7 +9,6 @@
 - [ ] 在 LayaAir IDE 中验证启动时读取 `config-manifest.json`、加载全部客户端表并完成一次 reload。
 - [ ] 为 CSV 导出补充重复 ID、缺失 ID、非法字段类型、非法 `UsedSize` 和行列不一致检查。
 - [ ] 区分服务器导出的“客户端专用表正常跳过”和真实失败；真实失败必须返回非零退出码。
-- [ ] 用独立重命名变更将 Git 中的 `sceneobjconfig.json` 统一为 manifest 使用的 `SceneObjConfig.json`，并在 Windows 与大小写敏感环境验证。
 - [ ] 为服务器提供受控的 GM 或管理端 reload 入口，并验证已有字段数值热更。
 - [ ] 将双次导出的哈希一致性检查自动化并接入根级验证，确保提交的生成物与 CSV 一致。
 

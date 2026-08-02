@@ -53,7 +53,8 @@ export class BulletAction extends BaseAction {
                 data.Speed,
                 0,
                 searchTeam,
-                data.PenetrateCount
+                data.PenetrateCount,
+                bulletInfo.flyTimeSeconds
             );
         }
 

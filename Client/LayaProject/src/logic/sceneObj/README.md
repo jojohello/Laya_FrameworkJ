@@ -54,7 +54,7 @@ const obj = scene.addObjectToScene("MonsterObj", 1, 2, 300, 200, 0);
 
 战斗角色直接使用 LayaAir 标准的“单张 PNG + `.atlas`”帧动画资源，不再维护独立的 idle 单图与队伍色蒙版。`CharacterAnimation` 表为每个动作配置 `actionName`、包含首尾的 `startFrameIndex/endFrameIndex` 和 `durationMs`。基础帧与对应队伍色蒙版帧共用逻辑索引，现有 atlas 子纹理按 `{actionName}_{localIndex}.png` 和 `{actionName}_mask_{localIndex}.png` 命名；循环性由 Idle/Run 或技能调用明确传入，不保存在动作配置中。原图始终保持原色，蒙版 Alpha 表示可染色权重；`character-team-color.shader` 在每帧更新主图和蒙版图集 UV 后替换队伍色，并保留肤色和装备色调。队伍颜色默认由 `CharacterSceneObj` 根据 `team` ID 初始化，并在材质异步创建或重新绑定时重复应用；`setTeamColor(r, g, b)` 仅用于明确的运行时覆写。同一职业不复制红蓝两套完整资源。角色必须配置至少一个可播放的帧动画动作。
 
-角色兵种、缩放、逻辑占位半径、战斗特效中心点和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`，动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`range` 是以逻辑脚底点为圆心的世界单位半径，同时供空间切分、碰撞和同队局部避让使用；`centerOffsetY` 是从逻辑脚底点到战斗受击/恢复特效中心的 Y 位移（负数向上）；`skillIds` 使用分号分隔。技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`、`range` 均为 `25`、特效中心偏移均为 `-52`。
+所有生物实体的兵种、基础属性、缩放、逻辑占位半径、战斗特效中心点和按优先级排列的技能列表统一配置在 `Config/csv/Character.csv`；防御塔、玩家和正式怪物使用各自的 Character ID。动作图集资源配置在 `Config/csv/CharacterAnimation.csv`。`range` 是以逻辑脚底点为圆心的世界单位半径，同时供空间切分、碰撞和同队局部避让使用；`centerOffsetY` 是从逻辑脚底点到战斗受击/恢复特效中心的 Y 位移（负数向上）；`skillIds` 使用分号分隔。技能 CD 和施法距离来自 Skill 表，不建立 AI 模板配置。当前三名角色的显示缩放均为 `0.666667`、`range` 均为 `25`、特效中心偏移均为 `-52`。
 
 帧动画由角色 Entity 的每帧更新使用场景游戏时间驱动，暂停、加速和减速与场景逻辑保持一致；每个动画实例不再创建独立 Timer。Laya 仍逐帧提交场景渲染，只有动画帧索引变化时才重写主图、蒙版和对应 UV，角色位置变化不受换帧频率限制。
 
@@ -150,7 +150,7 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 
 | API | 说明 |
 |-----|------|
-| `initLineMovement(...)` | 初始化直线子弹 |
+| `initLineMovement(...)` | 初始化直线子弹；显式 `flyTimeSeconds` 大于 0 时到期回收，`-1` 时按距离和速度推导 |
 | `initTraceMovement(..., flyTimeSeconds)` | 使用运行时秒初始化追踪子弹 |
 | `configureCollision(...)` | 配置实时/间隔、轨迹/范围、排序、排重/重复、命中计数等碰撞策略 |
 | `setVisualResource(atlasPath)` | 使用标准子弹图集默认播放全部 `frame_00..frame_05`，90ms 一帧、50px 显示并循环 |

@@ -23,7 +23,7 @@
       "name": "Character",
       "file": "Character.json",
       "path": "config/Character.json",
-      "rows": 3
+      "rows": 5
     },
     {
       "name": "CharacterAnimation",
@@ -60,12 +60,6 @@
       "file": "MainNav.json",
       "path": "config/MainNav.json",
       "rows": 5
-    },
-    {
-      "name": "SceneObjConfig",
-      "file": "SceneObjConfig.json",
-      "path": "config/SceneObjConfig.json",
-      "rows": 7
     },
     {
       "name": "SceneType",

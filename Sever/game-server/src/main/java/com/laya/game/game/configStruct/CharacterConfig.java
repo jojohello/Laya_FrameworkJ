@@ -37,10 +37,34 @@ public class CharacterConfig implements Serializable {
     private final String soldierType;
 
     /**
-     * Base scene object config ID
+     * Max HP
      */
-    @JsonProperty("sceneObjConfigId")
-    private final int sceneObjConfigId;
+    @JsonProperty("hp")
+    private final int hp;
+
+    /**
+     * Move speed
+     */
+    @JsonProperty("speed")
+    private final float speed;
+
+    /**
+     * Unified attack attribute
+     */
+    @JsonProperty("attack")
+    private final Integer attack;
+
+    /**
+     * Physical defense
+     */
+    @JsonProperty("defense")
+    private final Integer defense;
+
+    /**
+     * Magic defense
+     */
+    @JsonProperty("magicDefense")
+    private final Integer magicDefense;
 
     /**
      * Logical circular occupancy radius in world units
@@ -62,12 +86,20 @@ public class CharacterConfig implements Serializable {
     public CharacterConfig(
             @JsonProperty("ID") int ID,
             @JsonProperty("soldierType") String soldierType,
-            @JsonProperty("sceneObjConfigId") int sceneObjConfigId,
+            @JsonProperty("hp") int hp,
+            @JsonProperty("speed") float speed,
+            @JsonProperty("attack") Integer attack,
+            @JsonProperty("defense") Integer defense,
+            @JsonProperty("magicDefense") Integer magicDefense,
             @JsonProperty("range") int range,
             @JsonProperty("skillIds") String skillIds) {
         this.ID = ID;
         this.soldierType = soldierType != null ? soldierType.intern() : null;
-        this.sceneObjConfigId = sceneObjConfigId;
+        this.hp = hp;
+        this.speed = speed;
+        this.attack = attack;
+        this.defense = defense;
+        this.magicDefense = magicDefense;
         this.range = range;
         this.skillIds = skillIds;
     }
@@ -80,8 +112,24 @@ public class CharacterConfig implements Serializable {
         return soldierType;
     }
 
-    public int getSceneObjConfigId() {
-        return sceneObjConfigId;
+    public int getHp() {
+        return hp;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public Integer getAttack() {
+        return attack;
+    }
+
+    public Integer getDefense() {
+        return defense;
+    }
+
+    public Integer getMagicDefense() {
+        return magicDefense;
     }
 
     public int getRange() {
@@ -94,7 +142,7 @@ public class CharacterConfig implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("CharacterConfig{ID=%s, soldierType=%s, sceneObjConfigId=%s, range=%s, skillIds=%s}",
-                ID, soldierType, sceneObjConfigId, range, skillIds);
+        return String.format("CharacterConfig{ID=%s, soldierType=%s, hp=%s, speed=%s, attack=%s}",
+                ID, soldierType, hp, speed, attack);
     }
 }

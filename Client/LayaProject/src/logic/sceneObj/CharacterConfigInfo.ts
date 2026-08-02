@@ -1,4 +1,4 @@
-export type SoldierType = "warrior" | "mage" | "priest";
+export type SoldierType = "warrior" | "mage" | "priest" | "tower" | "player";
 
 export const DEFAULT_CHARACTER_RANGE = 25;
 export const MAX_CHARACTER_RANGE = 256;
@@ -8,7 +8,11 @@ export interface CharacterConfigInfo {
     ID: number;
     name: string;
     soldierType: SoldierType;
-    sceneObjConfigId: number;
+    hp: number;
+    speed: number;
+    attack: number;
+    defense: number;
+    magicDefense: number;
     modelScale: number;
     /** Logical circular occupancy radius used by spatial queries, collision and local avoidance. */
     range: number;
