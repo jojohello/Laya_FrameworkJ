@@ -288,16 +288,21 @@
         }
       ],
       "layout": {
-        "type": 2,
+        "type": 3,
         "rowGap": 18,
         "columnGap": 12,
         "align": 1
       },
       "scroller": {
         "_$type": "Scroller",
+        "direction": 0,
         "barDisplay": 5,
         "bouncebackEffect": 1,
         "touchEffect": 1
+      },
+      "_templateNode": {
+        "_$ref": "bag-item-template",
+        "_$tmpl": "itemTemplate"
       },
       "_initItemNum": null,
       "_$child": [

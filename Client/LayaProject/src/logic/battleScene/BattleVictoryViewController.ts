@@ -51,8 +51,6 @@ export class BattleVictoryViewController {
     private renderRewardItem = (index: number, item: Laya.GWidget): void => {
         item.mouseEnabled = false;
         const data = this._rewards[index];
-        const name = item.getChildByName("rewardName") as Laya.GTextField;
-        if (name) name.text = data?.name || "";
         const container = item.getChildByName("itemContainer") as Laya.GBox;
         const previous = this._itemViews.get(item);
         previous?.root.destroy();

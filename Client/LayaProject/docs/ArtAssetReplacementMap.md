@@ -26,11 +26,10 @@ Rules:
 | `assets/ui/common/imgs/view-bg-1.png` | Canonical common window panel | generated v4 panel | 505x166 | 9-slice panel bg | integrated | Kept old meta/UUID; `sizeGrid=[65,72,66,76,0]`. Reused by CommonDialog and battle-result outer panels, replacing the redundant un-sliced panel asset. |
 | `assets/ui/common/imgs/surface-bg-cream.png` | Canonical plain section/content surface | project-generated pure cream fill | 32x32 | 9-slice surface | integrated | IDE UUID `43f87ea2-ca0d-4322-a165-4abb7bc183f6`, `sizeGrid=[1,1,1,1,0]`. Reused by the victory and defeat `.ls` files; size and alpha stay declarative rather than Controller-drawn. |
 | `assets/ui/common/imgs/surface-bg-blue.png` | Canonical translucent battle-result mask | project-generated pure desaturated blue fill | 32x32 | 9-slice surface | integrated | IDE UUID `0a7c3be5-1c66-4281-be69-20cb3b133418`, `sizeGrid=[1,1,1,1,0]`. Victory and defeat each declare one identical full-screen `bg:GImage` in `.ls`; it supplies the visible mask and input interception, replacing separate mask nodes and Controller drawing. |
-| `assets/ui/common/imgs/view-bg-2.png` | Small reward/item frame or small panel | generated v4 reward frame | 177x178 | item/reward frame | replaced | Kept old meta/uuid. Center kept clean for item icons. |
+| `assets/ui/common/imgs/view-bg-2.png` | Small reward/item frame or small panel | simplified v4 reward frame | 177x178 | item/reward frame | replaced | Kept old meta/UUID and dimensions; gemstone and leaf ornaments removed in favor of a quiet warm-gold border with a clean center. |
 | `assets/ui/common/imgs/btn-add.png` | Canonical compact add icon | unified top-HUD production sheet | 28x28 | independent icon | replaced | Kept the common meta/UUID; supersedes the redundant HUD-specific copy. |
 | `assets/ui/common/imgs/player-avatar-frame.png` | Canonical circular player portrait frame | unified top-HUD production sheet | 88x88 | independent overlay | replaced | Kept the common meta/UUID; supersedes the redundant main-scene copy. |
 | `assets/ui/common/imgs/currency-crystal.png` | Premium-currency icon | approved top-HUD production sheet | 44x56 | independent icon | ready | No baked amount; formal currency Item remains to be configured. |
-| `assets/ui/common/imgs/currency-gold.png` | Gold currency icon | approved top-HUD production sheet | 52x52 | independent icon | ready | Wallet balance uses Item ID 1001. |
 | `assets/ui/common/imgs/stamina-potion.png` | Stamina icon | approved top-HUD production sheet | 54x58 | independent icon | ready | No baked amount or maximum. |
 | `assets/ui/common/imgs/exp-track.png` | Compact EXP track | approved top-HUD production sheet | 196x22 | independent bar background | ready | Dark track with restrained gold edge. |
 | `assets/ui/common/imgs/exp-fill.png` | Compact EXP fill | approved top-HUD production sheet | 190x14 | independent bar fill | ready | Green fill kept separate from the track. |
@@ -61,6 +60,11 @@ Rules:
 | --- | --- | --- | --- | --- | --- | --- |
 | `assets/ui/bag/imgs/tab-selected.png` | Selected Bag category-tab background | Generated dedicated embedded-page tab in locked v4 direction | 180x72 | Fixed-size `GLoader` background | integrated | IDE UUID `578c564c-160c-4f86-b94c-ac3bf78fbf93`; cyan open-page surface with soft gold rim, rendered at the same position and size as inactive tabs. Laya renders labels. |
 | `assets/ui/bag/imgs/tab-normal.png` | Unselected Bag category-tab background | Generated dedicated embedded-page tab in locked v4 direction | 180x72 | Fixed-size `GLoader` background | integrated | IDE UUID `83a1cbfa-a91d-4875-a718-0003495e0762`; muted brown closed-page surface, rendered at the same position and size as the selected tab. Laya renders labels. |
+| `assets/ui/common/imgs/items/currency-gold.png` | Canonical gold Item and HUD icon | Existing gold icon normalized to the shared item-icon contract | 128x128 | Independent item icon | integrated | IDE UUID `ec35f84e-f95f-4e50-afa1-4383140f735f`; Item 1001 and top HUD share this resource. |
+| `assets/ui/common/imgs/items/gem-ruby.png` | Ruby material icon | Generated locked v4 magic-gem icon | 128x128 | Independent item icon | integrated | IDE UUID `b051be9f-4932-4f3a-a160-a37e03d739a1`; Item 1101. |
+| `assets/ui/common/imgs/items/gem-sapphire.png` | Sapphire material icon | Generated locked v4 magic-gem icon | 128x128 | Independent item icon | integrated | IDE UUID `336bb386-330b-49a1-8707-bdd2dd2ba6e2`; Item 1102. |
+| `assets/ui/common/imgs/items/gem-emerald.png` | Emerald material icon | Generated locked v4 magic-gem icon | 128x128 | Independent item icon | integrated | IDE UUID `acb27256-3ffb-4071-a6bc-d4f53a4add01`; Item 1103. |
+| `assets/ui/common/imgs/items/gem-topaz.png` | Topaz material icon | Generated locked v4 magic-gem icon | 128x128 | Independent item icon | integrated | IDE UUID `ad1a5c9d-7d4f-4a78-9773-958151899179`; Item 1104. |
 
 ## Big Image Assets
 

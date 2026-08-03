@@ -6,6 +6,7 @@
     "Quality": 1,
     "MaxStack": 999999,
     "UseAction": "",
+    "Icon": "ui/common/imgs/items/currency-gold.png",
     "Desc": "Basic currency"
   },
   {
@@ -15,6 +16,7 @@
     "Quality": 1,
     "MaxStack": 999,
     "UseAction": "",
+    "Icon": "ui/mainscene/imgs/icon-box.png",
     "Desc": "Craft material"
   },
   {
@@ -24,7 +26,48 @@
     "Quality": 1,
     "MaxStack": 99,
     "UseAction": "",
+    "Icon": "ui/common/imgs/stamina-potion.png",
     "Desc": "Recover test item"
+  },
+  {
+    "ID": 1101,
+    "Name": "Ruby",
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": "",
+    "Icon": "ui/common/imgs/items/gem-ruby.png",
+    "Desc": "Red magic gemstone"
+  },
+  {
+    "ID": 1102,
+    "Name": "Sapphire",
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": "",
+    "Icon": "ui/common/imgs/items/gem-sapphire.png",
+    "Desc": "Blue magic gemstone"
+  },
+  {
+    "ID": 1103,
+    "Name": "Emerald",
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": "",
+    "Icon": "ui/common/imgs/items/gem-emerald.png",
+    "Desc": "Green magic gemstone"
+  },
+  {
+    "ID": 1104,
+    "Name": "Topaz",
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": "",
+    "Icon": "ui/common/imgs/items/gem-topaz.png",
+    "Desc": "Yellow magic gemstone"
   },
   {
     "ID": 2001,
@@ -33,6 +76,7 @@
     "Quality": 2,
     "MaxStack": 1,
     "UseAction": "",
+    "Icon": "ui/mainscene/imgs/icon-battle.png",
     "Desc": "Starter weapon"
   }
 ]

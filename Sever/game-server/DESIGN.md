@@ -54,10 +54,33 @@ Activation conditions are server-authoritative. The first time they match, the g
 
 `BATTLE_ENTER_REQUEST` creates a `player_battle_session` owned by the authenticated `playerId`.
 `BATTLE_COMPLETE_REQUEST` locks that session, reads `BattleStage.victoryRewards`, writes its immutable
-`reward_snapshot`, and grants currency through `WalletRepository` or ordinary items through `BagRepository`
-inside the same transaction. A completed session returns its recorded snapshot and current wallet instead of
-granting again. The response is the only client source for the victory reward display and wallet refresh.
+`reward_snapshot`, and grants currency through `WalletRepository` or ordinary items through `BagService`
+inside the same transaction. The first successful settlement returns one versioned bag delta. A completed
+session returns its recorded rewards, current wallet, and current bag snapshot instead of granting again. The
+response is the only client source for the victory reward display, wallet refresh, and reward-driven bag change.
 
 The current client-side battle simulation can report victory, so this session contract establishes ownership,
 configuration authority and idempotency but is not anti-cheat proof. Do not treat client-reported victory as a
 production trust boundary; replace it with server simulation or a server-verifiable combat report before release.
+
+## Bag authority
+
+`BagService` is the only gameplay mutation boundary for ordinary inventory items. It locks
+`player_container_state`, validates item definitions and stack-based capacity, computes absolute counts with
+checked arithmetic, persists a batch atomically, and increments the bag version exactly once. Handlers obtain
+the owner from `MessageContext.playerId`; payloads never choose an owner, capacity, final count, or version.
+
+`BagService` and `BagRepository` are stateless Spring singletons, not per-player managers. Every operation is
+keyed by `(playerId, BagType)`. Each player therefore has one logical bag manager with reusable container
+instances: `main` and `warehouse` share code but have isolated rows, capacity, items, locks, and versions.
+Battle rewards always target `main`. Login/reconnect eagerly serializes only `main`; `warehouse` is lazy-loaded
+through the typed snapshot request. Adding another one-per-player container requires extending the generated
+enum and capacity policy, not copying service/repository code.
+
+Snapshots are used for login, reconnect, explicit recovery, and duplicate battle completion. Deltas are used
+for the first successful battle reward settlement. The shared wire contract and fixtures live under
+`Protocol/contracts/bag`; local code must not define a competing payload contract.
+
+`BagPayloads` is generated from `Protocol/contracts/bag/schema.json` and is the only Java wire DTO for this
+feature. Bag domain services may use internal state records, but handlers, initialization sections, and battle
+response fragments must expose generated payload records rather than handwritten transport classes.

@@ -171,6 +171,7 @@ export class MainSceneView extends MainSceneViewBase {
                 return;
             }
             this.selectSystemButton(itemIndex);
+            MainNavRouteRegistry.closeMainContent();
             void SceneMgr.instance.switchScene(SceneType.BattleStageScene).then(scene => {
                 console.log(`[MainSceneView] 战斗场景切换结果: success=${!!scene}, current=${SceneMgr.instance.curSceneName || "none"}`);
             });

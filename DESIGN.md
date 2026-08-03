@@ -12,6 +12,7 @@ Config/csv ──导出──> Client JSON
      └──────导出──> Server JSON + Java configStruct
 
 Protocol/message-ids.yaml ──生成──> TypeScript / Java MessageIds
+Protocol/contracts/*/schema.json ──生成──> TypeScript guards / Java payload records
 
 Client ──HTTP 登录──> Login Server
 Client ──WebSocket──> Gateway <──WebSocket──> Game Server
@@ -22,7 +23,7 @@ Client ──WebSocket──> Gateway <──WebSocket──> Game Server
 - Client 负责表现、输入、客户端生命周期和网络适配，不作为游戏权威数据源。
 - Sever 负责账号、会话、路由和服务器权威游戏状态。
 - Config 是静态策划数据来源，不保存玩家运行时状态。
-- Protocol 当前只统一消息 ID；消息负载结构仍由消费端代码定义。
+- Protocol 统一消息 ID 和 wire payload 结构；跨客户端与服务器的稳定业务契约集中在 `Protocol/contracts/<feature>/`，消费端代码不得各自形成第二套字段或语义。
 
 ## 身份与数据所有权
 
@@ -43,6 +44,7 @@ Client ──WebSocket──> Gateway <──WebSocket──> Game Server
 
 - 配置表唯一源数据是 `Config/csv/*.csv`。
 - 消息 ID 唯一来源是 `Protocol/message-ids.yaml`。
+- 跨端 payload 字段唯一来源是 `Protocol/contracts/<feature>/schema.json`；`DESIGN.md` 只承载 Schema 无法表达的权威、事务、幂等、版本和兼容语义。
 - 生成的 JSON、Java 和 TypeScript 文件不得作为独立编辑入口。
 - 生成器、源文件和所有消费端必须在同一变更中保持一致。
 
@@ -58,6 +60,15 @@ Client ──WebSocket──> Gateway <──WebSocket──> Game Server
 4. 分别运行静态检查、服务器构建和必要的端到端验证。
 
 不能用“某一端可以编译”代替契约一致性验证。
+
+## 跨端功能交付
+
+涉及客户端与服务器共同实现的功能必须使用根级 `$laya-client-server-feature` Skill，并按权威边界、协议草案、服务端领域逻辑、协议定稿、客户端状态逻辑和跨端集成的 Gate 顺序推进。
+
+- 客户端发送意图并展示服务端结果，不决定奖励、余额、背包数量、胜负、进度或权限等权威状态。
+- 服务端从已认证上下文解析 `playerId`，负责校验、事务、幂等、持久化、版本和错误结果；不得信任客户端声明的最终状态。
+- 跨端稳定契约的机器 Schema、共同 JSON fixture 和语义 DESIGN 位于 `Protocol/contracts/<feature>/`；客户端和服务端只能消费生成类型并记录各自内部实现与入口。
+- 当前未完成 Gate 可写入契约包内的 `PlanAndStatus.md`，完成后删除；不得保留进度日记。
 
 ## 目录与依赖
 

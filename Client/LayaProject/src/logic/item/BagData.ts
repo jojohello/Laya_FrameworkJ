@@ -1,4 +1,4 @@
-/** Bag data structures kept primitive for network and persistence use. */
+/** Internal primitive view model retained for the existing UI. */
 export interface BagItemData {
     ItemID: number;
     Count: number;

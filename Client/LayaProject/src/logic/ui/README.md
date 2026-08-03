@@ -37,6 +37,12 @@ await UIManager.instance.open("MyUI", { userId: 123 });
 
 ```typescript
 UIManager.instance.close("MyUI");
+
+// 关闭某个语义层上的全部页面；主导航离开内页时使用 MainContent
+UIManager.instance.closeLayer("MainContent");
+
+// 刷新同一页面时可以保留指定名称
+UIManager.instance.closeLayer("MainContent", "BagUI");
 ```
 
 ---

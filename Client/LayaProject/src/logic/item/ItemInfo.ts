@@ -1,4 +1,4 @@
-import { ItemData, ItemCountData } from "./ItemData";
+import { ItemData } from "./ItemData";
 
 export enum ItemType {
     Material = "Material",
@@ -21,25 +21,8 @@ export class ItemInfo {
     get canUse(): boolean {
         return this.data.Type === ItemType.Consumable && this.data.UseAction.length > 0;
     }
-}
 
-export class ItemCountInfo {
-    constructor(readonly data: ItemCountData) {}
-
-    get itemId(): number {
-        return this.data.ItemID;
-    }
-
-    get count(): number {
-        return Math.max(0, Number(this.data.Count) || 0);
-    }
-
-    setCount(value: number): void {
-        this.data.Count = Math.max(0, Math.floor(Number(value) || 0));
-    }
-
-    addCount(delta: number): number {
-        this.setCount(this.count + Math.floor(Number(delta) || 0));
-        return this.count;
+    get iconPath(): string {
+        return this.data.Icon || "";
     }
 }

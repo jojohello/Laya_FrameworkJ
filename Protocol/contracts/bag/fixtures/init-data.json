@@ -1,0 +1,12 @@
+{
+  "bags": [
+    {
+      "bagType": "main",
+      "capacity": 40,
+      "version": "7",
+      "items": [
+        { "itemId": 1001, "count": 3 }
+      ]
+    }
+  ]
+}

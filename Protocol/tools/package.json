@@ -4,8 +4,8 @@
   "description": "Laya Game Protocol Code Generator",
   "main": "generate.js",
   "scripts": {
-    "generate": "node generate.js",
-    "test": "node test.js",
+    "generate": "node generate.js && node generate-contracts.js",
+    "test": "node test.js && node test-contracts.js && node generate-contracts.js --check",
     "help": "node generate.js --help"
   },
   "keywords": [

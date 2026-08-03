@@ -9,10 +9,6 @@ export interface ItemData {
     Quality: number;
     MaxStack: number;
     UseAction: string;
+    Icon: string;
     Desc: string;
-}
-
-export interface ItemCountData {
-    ItemID: number;
-    Count: number;
 }

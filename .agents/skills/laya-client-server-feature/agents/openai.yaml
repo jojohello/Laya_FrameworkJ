@@ -1,0 +1,6 @@
+interface:
+  display_name: "Laya 双端功能开发"
+  short_description: "约束客户端、协议与服务端共同交付的权威边界和验证流程"
+  default_prompt: "Use $laya-client-server-feature to design and implement this client-server game feature end to end."
+policy:
+  allow_implicit_invocation: true

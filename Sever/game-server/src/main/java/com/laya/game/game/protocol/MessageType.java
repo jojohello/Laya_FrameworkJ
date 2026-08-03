@@ -1,6 +1,7 @@
 package com.laya.game.game.protocol;
 
 /**
+ * @deprecated Legacy, unused message catalog. Runtime handlers must use generated {@link MessageIds} constants.
  * 消息类型枚举
  * 定义 Game Server 支持的所有消息类型
  *
@@ -17,6 +18,7 @@ package com.laya.game.game.protocol;
  * @author Laya Game Server
  * @since 2025-10-29
  */
+@Deprecated(forRemoval = true)
 public enum MessageType {
 
     // ==================== 认证类 (1xxx) ====================

@@ -29,7 +29,7 @@ export class ItemViewController {
 
     setData(data: ItemViewData): void {
         this.drawQuality(data.quality || 1);
-        this._icon.url = data.iconPath || "";
+        this._icon.src = data.iconPath || "";
         this._countText.visible = data.quantity > 1;
         this._countText.text = this.formatQuantity(data.quantity);
         this._redPoint.visible = !!data.showRedPoint;
@@ -37,7 +37,7 @@ export class ItemViewController {
     }
 
     clear(): void {
-        this._icon.url = "";
+        this._icon.src = "";
         this._countText.text = "";
         this._countText.visible = false;
         this._redPoint.visible = false;

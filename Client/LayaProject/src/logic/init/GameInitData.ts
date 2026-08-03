@@ -1,4 +1,5 @@
 import { IntegerString } from "../common/ExactInteger";
+import type { BagInitData } from "../item/BagPayloads.generated";
 
 export interface PlayerInitData {
     playerId: string;
@@ -10,11 +11,6 @@ export interface PlayerInitData {
 
 export interface WalletInitData {
     balances: Record<string, IntegerString>;
-}
-
-export interface BagInitData {
-    capacity: number;
-    items: Array<{ itemId: number; count: number }>;
 }
 
 export interface GameInitData {

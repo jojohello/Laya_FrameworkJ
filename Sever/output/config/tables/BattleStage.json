@@ -3,36 +3,36 @@
     "ID": 1001,
     "battleId": 1,
     "canEnter": true,
-    "victoryRewards": "1001:100"
+    "victoryRewards": "1001:100;1101:3"
   },
   {
     "ID": 1002,
     "battleId": 2,
     "canEnter": true,
-    "victoryRewards": "1001:120"
+    "victoryRewards": "1001:120;1102:4"
   },
   {
     "ID": 1003,
     "battleId": 3,
     "canEnter": true,
-    "victoryRewards": "1001:140"
+    "victoryRewards": "1001:140;1103:5"
   },
   {
     "ID": 1004,
     "battleId": 4,
     "canEnter": true,
-    "victoryRewards": "1001:160"
+    "victoryRewards": "1001:160;1104:6"
   },
   {
     "ID": 1005,
     "battleId": 5,
     "canEnter": true,
-    "victoryRewards": "1001:180"
+    "victoryRewards": "1001:180;1101:2;1102:2;1103:2;1104:2"
   },
   {
     "ID": 1006,
     "battleId": 6,
     "canEnter": true,
-    "victoryRewards": "1001:300"
+    "victoryRewards": "1001:300;1101:12;1102:12;1103:12;1104:12"
   }
 ]

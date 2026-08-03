@@ -41,6 +41,8 @@ UsedSize,cs,c,s
 
 `UITextStyle.csv` 是客户端 UI 语义文字样式表，记录字体、字号、颜色、粗体、描边像素、描边颜色和对齐方式；颜色统一使用 `#rrggbb`，`Stroke>0` 时必须填写 `StrokeColor`。
 
+`Item.csv` 的 `Icon` 是相对客户端 `assets/` 根的资源路径，只导出到客户端；`MaxStack` 同时导出到两端，服务端负责容量校验，客户端负责按相同上限拆分显示格。
+
 ## 导出
 
 从仓库根目录运行：

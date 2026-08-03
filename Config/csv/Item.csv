@@ -1,8 +1,12 @@
-Title,ID,Name,Type,Quality,MaxStack,UseAction,Desc
-Type,int,str,str,int,int,str,str
-Description,Item ID,Client display name,Item type,Quality,Max stack,Action script when used,Client description
-UsedSize,cs,c,cs,cs,cs,cs,c
-,1001,Gold,Currency,1,999999,,Basic currency
-,1002,Wood,Material,1,999,,Craft material
-,1003,Small Potion,Consumable,1,99,,Recover test item
-,2001,Iron Sword,Equipment,2,1,,Starter weapon
+Title,ID,Name,Type,Quality,MaxStack,UseAction,Icon,Desc
+Type,int,str,str,int,int,str,str,str
+Description,Item ID,Client display name,Item type,Quality,Max stack,Action script when used,Client icon path relative to assets root,Client description
+UsedSize,cs,c,cs,cs,cs,cs,c,c
+,1001,Gold,Currency,1,999999,,ui/common/imgs/items/currency-gold.png,Basic currency
+,1002,Wood,Material,1,999,,ui/mainscene/imgs/icon-box.png,Craft material
+,1003,Small Potion,Consumable,1,99,,ui/common/imgs/stamina-potion.png,Recover test item
+,1101,Ruby,Material,2,10,,ui/common/imgs/items/gem-ruby.png,Red magic gemstone
+,1102,Sapphire,Material,2,10,,ui/common/imgs/items/gem-sapphire.png,Blue magic gemstone
+,1103,Emerald,Material,2,10,,ui/common/imgs/items/gem-emerald.png,Green magic gemstone
+,1104,Topaz,Material,2,10,,ui/common/imgs/items/gem-topaz.png,Yellow magic gemstone
+,2001,Iron Sword,Equipment,2,1,,ui/mainscene/imgs/icon-battle.png,Starter weapon

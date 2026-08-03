@@ -28,6 +28,11 @@ interface BattleTestFormationRow {
     rowStepY: number;
 }
 
+interface BattleTestFormation {
+    player: readonly BattleTestFormationRow[];
+    opponent: readonly BattleTestFormationRow[];
+}
+
 const BATTLE_TEST_COLUMNS = 10;
 const BATTLE_TEST_START_X = 90;
 const BATTLE_TEST_COLUMN_STEP = 65;
@@ -43,6 +48,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     private _resultUIName: BattleResultUIName | null = null;
     private _resultExitRequested = false;
     private _battleSessionId = "";
+    private _stageCopyType = "normal";
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
@@ -63,6 +69,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._resultUIName = null;
         this._resultExitRequested = false;
         this._battleSessionId = typeof param?.battleSessionId === "string" ? param.battleSessionId : "";
+        this._stageCopyType = "normal";
         this._battleUnitLoadToken++;
         this.applyStageMapConfig(param);
         super.onEnter(param);
@@ -80,6 +87,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
             console.warn(`[BattleScene] BattleStage config not found: stageId=${stageId}`);
             return;
         }
+        this._stageCopyType = stage.copyType === "boss" ? "boss" : "normal";
         const config: any = this._sceneConfig || (this._sceneConfig = {});
         if (stage.map) config.map = stage.map;
         if (stage.mapType) config.mapType = stage.mapType;
@@ -141,6 +149,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._resultUIName = null;
         this._resultExitRequested = false;
         this._battleSessionId = "";
+        this._stageCopyType = "normal";
         this._battleUnitLoadToken++;
         this._battleUnitsCreated = false;
         this._battleUnitsReady = false;
@@ -226,16 +235,9 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         }
         console.log(`[BattleScene] 角色队伍色 Shader 已就绪: ${CharacterTeamColorMaterial.SHADER_NAME}`);
 
-        this.createTestTeam(2, [
-            { configId: 1003, count: 30, startY: 200, rowStepY: 45 },
-            { configId: 1002, count: 30, startY: 340, rowStepY: 45 },
-            { configId: 1001, count: 40, startY: 480, rowStepY: 45 },
-        ]);
-        this.createTestTeam(1, [
-            { configId: 1003, count: 30, startY: 1144, rowStepY: -45 },
-            { configId: 1002, count: 30, startY: 1004, rowStepY: -45 },
-            { configId: 1001, count: 40, startY: 864, rowStepY: -45 },
-        ]);
+        const formation = this.getTestFormation();
+        this.createTestTeam(2, formation.opponent);
+        this.createTestTeam(1, formation.player);
         this._battleUnitsReady = true;
         this.transitionFlowState(BattleFlowState.Running);
     }
@@ -344,8 +346,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
             const item = ItemMgr.instance.getItem(reward.itemId);
             return {
                 name: item?.data.Name || `物品 ${reward.itemId}`,
-                // Item config has no icon field yet; retain the common currency placeholder until that table adds art mapping.
-                iconPath: "ui/common/imgs/currency-crystal.png",
+                iconPath: item?.iconPath || "ui/mainscene/imgs/icon-box.png",
                 quantity: reward.quantity,
                 quality: Math.max(1, Math.min(5, Number(item?.data.Quality) || 1)) as ItemViewData["quality"],
                 showRedPoint: false,
@@ -390,6 +391,31 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
                 }
             }
         }
+    }
+
+    private getTestFormation(): BattleTestFormation {
+        if (this._stageCopyType === "boss") {
+            return {
+                opponent: [
+                    { configId: 1001, count: 100, startY: 200, rowStepY: 45 },
+                ],
+                player: [
+                    { configId: 1003, count: 10, startY: 1144, rowStepY: -45 },
+                    { configId: 1002, count: 20, startY: 1054, rowStepY: -45 },
+                    { configId: 1001, count: 30, startY: 919, rowStepY: -45 },
+                ],
+            };
+        }
+        return {
+            opponent: [
+                { configId: 1001, count: 1, startY: 300, rowStepY: 45 },
+            ],
+            player: [
+                { configId: 1003, count: 1, startY: 1144, rowStepY: -45 },
+                { configId: 1002, count: 1, startY: 1054, rowStepY: -45 },
+                { configId: 1001, count: 1, startY: 964, rowStepY: -45 },
+            ],
+        };
     }
 }
 

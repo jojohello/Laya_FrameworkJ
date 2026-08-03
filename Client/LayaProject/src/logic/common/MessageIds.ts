@@ -38,6 +38,10 @@ export const FUNCTION_OPEN_PUSH = 4002;
 export const GUIDE_PROGRESS_REQUEST = 4101;
 export const GUIDE_PROGRESS_RESPONSE = 4102;
 
+// ========== 背包类 (5xxx) ==========
+export const BAG_SNAPSHOT_REQUEST = 5001;
+export const BAG_SNAPSHOT_RESPONSE = 5002;
+
 // ========== 系统类 (9xxx) ==========
 export const ERROR = 9001;
 export const NOTIFICATION = 9002;
@@ -69,6 +73,8 @@ export const MessageIds = {
     FUNCTION_OPEN_PUSH,
     GUIDE_PROGRESS_REQUEST,
     GUIDE_PROGRESS_RESPONSE,
+    BAG_SNAPSHOT_REQUEST,
+    BAG_SNAPSHOT_RESPONSE,
     ERROR,
     NOTIFICATION,
     KICK
@@ -109,6 +115,8 @@ export function getMessageName(id: number): string {
         case 4002: return "FUNCTION_OPEN_PUSH";
         case 4101: return "GUIDE_PROGRESS_REQUEST";
         case 4102: return "GUIDE_PROGRESS_RESPONSE";
+        case 5001: return "BAG_SNAPSHOT_REQUEST";
+        case 5002: return "BAG_SNAPSHOT_RESPONSE";
         case 9001: return "ERROR";
         case 9002: return "NOTIFICATION";
         case 9004: return "KICK";
@@ -146,6 +154,8 @@ export function getMessageId(name: string): number | null {
         case "FUNCTION_OPEN_PUSH": return 4002;
         case "GUIDE_PROGRESS_REQUEST": return 4101;
         case "GUIDE_PROGRESS_RESPONSE": return 4102;
+        case "BAG_SNAPSHOT_REQUEST": return 5001;
+        case "BAG_SNAPSHOT_RESPONSE": return 5002;
         case "ERROR": return 9001;
         case "NOTIFICATION": return 9002;
         case "KICK": return 9004;

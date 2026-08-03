@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "feature": "bag",
+  "targets": ["client", "game"],
+  "clientModule": "item",
+  "definitions": {
+    "BagType": {
+      "type": "string",
+      "enum": ["main", "warehouse"]
+    },
+    "BagSnapshotRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bagType"],
+      "properties": {
+        "bagType": { "$ref": "BagType" }
+      }
+    },
+    "BagItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemId", "count"],
+      "properties": {
+        "itemId": { "type": "integer", "minimum": 1, "maximum": 2147483647, "javaType": "int" },
+        "count": { "type": "integer", "minimum": 1, "maximum": 9007199254740991, "javaType": "long" }
+      }
+    },
+    "BagSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bagType", "capacity", "version", "items"],
+      "properties": {
+        "bagType": { "$ref": "BagType" },
+        "capacity": { "type": "integer", "minimum": 1, "maximum": 2147483647, "javaType": "int" },
+        "version": { "type": "string", "pattern": "^(0|[1-9]\\d*)$" },
+        "items": { "type": "array", "items": { "$ref": "BagItem" } }
+      }
+    },
+    "BagChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemId", "delta", "count"],
+      "properties": {
+        "itemId": { "type": "integer", "minimum": 1, "maximum": 2147483647, "javaType": "int" },
+        "delta": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991, "not": 0, "javaType": "long" },
+        "count": { "type": "integer", "minimum": 0, "maximum": 9007199254740991, "javaType": "long" }
+      }
+    },
+    "BagDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bagType", "baseVersion", "version", "changes"],
+      "properties": {
+        "bagType": { "$ref": "BagType" },
+        "baseVersion": { "type": "string", "pattern": "^(0|[1-9]\\d*)$" },
+        "version": { "type": "string", "pattern": "^(0|[1-9]\\d*)$" },
+        "changes": { "type": "array", "minItems": 1, "items": { "$ref": "BagChange" } }
+      }
+    },
+    "BagSnapshotResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["success"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "snapshot": { "$ref": "BagSnapshot" },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "rules": [
+        { "when": { "field": "success", "equals": true }, "required": ["snapshot"], "forbidden": ["reason"] },
+        { "when": { "field": "success", "equals": false }, "required": ["reason"], "forbidden": ["snapshot"] }
+      ]
+    },
+    "BagInitData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bags"],
+      "properties": {
+        "bags": { "type": "array", "minItems": 1, "items": { "$ref": "BagSnapshot" } }
+      }
+    }
+  },
+  "fixtures": {
+    "snapshot-response.json": "BagSnapshotResponse",
+    "delta.json": "BagDelta",
+    "error-response.json": "BagSnapshotResponse",
+    "init-data.json": "BagInitData"
+  },
+  "bindings": [
+    { "message": "BAG_SNAPSHOT_REQUEST", "path": "$", "type": "BagSnapshotRequest" },
+    { "message": "BAG_SNAPSHOT_RESPONSE", "path": "$", "type": "BagSnapshotResponse" },
+    { "message": "GAME_INIT_RESPONSE", "path": "sections.bag", "type": "BagInitData" },
+    { "message": "BATTLE_COMPLETE_RESPONSE", "path": "bagDelta", "type": "BagDelta" },
+    { "message": "BATTLE_COMPLETE_RESPONSE", "path": "bagSnapshot", "type": "BagSnapshot" }
+  ]
+}

@@ -1,12 +1,12 @@
 package com.laya.game.game.init;
 
-import com.laya.game.game.bag.BagRepository;
+import com.laya.game.game.bag.BagService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BagInitDataProvider implements GameInitDataProvider {
-    private final BagRepository repository;
-    public BagInitDataProvider(BagRepository repository) { this.repository = repository; }
+    private final BagService bagService;
+    public BagInitDataProvider(BagService bagService) { this.bagService = bagService; }
     @Override public String sectionName() { return "bag"; }
-    @Override public Object build(GamePlayerContext context) { return repository.find(context.playerId()); }
+    @Override public Object build(GamePlayerContext context) { return bagService.initialData(context.playerId()); }
 }

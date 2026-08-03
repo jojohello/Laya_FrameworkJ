@@ -199,6 +199,14 @@ export class UIManager implements IManager {
         });
     }
 
+    /** Close every opened UI on a semantic layer, optionally preserving one named page. */
+    public closeLayer(layerName: string, exceptName: string = ""): void {
+        const names = Array.from(this._openedUIs.values())
+            .filter(instance => instance.name !== exceptName && instance.config.layerName === layerName)
+            .map(instance => instance.name);
+        names.forEach(name => this.close(name));
+    }
+
     /**
      * 关闭所有 UI
      */

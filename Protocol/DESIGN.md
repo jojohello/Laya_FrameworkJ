@@ -2,7 +2,7 @@
 
 ## 作用域
 
-本目录统一消息名称、数值 ID 和服务器处理作用域，不定义完整消息负载 schema。字段结构和处理语义仍由客户端、Gateway 与 Game Server 的消费代码共同形成契约。
+本目录统一消息名称、数值 ID、服务器处理作用域，以及跨端业务的稳定负载契约。`message-ids.yaml` 负责 ID；`contracts/<feature>/schema.json` 负责机器可读的 wire 字段、约束、消息绑定和 fixture 映射；同目录 `DESIGN.md` 负责权威、事务、幂等、错误、版本和兼容语义。客户端、Gateway 与 Game Server 不得各自形成隐式 schema。
 
 ## 唯一来源
 
@@ -49,12 +49,20 @@ Gateway 与 Game Server 的 Java 类位于不同包且消费的作用域不同�
 
 ## 负载契约
 
-统一 ID 不代表负载已经统一。新增消息时必须在最近的业务模块 DESIGN 或代码类型中明确请求、响应、错误和路由字段。账号 `userId`、角色 `playerId` 与连接 `sessionId` 必须遵循根级 DESIGN 的语义。
+统一 ID 不代表负载已经统一。新增跨端业务消息时必须建立 `contracts/<feature>/schema.json`、`DESIGN.md` 和必要 fixtures。账号 `userId`、角色 `playerId` 与连接 `sessionId` 必须遵循根级 DESIGN 的语义。
+
+Schema 使用版本化的项目方言并采用关键字白名单。每个 definition 必须是 `additionalProperties: false` 的对象，或值唯一且稳定的小写 string enum；整数必须声明 Java `int/long` 映射及安全范围；bindings 必须引用 `message-ids.yaml` 中存在的消息。生成器输出 Java records/enums、TypeScript interfaces/enums 和客户端结构守卫，同时校验 fixtures。未知关键字必须失败，不得静默忽略。
+
+Schema 只负责可机械验证的 wire 结构。权限、身份来源、事务、幂等、排序、版本连续性、字段间领域关系和部署兼容窗口仍由 DESIGN 与领域测试负责。生成的结构守卫必须在客户端网络边界使用；服务端请求必须先转成生成 DTO 并执行领域校验，不能因为类型由生成器产生就信任客户端。
+
+业务模块可以在自身 DESIGN 记录内部实现，但不得复制完整 wire schema。消费代码只能引用生成 payload 类型；`npm.cmd test` 的 `--check` 必须阻止生成物漂移。
 
 ## 错误防范
 
 - 不从 Java 或 TypeScript 常量反向修改 YAML。
 - 不提交只更新一端的协议变更。
+- 不手写 Java/TypeScript wire DTO 绕过 `schema.json`。
+- 不把 Schema 能表达的字段、可选性和数值边界仅写在 Markdown 中。
 - 不使用生成日期作为业务版本或兼容性依据。
 - 不把 `node_modules` 提交到仓库；依赖由 `package-lock.json` 和 `npm ci` 恢复。
 - 生成后运行客户端静态检查与服务器构建，编号对比不能代替编译验证。

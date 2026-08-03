@@ -32,6 +32,10 @@ public class MessageIds {
     public static final short GUIDE_PROGRESS_REQUEST = 4101;
     public static final short GUIDE_PROGRESS_RESPONSE = 4102;
 
+    // ========== 背包类 (5xxx) ==========
+    public static final short BAG_SNAPSHOT_REQUEST = 5001;
+    public static final short BAG_SNAPSHOT_RESPONSE = 5002;
+
     // ========== 系统类 (9xxx) ==========
     public static final short ERROR = 9001;
     public static final short KICK = 9004;
@@ -66,6 +70,8 @@ public class MessageIds {
             case 4002: return "FUNCTION_OPEN_PUSH";
             case 4101: return "GUIDE_PROGRESS_REQUEST";
             case 4102: return "GUIDE_PROGRESS_RESPONSE";
+            case 5001: return "BAG_SNAPSHOT_REQUEST";
+            case 5002: return "BAG_SNAPSHOT_RESPONSE";
             case 9001: return "ERROR";
             case 9004: return "KICK";
             default: return "UNKNOWN(" + id + ")";

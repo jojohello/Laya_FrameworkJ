@@ -243,7 +243,7 @@
               "_$type": "GBox",
               "name": "rewardItem",
               "width": 112,
-              "height": 150,
+              "height": 112,
               "_$child": [
                 {
                   "_$id": "battle-victory-reward-item-container",
@@ -251,19 +251,6 @@
                   "name": "itemContainer",
                   "width": 112,
                   "height": 112
-                },
-                {
-                  "_$id": "battle-victory-reward-item-name",
-                  "_$type": "GTextField",
-                  "name": "rewardName",
-                  "y": 112,
-                  "width": 112,
-                  "height": 34,
-                  "text": "中级精石",
-                  "fontSize": 20,
-                  "color": "#4c4c44",
-                  "align": "center",
-                  "valign": "middle"
                 }
               ]
             }

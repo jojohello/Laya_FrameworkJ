@@ -41,6 +41,10 @@ FUNCTION_OPEN_PUSH: { id: 4002, scope: game }
 GUIDE_PROGRESS_REQUEST: { id: 4101, scope: game }
 GUIDE_PROGRESS_RESPONSE: { id: 4102, scope: game }
 
+# ========== Bag ==========
+BAG_SNAPSHOT_REQUEST: { id: 5001, scope: game }
+BAG_SNAPSHOT_RESPONSE: { id: 5002, scope: game }
+
 # ========== 系统协议 ==========
 ERROR: { id: 9001, scope: shared }
 NOTIFICATION: { id: 9002, scope: gateway }

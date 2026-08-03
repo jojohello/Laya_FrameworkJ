@@ -1,0 +1,9 @@
+{
+  "bagType": "main",
+  "baseVersion": "7",
+  "version": "8",
+  "changes": [
+    { "itemId": 1001, "delta": 2, "count": 5 },
+    { "itemId": 1002, "delta": -12, "count": 0 }
+  ]
+}

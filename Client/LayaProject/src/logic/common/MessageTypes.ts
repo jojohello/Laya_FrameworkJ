@@ -6,6 +6,7 @@
  *
  * 定义所有客户端和服务器之间通信的消息类型
  */
+/** @deprecated Runtime code must use the generated numeric MessageIds module. */
 export const MessageTypes = {
     // ========== 登录相关 ==========
     LOGIN: "LOGIN",

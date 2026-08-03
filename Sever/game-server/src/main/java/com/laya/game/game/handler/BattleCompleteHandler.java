@@ -34,6 +34,8 @@ public class BattleCompleteHandler implements MessageHandler {
         payload.put("rewarded", result.rewarded());
         payload.put("rewards", result.rewards());
         if (result.wallet() != null) payload.put("wallet", result.wallet());
+        if (result.bagDelta() != null) payload.put("bagDelta", result.bagDelta());
+        if (result.bagSnapshot() != null) payload.put("bagSnapshot", result.bagSnapshot());
         if (result.reason() != null) payload.put("reason", result.reason());
         send(context, payload);
     }

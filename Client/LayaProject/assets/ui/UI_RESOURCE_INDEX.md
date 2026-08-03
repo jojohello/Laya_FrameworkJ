@@ -5,9 +5,9 @@
 | `ui/mainscene/systemBtn.lh` | `.lh` prefab | Main scene system-entry tab | Used by the `MainSceneView.ls` GList; `itemRenderer` assigns `loader_1.src` and `name_1.text` from each MainNav row; Radio selected state scales to `1.08` from the center |
 | `ui/battlescene/HealthBar.lh` | `.lh` prefab | Battle health bar | Reusable battle HUD component |
 | `ui/battlescene/BattleMainView.ls` | `.ls` scene | Full-screen battle HUD | Transparent screen UI; owns compact top-right 1×/2× speed, pause/back controls and pause overlay; clickable controls use GButton with static GImage children |
-| `ui/battlescene/BattleVictoryView.ls` | `.ls` modal scene | Battle victory result screen | Owns the victory emblem, score, reward GList and claim action; each reward reuses `ItemView.lh`; opened as `BattleVictoryUI` |
+| `ui/battlescene/BattleVictoryView.ls` | `.ls` modal scene | Battle victory result screen | Owns the victory emblem, score, icon-only reward GList and claim action; each reward reuses `ItemView.lh` without a separate item-name label; opened as `BattleVictoryUI` |
 | `ui/battlescene/BattleDefeatView.ls` | `.ls` modal scene | Battle defeat result screen | Owns the defeat gate, data-driven suggestion GList and return action; opened as `BattleDefeatUI` |
-| `ui/common/ItemView.lh` | `.lh` prefab | Reusable item slot | Layered bottom frame, quality background, dynamic icon, quantity, red point and selected frame; driven by `ItemViewController` |
+| `ui/common/ItemView.lh` | `.lh` prefab | Reusable item slot | Simple warm-gold border, quality background, dynamic icon, quantity, red point and selected frame; driven by `ItemViewController` |
 | `ui/battlescene/imgs/victory_emblem.png` | PNG | Victory result illustration | Transparent compact blue-crystal shield; UUID `bed03bfb-1c8d-481f-915f-ac13adb74a76`; text and score remain Laya nodes |
 | `ui/battlescene/imgs/defeat_gate.png` | PNG | Defeat result illustration | Transparent `380x380` crying Q-version wizard with broken wand and magic sparkles; existing UUID `42c88f84-2df9-49d0-a8ef-82b24472bc50` is preserved |
 | `ui/battlescene/imgs/btn_battle_speed.png` | PNG | Battle speed button background | Dedicated empty-center shield for runtime 1×/2× text; UUID `3b6045fd-fdd9-4783-bd8e-5ab994a6e4ac`, integrated by `BattleMainView.ls` |
@@ -31,12 +31,16 @@
 | `ui/mainscene/imgs/icon-shop.png` | PNG | Main-scene shop navigation icon | Dedicated fantasy storefront icon, UUID `7e5dd6d7-2bb1-4c11-a3a2-1a57475b9be0`; MainNav runtime path is `ui/mainscene/imgs/icon-shop.png` |
 | `ui/mainscene/imgs/player-level-badge.png` | PNG | Empty level medallion | Level number remains a Laya text node |
 | `ui/common/imgs/currency-crystal.png` | PNG | Premium-currency icon | Common independent icon; current HUD slot displays zero until a formal currency Item is configured |
-| `ui/common/imgs/currency-gold.png` | PNG | Gold currency icon | Reads Wallet Item ID 1001 in the current HUD |
+| `ui/common/imgs/items/currency-gold.png` | PNG | Canonical Gold Item/HUD icon | `128x128`; Item ID 1001 and the top HUD use the same imported resource |
+| `ui/common/imgs/items/gem-ruby.png` | PNG | Ruby inventory icon | `128x128`; Item ID 1101, max stack 10 |
+| `ui/common/imgs/items/gem-sapphire.png` | PNG | Sapphire inventory icon | `128x128`; Item ID 1102, max stack 10 |
+| `ui/common/imgs/items/gem-emerald.png` | PNG | Emerald inventory icon | `128x128`; Item ID 1103, max stack 10 |
+| `ui/common/imgs/items/gem-topaz.png` | PNG | Topaz inventory icon | `128x128`; Item ID 1104, max stack 10 |
 | `ui/common/imgs/stamina-potion.png` | PNG | Player stamina icon | Reads the player initialization stamina field |
 | `ui/common/imgs/exp-track.png` | PNG | Compact experience track | Used with a separately clipped/scaled fill image |
 | `ui/common/imgs/exp-fill.png` | PNG | Compact green experience fill | The maximum experience source still needs a formal level configuration |
 | `ui/mainscene/MainSceneView.ls` | `.ls` scene | Main scene container | Loads `playerProfile.lh`, passes player data to `TopPrefab`, and owns main-scene system-entry behavior |
-| `ui/bag/bagUI.ls` | `.ls` scene | Main-scene bag content page | Root-Relation gray-blue backdrop sits below a warm-gold window panel; the panel and 5-column `ItemView.lh` list keep their confirmed root Relations, while equal-sized embedded-page tabs remain on one baseline and switch art without movement. The page stays below the persistent MainUI HUD and navigation |
+| `ui/bag/bagUI.ls` | `.ls` scene | Main-scene bag content page | Root-Relation gray-blue backdrop sits below a warm-gold window panel; the `ItemView.lh` list uses a wrapping FlowX grid and computes visible rows/columns from the live viewport, while equal-sized embedded-page tabs remain on one baseline and switch art without movement. The page stays below the persistent MainUI HUD and navigation |
 
 ## Selection rule
 

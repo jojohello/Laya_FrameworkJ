@@ -15,7 +15,6 @@
 当前回归基线包含两类子弹边界：
 
 - `BulletLiveTargetHitCase`：直线子弹命中一个存活目标恰好一次，并在命中后回收；
-- `BulletLineLifetimeRegressionCase`：直线子弹没有命中目标时，必须在配置的飞行时间到期后回收；
 - `BulletReleaseRegressionCase`：追踪子弹启动后目标被释放并从对象池复用，子弹必须取消，复用后的新实体不得受击。
 - `SceneDestroyRecreateRegressionCase`：场景销毁后重新创建测试世界，已回池实体必须取得新 UID，旧 UID、对象表和空间索引不得泄漏到新场景（已通过 IDE 插件入口运行）。
 - `SkillReleaseRegressionCase`：延迟 Skill Action 排队后施法者释放并回池复用，旧 Action 不得执行，复用对象不得保留施法状态（已通过 IDE 插件入口运行）。

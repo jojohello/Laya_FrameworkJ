@@ -1,6 +1,7 @@
 package com.laya.game.game.battle;
 
-import com.laya.game.game.bag.BagRepository;
+import com.laya.game.game.bag.BagService;
+import com.laya.game.game.protocol.payload.bag.BagPayloads;
 import com.laya.game.game.config.ConfigManager;
 import com.laya.game.game.configStruct.BattleStageConfig;
 import com.laya.game.game.configStruct.ItemConfig;
@@ -26,14 +27,14 @@ public class BattleSettlementService {
     private final JdbcTemplate jdbcTemplate;
     private final ConfigManager configManager;
     private final WalletRepository walletRepository;
-    private final BagRepository bagRepository;
+    private final BagService bagService;
 
     public BattleSettlementService(JdbcTemplate jdbcTemplate, ConfigManager configManager,
-                                   WalletRepository walletRepository, BagRepository bagRepository) {
+                                   WalletRepository walletRepository, BagService bagService) {
         this.jdbcTemplate = jdbcTemplate;
         this.configManager = configManager;
         this.walletRepository = walletRepository;
-        this.bagRepository = bagRepository;
+        this.bagService = bagService;
     }
 
     @Transactional
@@ -59,13 +60,14 @@ public class BattleSettlementService {
         }
 
         List<BattleReward> rewards = victory ? configuredRewards(session.stageId) : List.of();
-        if (victory) grantRewards(playerId, rewards);
+        BagPayloads.BagDelta bagDelta = victory ? grantRewards(playerId, rewards) : null;
         String status = victory ? VICTORY : DEFEAT;
         String snapshot = encodeRewards(rewards);
         jdbcTemplate.update(
                 "UPDATE player_battle_session SET status = ?, reward_snapshot = ?, completed_at = ? WHERE session_id = ?",
                 status, snapshot, System.currentTimeMillis(), sessionId);
-        return new CompleteResult(true, victory, true, rewards, walletRepository.findOrCreate(playerId), null);
+        return new CompleteResult(true, victory, true, rewards, walletRepository.findOrCreate(playerId),
+                bagDelta, null, null);
     }
 
     private SessionRow findForUpdate(String sessionId) {
@@ -82,7 +84,8 @@ public class BattleSettlementService {
     private CompleteResult toRecordedResult(SessionRow session) {
         boolean victory = VICTORY.equals(session.status);
         List<BattleReward> rewards = decodeRewards(session.rewardSnapshot);
-        return new CompleteResult(true, victory, false, rewards, walletRepository.findOrCreate(session.playerId), null);
+        return new CompleteResult(true, victory, false, rewards, walletRepository.findOrCreate(session.playerId),
+                null, bagService.snapshot(session.playerId, BagPayloads.BagType.MAIN), null);
     }
 
     private List<BattleReward> configuredRewards(int stageId) {
@@ -91,16 +94,18 @@ public class BattleSettlementService {
         return decodeRewards(stage.getVictoryRewards());
     }
 
-    private void grantRewards(long playerId, List<BattleReward> rewards) {
+    private BagPayloads.BagDelta grantRewards(long playerId, List<BattleReward> rewards) {
+        Map<Integer, Long> bagRewards = new LinkedHashMap<>();
         for (BattleReward reward : rewards) {
             ItemConfig item = configManager.get(ItemConfig.class, reward.itemId());
             if (item == null) throw new IllegalStateException("unknown_reward_item:" + reward.itemId());
             if ("Currency".equalsIgnoreCase(item.getType())) {
                 walletRepository.changeBalance(playerId, reward.itemId(), reward.quantity());
             } else {
-                bagRepository.changeItemCount(playerId, reward.itemId(), reward.quantity());
+                bagRewards.merge(reward.itemId(), reward.quantity(), Math::addExact);
             }
         }
+        return bagService.changeItemCounts(playerId, BagPayloads.BagType.MAIN, bagRewards);
     }
 
     /** CSV grammar: itemId:quantity;itemId:quantity. Empty means no reward. */
@@ -144,9 +149,10 @@ public class BattleSettlementService {
     }
 
     public record CompleteResult(boolean success, boolean victory, boolean rewarded,
-                                 List<BattleReward> rewards, WalletInitData wallet, String reason) {
+                                 List<BattleReward> rewards, WalletInitData wallet,
+                                 BagPayloads.BagDelta bagDelta, BagPayloads.BagSnapshot bagSnapshot, String reason) {
         static CompleteResult failed(String reason) {
-            return new CompleteResult(false, false, false, List.of(), null, reason);
+            return new CompleteResult(false, false, false, List.of(), null, null, null, reason);
         }
     }
 

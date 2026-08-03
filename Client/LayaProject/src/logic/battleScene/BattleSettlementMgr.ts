@@ -3,6 +3,7 @@ import { LogicProtocol } from "../common/LogicProtocol";
 import { MessageIds } from "../common/MessageIds";
 import { WalletMgr } from "../wallet/WalletMgr";
 import { WalletInitData } from "../init/GameInitData";
+import { BagMgr } from "../item/BagMgr";
 
 export interface BattleRewardData {
     itemId: number;
@@ -88,6 +89,8 @@ export class BattleSettlementMgr implements IManager {
         const resolve = this._completeResolve;
         this._completeResolve = null;
         if (data?.wallet) WalletMgr.instance.applyInit(data.wallet as WalletInitData);
+        if (data?.bagSnapshot) BagMgr.instance.applySnapshot(data.bagSnapshot);
+        else if (data?.bagDelta) BagMgr.instance.applyDelta(data.bagDelta);
         const rewards = Array.isArray(data?.rewards)
             ? data.rewards.map((reward: any) => ({
                 itemId: Math.max(0, Math.floor(Number(reward?.itemId) || 0)),

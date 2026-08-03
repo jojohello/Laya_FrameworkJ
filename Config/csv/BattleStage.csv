@@ -2,9 +2,9 @@ Title,ID,stageName,copyType,battleId,canEnter,victoryRewards,mapType,map
 Type,int,str,str,int,bool,str,str,str
 Description,关卡ID,关卡名称,副本类型,战斗ID,是否可进入,胜利奖励(itemId:数量;itemId:数量),地图类型(image/tilemap),地图资源路径
 UsedSize,cs,c,c,cs,cs,cs,c,c
-,1001,第一关,normal,1,true,1001:100,tilemap,map/map002/fightmap.json
-,1002,第二关,normal,2,true,1001:120,tilemap,map/map002/fightmap.json
-,1003,第三关,normal,3,true,1001:140,tilemap,map/map002/fightmap.json
-,1004,第四关,normal,4,true,1001:160,tilemap,map/map002/fightmap.json
-,1005,第五关,normal,5,true,1001:180,tilemap,map/map002/fightmap.json
-,1006,Boss关,boss,6,true,1001:300,tilemap,map/map002/fightmap.json
+,1001,第一关,normal,1,true,1001:100;1101:3,tilemap,map/map002/fightmap.json
+,1002,第二关,normal,2,true,1001:120;1102:4,tilemap,map/map002/fightmap.json
+,1003,第三关,normal,3,true,1001:140;1103:5,tilemap,map/map002/fightmap.json
+,1004,第四关,normal,4,true,1001:160;1104:6,tilemap,map/map002/fightmap.json
+,1005,第五关,normal,5,true,1001:180;1101:2;1102:2;1103:2;1104:2,tilemap,map/map002/fightmap.json
+,1006,Boss关,boss,6,true,1001:300;1101:12;1102:12;1103:12;1104:12,tilemap,map/map002/fightmap.json

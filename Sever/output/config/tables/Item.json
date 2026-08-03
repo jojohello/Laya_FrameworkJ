@@ -21,6 +21,34 @@
     "UseAction": ""
   },
   {
+    "ID": 1101,
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": ""
+  },
+  {
+    "ID": 1102,
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": ""
+  },
+  {
+    "ID": 1103,
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": ""
+  },
+  {
+    "ID": 1104,
+    "Type": "Material",
+    "Quality": 2,
+    "MaxStack": 10,
+    "UseAction": ""
+  },
+  {
     "ID": 2001,
     "Type": "Equipment",
     "Quality": 2,
