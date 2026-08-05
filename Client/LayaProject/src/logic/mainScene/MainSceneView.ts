@@ -39,6 +39,7 @@ export class MainSceneView extends MainSceneViewBase {
     private static readonly BATTLE_FUNCTION_ID = 1001;
     private static readonly DEFAULT_SELECTED_INDEX = 2;
     private static readonly GOLD_CURRENCY_ITEM_ID = 1001;
+    private static readonly CRYSTAL_CURRENCY_ITEM_ID = 1004;
     private static readonly EXP_BAR_WIDTH = 106;
     private static readonly DISPLAY_EXP_PER_LEVEL = 100;
 
@@ -291,7 +292,7 @@ export class MainSceneView extends MainSceneViewBase {
         if (avatar) avatar.src = "ui/common/imgs/player-avatar-default.png";
         this.applyAvatarMask(avatar);
         profile.setPlayerIdentity(data?.name, data?.level);
-        if (crystalAmount) crystalAmount.text = "0";
+        if (crystalAmount) crystalAmount.text = this.formatCompactAmount(WalletMgr.instance.getBalance(MainSceneView.CRYSTAL_CURRENCY_ITEM_ID));
         if (goldAmount) goldAmount.text = this.formatCompactAmount(WalletMgr.instance.getBalance(MainSceneView.GOLD_CURRENCY_ITEM_ID));
         if (staminaAmount) staminaAmount.text = this.formatCompactAmount(data?.stamina || 0);
         if (expFill) {

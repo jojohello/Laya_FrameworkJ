@@ -5,13 +5,20 @@
     "sRGB": true,
     "premultiplyAlpha": true,
     "platformDefault": {
-      "format": 10
+      "format": 10,
+      "quality": 1
     },
     "platformAndroid": {
-      "format": "ASTC_6X6"
+      "format": "ASTC_6X6",
+      "quality": 1
     },
     "platformIOS": {
-      "format": "ASTC_6X6"
+      "format": "ASTC_6X6",
+      "quality": 1
+    },
+    "platformPC": {
+      "format": "R8G8B8A8",
+      "quality": 1
     }
   }
 }

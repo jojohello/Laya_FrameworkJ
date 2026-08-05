@@ -11,6 +11,7 @@ import { Protocol } from "./network/Protocol";
 import { MessageDispatcher } from "./network/MessageDispatcher";
 import { LoginProtocol } from "./login/LoginProtocol";
 import { SystemProtocol } from "./network/SystemProtocol";
+import { MyGameConfig } from "./MyGameConfig";
 
 /**
  * StartMain - 主包入口
@@ -19,9 +20,11 @@ import { SystemProtocol } from "./network/SystemProtocol";
  * - 初始化引擎和基础服务
  * - 显示登录界面
  * - 等待用户登录
- * - 登录成功后加载 Logic 分包
+ * - 登录成功后加载 Logic 与正式游戏资源分包
  */
 export class StartMain {
+    private static readonly LOGIC_SUBPACKAGE = "logic";
+
     private _logicMain: any | null = null; // LogicMain 类型（分包加载后才有）
     private _loginScene: Laya.Scene | null = null;
     private _systemProtocol: SystemProtocol | null = null;
@@ -41,6 +44,9 @@ export class StartMain {
     async start() {
         // 1. 初始化引擎相关配置
         this.initEngine();
+
+        // Start owns environment selection; Logic receives only this immutable snapshot.
+        MyGameConfig.publish();
 
         // 2. 初始化事件分发器
         (Laya.Browser.window as any)["eventDispatcher"] = new Laya.EventDispatcher();
@@ -80,7 +86,7 @@ export class StartMain {
     }
 
     /**
-     * 登录成功后调用 - 加载 Logic 分包
+     * 登录成功后调用 - 加载 Logic 与正式游戏资源分包
      *
      * 此方法由 LoginView 在登录成功后调用
      */
@@ -116,7 +122,7 @@ export class StartMain {
             this._isLoadingComplete = true;
 
         } catch (error) {
-            console.error("[StartMain] ❌ 加载 Logic 分包失败:", error);
+            console.error("[StartMain] ❌ 加载游戏分包失败:", error);
             LoadingMgr.instance.forceHide();
         }
     }
@@ -125,10 +131,10 @@ export class StartMain {
      * 执行加载流程（分包加载 → LogicMain → 核心流程 → 主界面）
      */
     private async executeLoadingFlow(): Promise<void> {
-        // Phase 1: 加载 Logic 分包 (0% - 40%)
+        // Phase 1: 加载 Logic 与正式游戏资源分包 (0% - 40%)
         this._loadingPhase = "加载分包资源...";
         this._loadingProgress = 0.1;
-        await this.loadLogicSubpackage();
+        await this.loadGameSubpackages();
         this._loadingProgress = 0.4;
 
         // Phase 2: 初始化 LogicMain (40% - 60%)
@@ -162,42 +168,40 @@ export class StartMain {
 
     // ==================== 分包加载 ====================
 
-    /**
-     * 加载 Logic 分包
-     */
-    private async loadLogicSubpackage(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // LayaAir 分包加载 API
-            // 注意：Laya.loader.loadPackage 在不同平台有不同的参数重载
-            // - 微信小游戏：loadPackage(name, onProgress)
-            // - Web 平台：loadPackage(name, remoteUrl, onProgress)
+    /** Load the local Logic code package first, then register remote resource packages. */
+    private async loadGameSubpackages(): Promise<void> {
+        const remotePackages = MyGameConfig.remoteResourcePackages;
+        const packageCount = remotePackages.length + 1;
+        let completedCount = 0;
 
+        const loadPackage = async (packageName: string, remoteUrl?: string): Promise<void> => {
             const onProgress = (progress: any) => {
-                // progress 可能是数字（0-1）或对象 { loaded, total }
                 let progressValue = 0;
-
-                if (typeof progress === 'number') {
+                if (typeof progress === "number") {
                     progressValue = progress;
-                } else if (progress && typeof progress.loaded === 'number' && typeof progress.total === 'number') {
-                    progressValue = progress.loaded / progress.total;
-                } else {
-                    progressValue = 0;
+                } else if (progress && typeof progress.loaded === "number" && typeof progress.total === "number") {
+                    progressValue = progress.total > 0 ? progress.loaded / progress.total : 0;
                 }
-
-                // 更新 Loading 进度（通过 LoadingMgr）
-                this._loadingProgress = 0.1 + progressValue * 0.3; // 10% - 40%
+                const completedPackages = completedCount + Math.max(0, Math.min(1, progressValue));
+                this._loadingProgress = 0.1 + completedPackages / packageCount * 0.3;
             };
 
-            // 调用 LayaAir 分包加载 API
-            Laya.loader.loadPackage("logic", onProgress)
-                .then(() => {
-                    resolve();
-                })
-                .catch((error: any) => {
-                    console.error("[StartMain] ❌ Logic 分包加载失败:", error);
-                    reject(error);
-                });
-        });
+            try {
+                if (remoteUrl) await Laya.loader.loadPackage(packageName, remoteUrl, onProgress);
+                else await Laya.loader.loadPackage(packageName, onProgress);
+                completedCount++;
+                this._loadingProgress = 0.1 + completedCount / packageCount * 0.3;
+            } catch (error) {
+                console.error(`[StartMain] ❌ 分包加载失败: ${packageName}`, error);
+                throw error;
+            }
+        };
+
+        await loadPackage(StartMain.LOGIC_SUBPACKAGE);
+        const remoteUrl = MyGameConfig.resourcePackageBaseUrl;
+        for (const packageName of remotePackages) {
+            await loadPackage(packageName, remoteUrl);
+        }
     }
 
     /**

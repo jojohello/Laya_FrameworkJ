@@ -77,7 +77,11 @@ const result = await SDKUtils.wxApiCall((success, fail) => {
 }, 3000); // 3秒超时
 ```
 
-### 3. 工具函数
+### 3. 微信登录模式
+
+`WechatMiniGameSDK` 始终负责微信小游戏平台接入，登录凭据由 `MyGameConfig.loginMode` 决定：`Local` 使用 Login Server 现有的固定开发微信凭据，方便微信开发者工具联调；`Test` 与 `Production` 使用 `wx.login()` 返回的真实临时代码。开发凭据只能在 `Local` 环境生成，正式环境还要求服务端通过微信 `code2Session` 校验。
+
+### 4. 工具函数
 
 #### 设备信息获取
 ```typescript

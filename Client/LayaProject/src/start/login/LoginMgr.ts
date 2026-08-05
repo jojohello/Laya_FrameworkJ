@@ -2,7 +2,6 @@
 // 登录管理器，通过SDKMgr调用登录接口
 
 import { SDKMgr, Platform, LoginResponse } from "../sdk/SDKMgr";
-import { Config } from "../Config";
 import { LoginProtocol } from "./LoginProtocol";
 
 export class LoginMgr {
@@ -188,16 +187,15 @@ export class LoginMgr {
      * 设置服务器地址
      */
     public setServerUrl(url: string): void {
-        // 注意：Config中的URL是静态配置，无法动态修改
-        // 如需修改URL，请直接修改Config.ts文件中的LOGIN_SERVER_URLS配置
-        console.warn("LoginMgr: 如需修改登录 URL，请修改 Config.ts 文件");
+        // MyGameConfig is the single source of truth and is immutable at runtime.
+        console.warn("LoginMgr: 如需修改登录 URL，请修改 MyGameConfig 的环境配置");
     }
     
     /**
      * 获取当前平台
      */
     public getPlatform(): Platform {
-        return Config.getPlatform();
+        return this._sdkMgr.getPlatform();
     }
     
     /**

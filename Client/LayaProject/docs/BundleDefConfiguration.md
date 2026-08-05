@@ -32,7 +32,7 @@
   "enableSubpackages": true,
   "subpackages": [
     {
-      "path": "../src/logic",
+      "path": "logic",
       "mainScript": "res://fab2a401-bee2-4db4-bade-e3966699346e"  // ← LogicLib.bundledef 的 UUID
     }
   ]
@@ -48,6 +48,8 @@ src/logic/LogicLib.bundledef.meta
     ↓ (包含 UUID: fab2a401-bee2-4db4-bade-e3966699346e)
 settings/BuildSettings.json
     ↓ (通过 mainScript 引用此 UUID)
+assets/logic/ 作为本地分包资源锚点
+    ↓ (发布为 logic/)
 分包配置生效
 ```
 

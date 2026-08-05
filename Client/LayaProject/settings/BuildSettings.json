@@ -4,19 +4,63 @@
   "startupScene": "res://767ada5e-aa5b-43a7-b28a-9a1557d27514",
   "alwaysIncluded": [
     "ttf",
+    "startupUI",
     "bigImg",
-    "startupUI"
+    "character",
+    "config",
+    "effects",
+    "guides",
+    "map",
+    "scene",
+    "shaders",
+    "ui"
   ],
   "enableVersion": true,
   "enableSubpackages": true,
   "subpackages": [
     {
-      "path": "../src/logic",
-      "mainScript": "res://fab2a401-bee2-4db4-bade-e3966699346e",
-      "autoLoad": true
+      "path": "logic",
+      "mainScript": "res://fab2a401-bee2-4db4-bade-e3966699346e"
+    },
+    {
+      "path": "bigImg",
+      "remote": true
+    },
+    {
+      "path": "character",
+      "remote": true
+    },
+    {
+      "path": "config",
+      "remote": true
+    },
+    {
+      "path": "effects",
+      "remote": true
+    },
+    {
+      "path": "guides",
+      "remote": true
+    },
+    {
+      "path": "map",
+      "remote": true
+    },
+    {
+      "path": "scene",
+      "remote": true
+    },
+    {
+      "path": "shaders",
+      "remote": true
+    },
+    {
+      "path": "ui",
+      "remote": true
     }
   ],
   "web": {
+    "keepTextureSourceFile": true,
     "useSafeFileExtensions": true
   },
   "android": {

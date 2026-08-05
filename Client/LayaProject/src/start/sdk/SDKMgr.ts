@@ -4,14 +4,9 @@
 import { ISDK } from "./ISDK";
 import { WebSDK } from "./WebSDK";
 import { WechatMiniGameSDK } from "./WechatMiniGameSDK";
-import { Config } from "../Config";
+import { MyGameConfig, Platform } from "../MyGameConfig";
 
-export enum Platform {
-    WEB = "web",
-    ANDROID = "android", 
-    IOS = "ios",
-    MINIGAME = "minigame"  // 微信小游戏
-}
+export { Platform };
 
 export interface LoginRequest {
     type: "GUEST" | "WECHAT";
@@ -50,25 +45,25 @@ export class SDKMgr {
     }
     
     constructor() {
-        // 根据Config配置创建对应的SDK
+        // 根据 MyGameConfig 的运行平台创建对应 SDK。
         this._currentSDK = this.createSDKByConfig();
     }
     
     /**
-     * 根据Config配置创建对应的SDK
+     * 根据 MyGameConfig 创建对应的 SDK。
      */
     private createSDKByConfig(): ISDK {
-        const platform = Config.getPlatform();
+        const platform = MyGameConfig.platform;
         
         if (platform === Platform.MINIGAME) {
             const sdk = new WechatMiniGameSDK();
             // 设置服务器URL
-            sdk.setServerUrl(Config.getCurrentLoginServerUrl());
+            sdk.setServerUrl(MyGameConfig.loginApiBaseUrl);
             return sdk;
         } else {
             const sdk = new WebSDK();
             // 设置服务器URL
-            sdk.setServerUrl(Config.getCurrentLoginServerUrl());
+            sdk.setServerUrl(MyGameConfig.loginApiBaseUrl);
             return sdk;
         }
     }
@@ -77,9 +72,9 @@ export class SDKMgr {
      * 设置平台（手动指定）
      */
     public setPlatform(platform: Platform): void {
-        // 注意：Config中的平台是静态配置，无法动态修改
-        // 此方法仅用于重新创建SDK实例
-        this._currentSDK = this.createSDKByConfig();
+        const sdk = platform === Platform.MINIGAME ? new WechatMiniGameSDK() : new WebSDK();
+        sdk.setServerUrl(MyGameConfig.loginApiBaseUrl);
+        this._currentSDK = sdk;
     }
     
     /**
@@ -93,9 +88,7 @@ export class SDKMgr {
      * 设置服务器地址
      */
     public setServerUrl(url: string): void {
-        // 注意：Config中的URL是静态配置，无法动态修改
-        // 此方法仅用于重新创建SDK实例
-        this._currentSDK = this.createSDKByConfig();
+        this._currentSDK.setServerUrl(url);
     }
     
     /**
@@ -110,6 +103,6 @@ export class SDKMgr {
      * 检测是否微信环境
      */
     public isWechatEnvironment(): boolean {
-        return Config.getPlatform() === Platform.MINIGAME;
+        return this._currentSDK.getPlatform() === Platform.MINIGAME;
     }
 }

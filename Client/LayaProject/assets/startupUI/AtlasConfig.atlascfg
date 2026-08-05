@@ -12,15 +12,15 @@
     "format": 0,
     "quality": 1
   },
-  "platformPC2": {
-    "format": "BC1",
+  "platformPC": {
+    "format": "R8G8B8A8",
     "quality": 1
   },
-  "platformAndroid2": {
-    "format": "ASTC_4X4",
+  "platformAndroid": {
+    "format": "ASTC_6X6",
     "quality": 1
   },
-  "platformIOS2": {
+  "platformIOS": {
     "format": "ASTC_6X6",
     "quality": 1
   }

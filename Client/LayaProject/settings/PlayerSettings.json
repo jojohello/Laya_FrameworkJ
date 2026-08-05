@@ -23,7 +23,7 @@
   "spineVersion": "4.1",
   "splash": {
     "backgroundColor": "rgba(44, 44, 44, 1)",
-    "image": "assets/bigImg/loading_bg.png",
+    "image": "assets/startupUI/loading_bg.png",
     "fit": "center"
   }
 }

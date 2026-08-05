@@ -4,7 +4,7 @@
 
 测试夹具、对象池生命周期和 IDE 场景脚本缓存的稳定约束见上级 [DESIGN.md](../DESIGN.md)。
 
-本包位于 `assets/testAndSample/testBulletLifecycle/`：场景和说明位于包根目录，`scripts/` 放可挂载的 TypeScript 与用例。直接场景入口为兼容 IDE 预览而允许 Runtime 加载，只可作为开发期回退入口，不能单独作为正式包排除证明。
+本包位于 `assets/testAndSample/testBulletLifecycle/`：场景和说明位于包根目录，`scripts/` 放 TypeScript 用例。`TestBulletLifecycle.bundledef` 禁止 Runtime 发布；正式调用式入口使用相邻的 `testBulletLifecycleEditorPlugin/`，直接场景只保留为源资源，不作为正式运行入口。
 
 ## 在当前项目运行
 
@@ -39,4 +39,4 @@
 
 ## 复用到其他项目
 
-复制整个 `assets/testAndSample/testBulletLifecycle/` 到目标项目的 `assets/testAndSample/` 下。若需发布安全的调用式入口，配套采用 `testBulletLifecycleEditorPlugin/` 的 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 模式；若项目的场景对象入口或生命周期不同，仅替换 `scripts/scenarios/` 里的适配用例。微信等正式构建后仍须搜索产物确认测试资源和脚本不存在。
+复制整个 `assets/testAndSample/testBulletLifecycle/` 到目标项目的 `assets/testAndSample/` 下，并配套采用 `testBulletLifecycleEditorPlugin/` 的 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 模式；若项目的场景对象入口或生命周期不同，仅替换 `scripts/scenarios/` 里的适配用例。脚本集必须保持 `allowLoadInRuntime=false`，微信等正式构建后仍须搜索产物确认测试资源和脚本不存在。

@@ -6,7 +6,7 @@
 
 在 IDE 刷新脚本后，从工具菜单执行 `runBulletLifecycleHeadlessTest`。弹窗可分别运行子弹、回池、技能、Buff、AI 调度和局部避让用例，也可运行全部测试。每个按钮仅执行对应测试，并在窗口底部显示通过或失败；控制台仍保留完整 `[HeadlessTest] PASS / FAIL / SUMMARY`。
 
-本目录是开发期首选的调用式入口；编辑器与 Scene 进程脚本分别由 `@IEditor`、`@IEditorEnv` 装饰器隔离，不会作为正式运行时脚本进入发布 bundle。微信发布产物检查仍是最终证据；在此之前，`testBulletLifecycle/` 的直接场景入口保留为 IDE 兼容回退。
+本目录是开发期调用式入口；编辑器与 Scene 进程脚本分别由 `@IEditor`、`@IEditorEnv` 装饰器隔离，不会作为正式运行时脚本进入发布 bundle。相邻测试包关闭 Runtime 发布，直接场景只保留源资源；微信发布产物检查仍是最终排除证据。
 
 弹窗新增 `AI 三组调度与回池`：验证真实 AI 调度器的轮转、释放 UID 清理、回池复用隔离和注销清理。`运行全部测试` 会一并执行该用例。
 

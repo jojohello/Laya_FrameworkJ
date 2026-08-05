@@ -1,0 +1,28 @@
+{
+  "rules": [
+    {
+      "id": "big-images",
+      "path": "bigImg"
+    },
+    {
+      "id": "characters",
+      "path": "character"
+    },
+    {
+      "id": "effects",
+      "path": "effects"
+    },
+    {
+      "id": "maps",
+      "path": "map"
+    },
+    {
+      "id": "startup-ui",
+      "path": "startupUI"
+    },
+    {
+      "id": "ui",
+      "path": "ui"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import { Platform, LoginRequest, LoginResponse } from "./SDKMgr";
 import { SDKUtils } from "./SDKUtils";
 
 export class WebSDK implements ISDK {
-    private _serverUrl: string = "http://localhost:8081/api";
+    private _serverUrl: string = "";
     
     getPlatform(): Platform {
         return Platform.WEB;

@@ -2,11 +2,12 @@
 // 微信小游戏平台SDK实现
 
 import { ISDK } from "./ISDK";
-import { Platform, LoginRequest, LoginResponse } from "./SDKMgr";
+import type { LoginRequest, LoginResponse } from "./SDKMgr";
 import { SDKUtils } from "./SDKUtils";
+import { LoginMode, MyGameConfig, Platform } from "../MyGameConfig";
 
 export class WechatMiniGameSDK implements ISDK {
-    private _serverUrl: string = "http://localhost:8081/api";
+    private _serverUrl: string = "";
     
     getPlatform(): Platform {
         return Platform.MINIGAME;
@@ -18,8 +19,12 @@ export class WechatMiniGameSDK implements ISDK {
     
     async login(accountName?: string): Promise<LoginResponse> {
         try {
-            // 微信登录的第一步：获取微信授权码
-            const wechatCode = await this.getWechatCode();
+            // Local only: the checked-in Login Server currently exposes a fixed
+            // development credential. Test/Production must use the real wx.login code.
+            const isDeveloperLogin = MyGameConfig.loginMode === LoginMode.Developer;
+            const wechatCode = isDeveloperLogin
+                ? this.getDeveloperWechatCode()
+                : await this.getWechatCode();
             
             // 获取微信用户信息（可选）
             const userInfo = await this.getWechatUserInfo();
@@ -34,7 +39,9 @@ export class WechatMiniGameSDK implements ISDK {
                 extraParams: JSON.stringify({
                     userInfo: userInfo || {},
                     openId: userInfo?.openId || "",
-                    unionId: userInfo?.unionId || ""
+                    unionId: userInfo?.unionId || "",
+                    mode: MyGameConfig.loginMode,
+                    developer: accountName?.trim() || ""
                 })
             };
             
@@ -45,6 +52,13 @@ export class WechatMiniGameSDK implements ISDK {
             console.error("WechatMiniGameSDK: 微信登录失败:", error);
             throw error;
         }
+    }
+
+    private getDeveloperWechatCode(): string {
+        if (!MyGameConfig.isLocalEnvironment) {
+            throw new Error("开发微信登录凭据只能用于 Local 环境");
+        }
+        return "test_wechat_code";
     }
     
     /**

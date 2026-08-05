@@ -92,7 +92,8 @@ export class LogicMain {
     async startCoreFlow(): Promise<void> {
         try {
             // 1. 连接Gateway
-            const gatewayUrl = App.network.gatewayWsUrl || "ws://localhost:8082/ws/native";
+            const gatewayUrl = App.network.gatewayWsUrl || App.gameConfig.endpoints.gatewayFallbackUrl;
+            if (!gatewayUrl) throw new Error("登录服务器未返回 Gateway URL，当前环境也未配置开发兜底地址");
 
             // ✅ 通过 App 访问 NetworkManager
             await App.networkManager.connect({

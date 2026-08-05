@@ -1,6 +1,22 @@
 {
   "uuid": "f3fcb1ee-5330-496c-8624-ba8886764f7c",
   "importer": {
-    "textureType": 2
+    "textureType": 2,
+    "platformDefault": {
+      "format": 10,
+      "quality": 1
+    },
+    "platformPC": {
+      "format": "R8G8B8A8",
+      "quality": 1
+    },
+    "platformAndroid": {
+      "format": "ASTC_6X6",
+      "quality": 1
+    },
+    "platformIOS": {
+      "format": "ASTC_6X6",
+      "quality": 1
+    }
   }
 }

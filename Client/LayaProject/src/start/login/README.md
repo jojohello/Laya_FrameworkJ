@@ -6,7 +6,7 @@
 ## 文件结构
 ```
 src/start/
-├── Config.ts           # 配置文件（平台和服务器URL）
+├── MyGameConfig.ts     # 环境、平台和服务器地址的唯一配置入口
 
 ├── login/
 │   ├── LoginMgr.ts     # 登录管理器主类
@@ -28,7 +28,7 @@ src/start/
 - **单例模式**: 全局唯一实例
 
 ### 配置系统
-- **Config**: 静态配置类，发布时手动修改平台和登录服务器URL
+- **MyGameConfig**: 按 Local/Test/Production 环境集中提供登录 API、远程资源地址和开发 Gateway 兜底；平台由运行环境识别
 
 ### 平台SDK实现
 - **ISDK**: SDK接口，定义所有平台必须实现的方法（getPlatform、login、setServerUrl）
@@ -48,18 +48,13 @@ src/start/
 
 ### 1. 配置修改
 ```typescript
-// 在 src/start/Config.ts 中修改以下配置：
+// 在 src/start/MyGameConfig.ts 选择环境并维护对应地址：
+static readonly environment = GameEnvironment.Local;
 
-// 设置当前平台
-public static readonly CURRENT_PLATFORM: Platform = Platform.WEB;
-
-// 设置各平台登录服务器URL
-public static readonly LOGIN_SERVER_URLS: { [key in Platform]: string } = {
-    [Platform.WEB]: "http://localhost:8081/api",
-    [Platform.ANDROID]: "http://localhost:8081/api", 
-    [Platform.IOS]: "http://localhost:8081/api",
-    [Platform.MINIGAME]: "http://localhost:8081/api"
-};
+// Local 默认值：
+// loginApiBaseUrl = "http://127.0.0.1:8081/api"
+// resourceBaseUrl = "http://127.0.0.1:8080/"
+// gatewayFallbackUrl = "ws://127.0.0.1:8082/ws/native"
 ```
 
 ### 2. 基本初始化
@@ -108,20 +103,10 @@ if (lastAccount) {
 
 ### 7. 配置查询
 ```typescript
-// 获取当前平台
-const platform = Config.getPlatform();
-
-// 获取当前平台的登录URL
-const loginUrl = Config.getCurrentLoginServerUrl();
-
-// 获取指定平台的登录URL
-const webLoginUrl = Config.getLoginServerUrl(Platform.WEB);
-
-// 获取所有平台配置
-const allUrls = Config.getAllLoginServerUrls();
-
-// 检测是否微信环境
-const isWechat = Config.isWechatEnvironment();
+const platform = MyGameConfig.platform;
+const loginUrl = MyGameConfig.loginApiBaseUrl;
+const resourceUrl = MyGameConfig.resourceBaseUrl;
+const isLocal = MyGameConfig.isLocalEnvironment;
 ```
 
 ## 登录流程
@@ -199,7 +184,7 @@ try {
 
 ## 平台配置
 
-系统根据Config.ts中的CURRENT_PLATFORM配置确定当前平台：
+系统根据 Laya 运行环境确定当前平台：
 - `Platform.WEB` - Web平台
 - `Platform.ANDROID` - Android平台
 - `Platform.IOS` - iOS平台  
@@ -207,9 +192,9 @@ try {
 
 ## 注意事项
 
-1. **配置修改**: 配置是静态的，需要直接修改Config.ts文件
-2. **平台发布**: 不同平台需要发布不同的版本，修改CURRENT_PLATFORM
-3. **服务器地址**: 需要根据实际部署情况修改LOGIN_SERVER_URLS
+1. **配置修改**: 在 `MyGameConfig.ts` 中选择环境并维护该环境的公开地址
+2. **平台发布**: 平台由运行环境识别，不再为每次发布手工切换平台常量
+3. **服务器地址**: Test/Production 未配置时会尽早报错；正式 Gateway URL 由登录服务器返回
 4. **本地存储**: 只记录上次登录账号，不保存Token等敏感信息
 5. **微信环境**: 微信登录只能在微信环境中使用
 6. **错误处理**: 建议在UI层面提供友好的错误提示
@@ -218,4 +203,4 @@ try {
 
 ## 示例代码
 
-参考 `Config.ts` 文件中的注释，展示了如何修改配置。
+参考 `MyGameConfig.ts` 中的环境配置和只读快照接口。

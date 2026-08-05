@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Release Verifier"
+  short_description: "Verify LayaAir WeChat packages, ASTC, and local testing"
+  default_prompt: "Use $laya-wechat-release-verifier to verify the current WeChat mini-game build and report blockers."

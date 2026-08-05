@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "allowLoadInEditor": true,
-  "allowLoadInRuntime": true,
+  "allowLoadInRuntime": false,
   "autoLoad": false,
   "entries": [],
   "includeAllFiles": true,

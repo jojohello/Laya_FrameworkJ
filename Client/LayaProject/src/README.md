@@ -1,9 +1,10 @@
 # 源码目录
 
-`src` 包含客户端 TypeScript 源码，分为启动层、逻辑层和 Laya 脚本组件。
+`src` 包含客户端 TypeScript 源码，分为启动层、逻辑层、编辑器工具和 Laya 脚本组件。
 
 - `start/`：首包启动、登录、网络、加载和平台 SDK。
 - `logic/`：逻辑分包中的游戏功能模块。
+- `editor/`：只在 LayaAir IDE 中运行的项目工具，不进入正式运行时 bundle。
 - `script/`：由 Laya 场景使用的通用脚本组件。
 
 架构与跨目录约束见 [DESIGN.md](DESIGN.md)。具体能力先读所在模块的 `README.md`；只有需要理解内部约束时再读模块 `DESIGN.md`。

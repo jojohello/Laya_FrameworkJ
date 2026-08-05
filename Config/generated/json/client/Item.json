@@ -30,6 +30,16 @@
     "Desc": "Recover test item"
   },
   {
+    "ID": 1004,
+    "Name": "Crystal",
+    "Type": "Currency",
+    "Quality": 1,
+    "MaxStack": 999999,
+    "UseAction": "",
+    "Icon": "ui/common/imgs/currency-crystal.png",
+    "Desc": "Premium currency"
+  },
+  {
     "ID": 1101,
     "Name": "Ruby",
     "Type": "Material",

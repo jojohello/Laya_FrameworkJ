@@ -53,7 +53,7 @@
       "name": "Item",
       "file": "Item.json",
       "path": "config/Item.json",
-      "rows": 8
+      "rows": 9
     },
     {
       "name": "MainNav",

@@ -21,6 +21,13 @@
     "UseAction": ""
   },
   {
+    "ID": 1004,
+    "Type": "Currency",
+    "Quality": 1,
+    "MaxStack": 999999,
+    "UseAction": ""
+  },
+  {
     "ID": 1101,
     "Type": "Material",
     "Quality": 2,

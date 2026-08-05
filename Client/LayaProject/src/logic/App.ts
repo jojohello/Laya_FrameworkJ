@@ -6,6 +6,7 @@
 // 使用 type-only import，避免将 Start 模块代码打包到 Logic 分包
 import type { NetworkContext } from "../start/network/NetworkContext";
 import type { LayerMgr } from "../start/utils/LayerMgr";
+import type { MyGameConfigSnapshot } from "../start/MyGameConfig";
 import * as MessageIds from "./common/MessageIds";
 import { ItemMgr } from "./item/ItemMgr";
 import { BagMgr } from "./item/BagMgr";
@@ -32,6 +33,7 @@ export class App {
 
     static systemProtocol: any;
     static loadingMgr: LoadingService;
+    static gameConfig: Readonly<MyGameConfigSnapshot>;
 
     // SceneMgr（Logic 分包，直接导入）
     static sceneMgr: SceneMgr;
@@ -68,6 +70,8 @@ export class App {
         this.loginMgr = (Laya.Browser.window as any).loginMgr;
         this.systemProtocol = (Laya.Browser.window as any).systemProtocol;
         this.loadingMgr = (Laya.Browser.window as any).loadingMgr as LoadingService;
+        this.gameConfig = (Laya.Browser.window as any).myGameConfig as Readonly<MyGameConfigSnapshot>;
+        if (!this.gameConfig) throw new Error("MyGameConfig 尚未由 Start 发布");
 
         // Logic 分包的 Manager（直接导入单例）
         this.sceneMgr = SceneMgr.instance;

@@ -48,6 +48,20 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 - 全项目只保留 `src/start/loading/LoadingMgr` 一套 Loading 显示实现。LoadingMgr 负责界面显示、逐帧刷新与关闭；各调用模块通过回调自行提供显示文字、进度值和完成条件。Logic 不得通过 `UIManager` 再创建第二套 Loading 界面，也不得静态导入 Start 的实现类。
 - `ManagerHub` 只注册需要统一生命周期协调的 Manager：需要统一 `init`、`reset`、`release` 或逐帧 `update` 中任一能力即可注册，各生命周期方法均为可选。无状态工具、纯算法和自行管理生命周期的服务不注册；不能为了满足接口保留空 `update`。新增注册时必须确认初始化依赖与反向释放顺序。
 
+## 微信构建与分包
+
+- 微信首包只保留启动场景、`startupUI` 和 `ttf`；Loading 背景属于 `startupUI`，不得通过 `alwaysIncluded` 强制打入整个大图目录。
+- `logic` 是微信本地纯代码分包：`assets/logic/` 是分包资源锚点，构建路径为 `logic`；入口为 `src/logic/LogicLib.bundledef`，不得标记为远程包。不得把 `src/logic` 的源码路径填写到资源文件夹，否则微信分包会被发布到包体根目录之外。正式资源按现有顶层路径形成 `bigImg/character/config/effects/guides/map/scene/shaders/ui` 远程分包，以保持运行时 URL 不变。
+- 代码动态加载的资源目录同时列入 `alwaysIncluded` 和对应的远程 `subpackages`：前者保证导出器不会裁剪资源，后者使它们输出到 `wxgame-remote` 而不是微信本地包。两个列表必须与 `MyGameConfig.remoteResourcePackages` 同步。
+- 所有游戏分包关闭构建器的启动前自动加载。首包 Loading 先注册微信本地 `logic` 代码包；资源包地址选择只能由 `MyGameConfig.resourcePackageBaseUrl` 决定：IDE 预览调用本地 `loadPackage(name)`，发布产物（包括微信开发者工具）调用远程 `loadPackage(name, remoteUrl)`。LogicMain、ConfigMgr 和 UIManager 只能在全部分包注册后初始化。
+- `MyGameConfig` 由 Start 首包拥有，统一选择环境、登录 API、远程资源地址和仅限开发环境的 Gateway 兜底。Start 在加载 Logic 前向 `window.myGameConfig` 发布不可变快照；Logic 只能通过 `App.gameConfig` 和 type-only 契约读取，不得静态导入 Start 配置实现。正常 Gateway 地址继续以登录服务器返回值为权威来源。
+- 平台 SDK 与认证环境不得通过组合子类交叉膨胀：`WechatMiniGameSDK` 负责微信平台 API，`MyGameConfig.loginMode` 决定开发凭据或真实微信凭据。开发微信凭据只能用于 `Local`；`Test`/`Production` 必须使用 `wx.login`，且服务端 Production 必须执行真实平台验证。
+- `Local` 允许 HTTP/WS 以支持本机和局域网联调；`Production` 的登录 API 与远程资源地址必须为 HTTPS，且不得设置 Gateway 兜底。微信开发者工具中的本地发布测试与 IDE 预览不是同一加载模式，不得用 `LayaEnv.isPreview` 以外的零散条件在业务代码中重复判断。
+- `assets/testAndSample/` 下脚本集必须关闭 `allowLoadInRuntime`。正式构建后必须同时检查资源清单和 JS bundle；只确认测试场景未导出不足以证明测试代码已排除。
+- 微信移动端纹理默认在 Android 与 iOS 统一使用 `ASTC_6X6`，PC 开发环境显式使用 `R8G8B8A8`，不得让启用默认压缩后的 PC 格式隐式落入 BC1。非自动图集图片的目录策略由 `settings/plugin-JFrameworkTextureImportRules.json` 和 `src/editor/textureImport/` 的导入处理器统一维护，`.meta` 只是导入结果，不是人工配置入口。`startupUI` 和 `ui` 中真正符合纹理类型、递归范围与单图尺寸上限的精灵由各自 `.atlascfg` 处理；角色与特效的手工 `.atlas` 纹理、大地图以及超过图集上限的 UI 散图继续由目录导入规则处理，不得为了套用目录规则再次打成自动图集。
+- 发布配置必须开启压缩纹理。当前保留 PNG/JPG 源图作为开发者工具和不支持 ASTC 设备的兼容回退；只有完成目标真机覆盖验证后，才能为了包体关闭源图保留。普通 IDE 预览不用于判断 ASTC 是否生效，发布后以 `fileconfig.json`、生成的 KTX 文件和真机网络请求为准。
+- `assets/config/*.json` 属于数据资源并进入 `config` 分包，不参与 ASTC 纹理压缩；其输入和生成约束继续遵循“配置输入与生成物”。
+
 ## 数据命名
 
 - `XXXData` 只包含 `number`、`string`、`boolean` 等基础字段，不包含数组、嵌套对象和业务方法，适合传输与直接序列化。

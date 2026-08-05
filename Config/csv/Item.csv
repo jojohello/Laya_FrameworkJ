@@ -5,6 +5,7 @@ UsedSize,cs,c,cs,cs,cs,cs,c,c
 ,1001,Gold,Currency,1,999999,,ui/common/imgs/items/currency-gold.png,Basic currency
 ,1002,Wood,Material,1,999,,ui/mainscene/imgs/icon-box.png,Craft material
 ,1003,Small Potion,Consumable,1,99,,ui/common/imgs/stamina-potion.png,Recover test item
+,1004,Crystal,Currency,1,999999,,ui/common/imgs/currency-crystal.png,Premium currency
 ,1101,Ruby,Material,2,10,,ui/common/imgs/items/gem-ruby.png,Red magic gemstone
 ,1102,Sapphire,Material,2,10,,ui/common/imgs/items/gem-sapphire.png,Blue magic gemstone
 ,1103,Emerald,Material,2,10,,ui/common/imgs/items/gem-emerald.png,Green magic gemstone
