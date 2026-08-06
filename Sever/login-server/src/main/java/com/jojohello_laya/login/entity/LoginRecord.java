@@ -280,7 +280,7 @@ public class LoginRecord {
         @java.lang.Override
         @java.lang.SuppressWarnings("all")
         public java.lang.String toString() {
-            return "LoginRecord.LoginRecordBuilder(id=" + this.id + ", userId=" + this.userId + ", token=" + this.token + ", loginTimestamp=" + this.loginTimestamp + ", loginTime=" + this.loginTime + ", thirdPartyType=" + this.thirdPartyType + ", deviceId=" + this.deviceId + ", clientIp=" + this.clientIp + ", deviceInfo=" + this.deviceInfo + ", platform=" + this.platform + ", version=" + this.version + ", isActive$value=" + this.isActive$value + ", expireTime=" + this.expireTime + ", createdTime=" + this.createdTime + ")";
+            return "LoginRecord.LoginRecordBuilder(id=" + this.id + ", userId=" + this.userId + ", token=[REDACTED], loginTimestamp=" + this.loginTimestamp + ", loginTime=" + this.loginTime + ", thirdPartyType=" + this.thirdPartyType + ", deviceId=[REDACTED], clientIp=[REDACTED], deviceInfo=[REDACTED], platform=" + this.platform + ", version=" + this.version + ", isActive$value=" + this.isActive$value + ", expireTime=" + this.expireTime + ", createdTime=" + this.createdTime + ")";
         }
     }
 
@@ -603,7 +603,7 @@ public class LoginRecord {
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     public java.lang.String toString() {
-        return "LoginRecord(id=" + this.getId() + ", userId=" + this.getUserId() + ", token=" + this.getToken() + ", loginTimestamp=" + this.getLoginTimestamp() + ", loginTime=" + this.getLoginTime() + ", thirdPartyType=" + this.getThirdPartyType() + ", deviceId=" + this.getDeviceId() + ", clientIp=" + this.getClientIp() + ", deviceInfo=" + this.getDeviceInfo() + ", platform=" + this.getPlatform() + ", version=" + this.getVersion() + ", isActive=" + this.getIsActive() + ", expireTime=" + this.getExpireTime() + ", createdTime=" + this.getCreatedTime() + ")";
+        return "LoginRecord(id=" + this.getId() + ", userId=" + this.getUserId() + ", token=[REDACTED], loginTimestamp=" + this.getLoginTimestamp() + ", loginTime=" + this.getLoginTime() + ", thirdPartyType=" + this.getThirdPartyType() + ", deviceId=[REDACTED], clientIp=[REDACTED], deviceInfo=[REDACTED], platform=" + this.getPlatform() + ", version=" + this.getVersion() + ", isActive=" + this.getIsActive() + ", expireTime=" + this.getExpireTime() + ", createdTime=" + this.getCreatedTime() + ")";
     }
 
     @java.lang.SuppressWarnings("all")

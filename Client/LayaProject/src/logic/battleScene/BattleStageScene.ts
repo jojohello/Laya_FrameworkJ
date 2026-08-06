@@ -22,6 +22,9 @@ const BOSS_STAGE_ICON = `${BATTLE_UI_PATH}stage_node_boss.png`;
 @regClass()
 export class BattleStageScene extends BaseScene {
     private _stageRoot: Laya.Sprite | null = null;
+    private _stageSourceWidth = 0;
+    private _stageSourceHeight = 0;
+    private _stageRenderedHeight = 0;
     private _stageNodeHandlers: Array<{ node: Laya.Node; handler: () => void }> = [];
     private _stageHitTargets: Array<{ node: Laya.Sprite; stageId: number; battleId: number }> = [];
     private _stageLoadToken = 0;
@@ -32,6 +35,8 @@ export class BattleStageScene extends BaseScene {
 
     onEnter(param?: any): void {
         super.onEnter(param);
+        Laya.stage.off(Laya.Event.RESIZE, this, this.applyStageRootLayout);
+        Laya.stage.on(Laya.Event.RESIZE, this, this.applyStageRootLayout);
         this._stageLoadToken++;
         if (this.camera) this.camera.camera2D.mouseEnabled = false;
         this._initialPositioned = false;
@@ -51,13 +56,17 @@ export class BattleStageScene extends BaseScene {
 
         if (!this._initialPositioned) {
             this._initialPositioned = true;
-            const mapHeight = this.map?.height || Number(this._sceneConfig?.mapHeight) || 1400;
+            const mapHeight = this._stageRenderedHeight
+                || this.map?.height
+                || Number(this._sceneConfig?.mapHeight)
+                || 1400;
             this.camera?.moveTo(0, Math.max(0, mapHeight - Laya.stage.height));
             this.createStageControls();
         }
     }
 
     onExit(): void {
+        Laya.stage.off(Laya.Event.RESIZE, this, this.applyStageRootLayout);
         this._stageLoadToken++;
         this.destroyStageControls();
         super.onExit();
@@ -91,14 +100,13 @@ export class BattleStageScene extends BaseScene {
             const mapImage = root.getChildByName("img") as any;
             const sourceWidth = Number(mapImage?.width) || 1024;
             const sourceHeight = Number(mapImage?.height) || 2048;
-            const targetWidth = Number(this._sceneConfig?.mapWidth) || sourceWidth;
-            const targetHeight = Number(this._sceneConfig?.mapHeight) || sourceHeight;
-            root.scale(targetWidth / sourceWidth, targetHeight / sourceHeight);
-            root.pos((Laya.stage.width - targetWidth) * 0.5, 0);
+            this._stageSourceWidth = sourceWidth;
+            this._stageSourceHeight = sourceHeight;
+            this._stageRoot = root;
+            this.applyStageRootLayout();
             root.mouseEnabled = true;
             (root as any).mouseThrough = false;
             groundLayer.addChild(root);
-            this._stageRoot = root;
 
             await Laya.loader.load([NORMAL_STAGE_ICON, BOSS_STAGE_ICON]);
             if (token !== this._stageLoadToken) return;
@@ -106,6 +114,28 @@ export class BattleStageScene extends BaseScene {
         } catch (error) {
             console.error(`[BattleStageScene] 加载大关 prefab 失败: ${prefabPath}`, error);
         }
+    }
+
+    private applyStageRootLayout(): void {
+        const root = this._stageRoot;
+        if (!root || this._stageSourceWidth <= 0 || this._stageSourceHeight <= 0) return;
+        const targetWidth = Math.max(Laya.stage.width, Number(this._sceneConfig?.mapWidth) || 0);
+        const targetHeight = Math.max(Laya.stage.height, Number(this._sceneConfig?.mapHeight) || 0);
+        // The route art and its clickable nodes share one coordinate system. A
+        // uniform cover scale preserves their alignment while cropping only the
+        // excess edge; independent X/Y stretching would move nodes off the road.
+        const scale = Math.max(
+            targetWidth / this._stageSourceWidth,
+            targetHeight / this._stageSourceHeight,
+        );
+        const renderedWidth = this._stageSourceWidth * scale;
+        this._stageRenderedHeight = this._stageSourceHeight * scale;
+        root.scale(scale, scale);
+        root.pos((Laya.stage.width - renderedWidth) * 0.5, 0);
+        this.setSpaceMapSize(
+            Math.max(Laya.stage.width, renderedWidth),
+            Math.max(Laya.stage.height, this._stageRenderedHeight),
+        );
     }
 
     private bindStageNodes(root: Laya.Sprite): void {
@@ -259,6 +289,9 @@ export class BattleStageScene extends BaseScene {
         this._stageHitTargets.length = 0;
         this._stageRoot?.destroy();
         this._stageRoot = null;
+        this._stageSourceWidth = 0;
+        this._stageSourceHeight = 0;
+        this._stageRenderedHeight = 0;
     }
 
     private enterStage(stageId: number, battleId: number): void {

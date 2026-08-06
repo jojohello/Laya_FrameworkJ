@@ -17,9 +17,6 @@
       "name": "loading_bg",
       "width": 750,
       "height": 1334,
-      "left": 0,
-      "right": 0,
-      "centerY": 0,
       "skin": "res://1f4b2188-00b3-4f1c-af3b-ad8e7564353f",
       "color": "#ffffff",
       "_$comp": [

@@ -4,13 +4,13 @@
 
 测试夹具、对象池生命周期和 IDE 场景脚本缓存的稳定约束见上级 [DESIGN.md](../DESIGN.md)。
 
-本包位于 `assets/testAndSample/testBulletLifecycle/`：场景和说明位于包根目录，`scripts/` 放 TypeScript 用例。`TestBulletLifecycle.bundledef` 禁止 Runtime 发布；正式调用式入口使用相邻的 `testBulletLifecycleEditorPlugin/`，直接场景只保留为源资源，不作为正式运行入口。
+本包位于 `assets/testAndSample/testBulletLifecycle/`：场景和说明位于包根目录，`scripts/` 放 TypeScript 用例。`TestBulletLifecycle.bundledef` 允许编辑器加载但禁止 Runtime 加载；唯一受支持的调用式入口使用相邻的 `testBulletLifecycleEditorPlugin/`，直接场景只保留为源资源，不作为运行入口。LayaAir 3.3.11 额外生成的 Runtime 空注册壳属于已接受的[引擎版本问题](../../../docs/LayaAirVersionBugs.md)，等待升级时复查。
 
 ## 在当前项目运行
 
-1. 用 LayaAir IDE 打开 `HeadlessTestScene.ls`。
-2. 将 `scripts/HeadlessTestScene.ts` 挂到场景根节点（首次由 IDE 写入组件和 `.meta`，不要手工伪造 UUID）。
-3. 直接运行该场景，查看控制台 `[HeadlessTest]` 的 PASS / FAIL / SUMMARY。
+1. 在 LayaAir IDE 中刷新项目脚本。
+2. 从工具菜单打开 `runBulletLifecycleHeadlessTest`。
+3. 运行单项或全部用例，检查弹窗结果和控制台 `[HeadlessTest]` 的 PASS / FAIL / SUMMARY。
 
 当前回归基线包含两类子弹边界：
 
@@ -39,4 +39,4 @@
 
 ## 复用到其他项目
 
-复制整个 `assets/testAndSample/testBulletLifecycle/` 到目标项目的 `assets/testAndSample/` 下，并配套采用 `testBulletLifecycleEditorPlugin/` 的 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 模式；若项目的场景对象入口或生命周期不同，仅替换 `scripts/scenarios/` 里的适配用例。脚本集必须保持 `allowLoadInRuntime=false`，微信等正式构建后仍须搜索产物确认测试资源和脚本不存在。
+复制整个 `assets/testAndSample/testBulletLifecycle/` 到目标项目的 `assets/testAndSample/` 下，并配套采用 `testBulletLifecycleEditorPlugin/` 的 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 模式；若项目的场景对象入口或生命周期不同，仅替换 `scripts/scenarios/` 里的适配用例。脚本集必须保持 `allowLoadInEditor=true`、`allowLoadInRuntime=false`，微信等正式构建后仍须搜索产物确认测试代码和资源不存在；LayaAir 3.3.11 的空注册壳按版本缺陷记录处理。

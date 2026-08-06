@@ -1,0 +1,9 @@
+{
+  "type": "WECHAT",
+  "authCode": "test_wechat_code",
+  "platform": "minigame",
+  "deviceInfo": "WeChat MiniGame",
+  "version": "1.0.0",
+  "developerAccount": "fixture_developer"
+}
+

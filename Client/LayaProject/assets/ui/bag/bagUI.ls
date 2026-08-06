@@ -13,7 +13,7 @@
     {
       "_$id": "bag-page-backdrop",
       "_$type": "GImage",
-      "name": "pageBackdrop",
+      "name": "fullBleedBackdrop",
       "x": -7,
       "y": -22,
       "width": 776,
@@ -37,6 +37,15 @@
       "autoSize": false
     },
     {
+      "_$id": "bag-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
+    },
+    {
       "_$id": "bag-panel",
       "_$type": "GImage",
       "name": "panelBackground",
@@ -47,13 +56,8 @@
       "relations": [
         {
           "_$type": "Relation",
-          "target": {
-            "_$ref": "bag-ui-root"
-          },
-          "data": [
-            24,
-            0
-          ]
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [10, 0, 24, 0]
         }
       ],
       "src": "res://f4603d4f-ae2b-4e5d-8690-d0c0a1811e48",
@@ -67,6 +71,13 @@
       "y": 136,
       "width": 460,
       "height": 82,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [6, 0, 10, 0]
+        }
+      ],
       "src": "res://cf489899-66ec-4629-ac3b-1b35ba20e78f",
       "autoSize": false
     },
@@ -78,6 +89,13 @@
       "y": 146,
       "width": 460,
       "height": 60,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [6, 0, 10, 0]
+        }
+      ],
       "text": "我的背包",
       "fontSize": 44,
       "color": "#ffe6a8",
@@ -95,6 +113,13 @@
       "y": 218,
       "width": 160,
       "height": 64,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [3, 0, 10, 0]
+        }
+      ],
       "_$child": [
         {
           "_$id": "bag-tab-all-active",
@@ -140,6 +165,13 @@
       "y": 218,
       "width": 160,
       "height": 64,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [3, 0, 10, 0]
+        }
+      ],
       "_$child": [
         {
           "_$id": "bag-tab-material-active",
@@ -185,6 +217,13 @@
       "y": 218,
       "width": 160,
       "height": 64,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [3, 0, 10, 0]
+        }
+      ],
       "_$child": [
         {
           "_$id": "bag-tab-consumable-active",
@@ -230,6 +269,13 @@
       "y": 218,
       "width": 160,
       "height": 64,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [3, 0, 10, 0]
+        }
+      ],
       "_$child": [
         {
           "_$id": "bag-tab-equipment-active",
@@ -278,13 +324,8 @@
       "relations": [
         {
           "_$type": "Relation",
-          "target": {
-            "_$ref": "bag-ui-root"
-          },
-          "data": [
-            24,
-            0
-          ]
+          "target": { "_$ref": "bag-safe-area-root" },
+          "data": [6, 0, 10, 0, 24, 0]
         }
       ],
       "layout": {

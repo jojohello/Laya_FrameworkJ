@@ -14,23 +14,9 @@
     {
       "_$id": "vmn78x8i",
       "_$type": "GImage",
-      "name": "img",
+      "name": "fullBleedBackground",
       "width": 750,
       "height": 1440,
-      "relations": [
-        {
-          "_$type": "Relation",
-          "target": {
-            "_$ref": "f66zmp2u"
-          },
-          "data": [
-            1,
-            0,
-            13,
-            0
-          ]
-        }
-      ],
       "src": "res://1f4b2188-00b3-4f1c-af3b-ad8e7564353f",
       "autoSize": false,
       "_$comp": [
@@ -41,6 +27,15 @@
       ]
     },
     {
+      "_$id": "loading-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
+    },
+    {
       "_$id": "nop5lnei",
       "_$type": "GImage",
       "name": "process-bg",
@@ -49,6 +44,20 @@
       "width": 466,
       "height": 36,
       "anchorX": 0.5,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "loading-safe-area-root"
+          },
+          "data": [
+            6,
+            0,
+            16,
+            0
+          ]
+        }
+      ],
       "src": "res://172f3217-8db1-4c53-8b05-344a3b1bed67",
       "autoSize": false,
       "color": "#b4cff9",
@@ -105,6 +114,18 @@
       "y": 810,
       "width": 100,
       "height": 119,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "loading-safe-area-root"
+          },
+          "data": [
+            16,
+            0
+          ]
+        }
+      ],
       "value": 151,
       "_hBar": {
         "_$ref": "ootvmtwi"

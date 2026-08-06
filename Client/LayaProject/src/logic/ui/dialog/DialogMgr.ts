@@ -11,7 +11,7 @@ export class DialogMgr implements IManager {
         return this._instance;
     }
 
-    private _active: { root: Laya.Scene; overlay: Laya.Sprite; options: DialogOptions } | null = null;
+    private _active: { root: Laya.Scene; options: DialogOptions } | null = null;
     private constructor() {}
 
     async init(): Promise<void> {}
@@ -24,12 +24,7 @@ export class DialogMgr implements IManager {
         const root = await UIManager.instance.open("CommonDialog", { modal: true });
         if (!(root instanceof Laya.Scene)) throw new Error("CommonDialog resource did not create a Scene");
         root.zOrder = UILayer.Pop;
-        const overlay = new Laya.Sprite();
-        overlay.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#000000");
-        overlay.alpha = 0.42;
-        overlay.mouseEnabled = true;
-        root.addChildAt(overlay, 0);
-        this._active = { root, overlay, options };
+        this._active = { root, options };
         this.bindResource(root, options);
         return { close: () => this.close() };
     }
@@ -40,7 +35,6 @@ export class DialogMgr implements IManager {
         this._active = null;
         this.unbindResource(active.root);
         if (notifyClosed) active.options.onClosed?.(false);
-        active.overlay.destroy();
         UIManager.instance.close("CommonDialog");
     }
 

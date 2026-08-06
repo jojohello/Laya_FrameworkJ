@@ -2,17 +2,23 @@
 
 ## 当前目标
 
-完成微信小游戏生产发布验收。Local 环境的微信开发者工具构建、远程资源下载和登录主流程已经可用；后续只处理会影响正式发布质量或目标真机兼容性的事项。
+完成微信小游戏生产发布验收。当前先交付真实微信账号登录和 Test/Production 外部环境接入；已通过验收的通用安全区布局主路径不再改动，目标 Android/iOS 真机验收后置。
 
 ## 工作顺序
 
-- [ ] 修复默认字体：替换或重新生成 `assets/ttf/sourcehansanscn.ttf`，确保字体 `name` 表至少包含 Family、Full Name 和 PostScript Name，并由 LayaAir IDE 重新导入；验收微信开发者工具不再出现 `loadFont` 错误，中文字符覆盖符合现有界面。
-- [ ] 消除正式包中的空测试脚本集：当前 LayaAir 3.3.11 在 `allowLoadInRuntime=false` 时仍生成约 914 字节的 `js/TestBulletLifecycle-*.js` 空注册壳并写入 `fileconfig.json`。在不手改发布产物、不破坏 IDE 调用式测试的前提下找到源配置或构建扩展方案；验收 `wxgame` 与 `wxgame-remote` 均不含测试脚本、测试资源或编辑器工具。
-- [ ] 配置 Test/Production 的登录 API、HTTPS 资源地址和 Apache/CDN 部署；Login Server 接入真实微信 `code2Session`，AppID/AppSecret 由服务端环境提供，Production 禁止开发凭据和 Gateway 兜底。
-- [ ] 在目标 Android/iOS 真机确认实际请求 ASTC KTX、PNG 兼容回退、远程包缓存与失败提示，并完成“启动/登录 → 主界面 → 固定战斗 → 结果 → 背包 → 重新登录”主路径和数据一致性验收。
+- [ ] 完成真实微信账号登录的跨端交付：微信模式由客户端 `wx.login` 获取一次性 code，Login Server 使用 `WECHAT_APP_ID`/`WECHAT_APP_SECRET` 调用 `code2Session`，只以服务端获得的 `openid` 建立账号映射；昵称头像通过微信原生授权取得并由服务端解密校验。未授权用户每次进入登录页都提供授权入口，已授权用户不重复弹窗；`session_key` 不返回客户端且不得记录 code/密钥。Local 仍保留需显式开启的开发者账号登录。
+- [ ] 配置 Test/Production 的登录 API、HTTPS 资源地址和 Apache/CDN 部署；Production 禁止开发凭据和 Gateway 兜底，并完成微信开发者工具中的真实登录回归。
+
+## 后置工作
+
+- [ ] 在上述生产链路稳定后，于目标 Android/iOS 真机确认实际请求 ASTC KTX、PNG 兼容回退、远程包缓存与失败提示，并完成“启动/登录 → 主界面 → 固定战斗 → 结果 → 背包 → 重新登录”主路径和数据一致性验收。
+
+## 阻塞
+
+- 真实微信联调前必须在微信后台重置本次会话中曾明文出现的 AppSecret，并只通过 Login Server 的 `WECHAT_APP_SECRET` 环境变量注入新值。
 
 ## 完成条件
 
-- 微信开发者工具无字体加载错误，首包和远程包不含测试产物。
+- 微信开发者工具无字体加载错误；首包和远程包不含测试代码与测试资源。LayaAir 3.3.11 产生的已知空脚本壳按版本缺陷记录跟踪，不阻塞当前发布。
 - Production 全链路使用 HTTPS/WSS 与真实微信认证，不含源码内密钥或开发绕过。
 - 目标真机证明 ASTC、远程资源、主路径和重新登录后的服务器权威数据均正常。

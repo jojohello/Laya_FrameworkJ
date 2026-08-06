@@ -13,7 +13,7 @@
     {
       "_$id": "battle-victory-bg",
       "_$type": "GImage",
-      "name": "bg",
+      "name": "fullBleedBackground",
       "x": -20,
       "y": -25,
       "width": 779,
@@ -38,6 +38,15 @@
       "autoSize": false
     },
     {
+      "_$id": "battle-victory-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
+    },
+    {
       "_$id": "battle-victory-art",
       "_$type": "GImage",
       "name": "victoryArt",
@@ -49,7 +58,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-victory-root"
+            "_$ref": "battle-victory-safe-area-root"
           },
           "data": [
             6,
@@ -74,7 +83,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-victory-root"
+            "_$ref": "battle-victory-safe-area-root"
           },
           "data": [
             6,
@@ -99,7 +108,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-victory-root"
+            "_$ref": "battle-victory-safe-area-root"
           },
           "data": [
             6,
@@ -130,7 +139,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-victory-root"
+            "_$ref": "battle-victory-safe-area-root"
           },
           "data": [
             6,
@@ -161,7 +170,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-victory-root"
+            "_$ref": "battle-victory-safe-area-root"
           },
           "data": [
             6,
@@ -272,7 +281,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-victory-root"
+            "_$ref": "battle-victory-safe-area-root"
           },
           "data": [
             6,

@@ -14,23 +14,9 @@
     {
       "_$id": "vmn78x8i",
       "_$type": "GImage",
-      "name": "img",
+      "name": "fullBleedBackground",
       "width": 750,
       "height": 1440,
-      "relations": [
-        {
-          "_$type": "Relation",
-          "target": {
-            "_$ref": "f66zmp2u"
-          },
-          "data": [
-            1,
-            0,
-            13,
-            0
-          ]
-        }
-      ],
       "src": "res://1f4b2188-00b3-4f1c-af3b-ad8e7564353f",
       "autoSize": false,
       "_$comp": [
@@ -39,6 +25,15 @@
           "scriptPath": "../src/script/LockRatio.ts"
         }
       ]
+    },
+    {
+      "_$id": "login-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
     },
     {
       "_$id": "pmmj2h97",
@@ -53,7 +48,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "f66zmp2u"
+            "_$ref": "login-safe-area-root"
           },
           "data": [
             6,
@@ -163,6 +158,73 @@
               "valign": "middle"
             }
           ]
+        }
+      ]
+    },
+    {
+      "_$id": "login-auto-progress-panel",
+      "_$type": "GBox",
+      "name": "autoLoginPanel",
+      "x": 92,
+      "y": 1015,
+      "width": 566,
+      "height": 110,
+      "visible": false,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "login-safe-area-root"
+          },
+          "data": [
+            6,
+            0,
+            16,
+            0
+          ]
+        }
+      ],
+      "_$child": [
+        {
+          "_$id": "login-auto-progress-status",
+          "_$type": "GTextField",
+          "name": "autoLoginStatus",
+          "x": 0,
+          "y": 0,
+          "width": 566,
+          "height": 42,
+          "text": "正在登录…",
+          "font": "res://562d5d5c-585b-4379-9a0f-65091e0d0d4e",
+          "fontSize": 24,
+          "color": "#fff4cf",
+          "bold": true,
+          "align": "center",
+          "valign": "middle",
+          "stroke": 2,
+          "strokeColor": "#29233f"
+        },
+        {
+          "_$id": "login-auto-progress-bg",
+          "_$type": "GImage",
+          "name": "autoLoginProgressBg",
+          "x": 50,
+          "y": 52,
+          "width": 466,
+          "height": 36,
+          "src": "res://172f3217-8db1-4c53-8b05-344a3b1bed67",
+          "autoSize": false,
+          "color": "#b4cff9"
+        },
+        {
+          "_$id": "login-auto-progress-fill",
+          "_$type": "GImage",
+          "name": "autoLoginProgressFill",
+          "x": 52,
+          "y": 54,
+          "width": 37,
+          "height": 34,
+          "src": "res://877ddc7c-8a3b-4b1a-be64-74a01880c40e",
+          "autoSize": false
         }
       ]
     }

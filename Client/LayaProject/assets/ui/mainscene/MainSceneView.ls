@@ -13,6 +13,15 @@
   "mouseThrough": true,
   "_$child": [
     {
+      "_$id": "main-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
+    },
+    {
       "_$id": "player-profile-instance",
       "_$prefab": "ab8e44cd-91b6-47f5-8a0a-86061addd07c",
       "_$var": true,
@@ -20,7 +29,21 @@
       "active": true,
       "x": 12,
       "y": 12,
-      "visible": true
+      "visible": true,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "main-safe-area-root"
+          },
+          "data": [
+            3,
+            0,
+            10,
+            0
+          ]
+        }
+      ]
     },
     {
       "_$id": "dgyiz0mt",
@@ -31,6 +54,20 @@
       "width": 768,
       "height": 255,
       "mouseThrough": true,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": {
+            "_$ref": "main-safe-area-root"
+          },
+          "data": [
+            6,
+            0,
+            16,
+            0
+          ]
+        }
+      ],
       "_$child": [
         {
           "_$id": "al4fryja",
@@ -45,12 +82,10 @@
             {
               "_$type": "Relation",
               "target": {
-                "_$ref": "f66zmp2u"
+                "_$ref": "dgyiz0mt"
               },
               "data": [
                 1,
-                0,
-                12,
                 0
               ]
             }
@@ -72,12 +107,10 @@
             {
               "_$type": "Relation",
               "target": {
-                "_$ref": "f66zmp2u"
+                "_$ref": "dgyiz0mt"
               },
               "data": [
                 6,
-                0,
-                12,
                 0
               ]
             }

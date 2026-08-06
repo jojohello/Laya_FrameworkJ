@@ -1,6 +1,5 @@
 package com.jojohello_laya.login.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jojohello_laya.login.config.CentralServerConfig;
 import com.jojohello_laya.login.entity.LoginRecord;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,7 +23,6 @@ public class CentralDataService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CentralDataService.class);
     private final CentralServerConfig config;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
     private final CentralWebSocketClient webSocketClient;
 
     /**
@@ -32,7 +30,6 @@ public class CentralDataService {
      */
     public boolean storeLoginRecord(LoginRecord record) {
         try {
-            log.info("正在向中心服务器注册登录会话: userId={}, loginTimestamp={}", record.getUserId(), record.getLoginTimestamp());
             String url = config.getUrl() + "/api/v1/sessions/register";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -51,17 +48,16 @@ public class CentralDataService {
                     && response.getBody() != null
                     && Boolean.TRUE.equals(response.getBody().get("success"));
             if (success) {
-                log.info("登录会话注册成功: userId={}", record.getUserId());
                 return true;
             } else {
-                log.warn("登录会话注册失败: status={}, body={}", response.getStatusCode(), response.getBody());
+                log.warn("登录会话注册失败: status={}", response.getStatusCode());
                 return false;
             }
         } catch (HttpClientErrorException e) {
-            log.error("存储登录记录客户端错误: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("存储登录记录客户端错误: status={}", e.getStatusCode());
             return false;
         } catch (HttpServerErrorException e) {
-            log.error("存储登录记录服务器错误: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("存储登录记录服务器错误: status={}", e.getStatusCode());
             return false;
         } catch (ResourceAccessException e) {
             log.error("存储登录记录网络错误: {}", e.getMessage());
@@ -94,11 +90,11 @@ public class CentralDataService {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 log.debug("登录记录不存在");
             } else {
-                log.error("获取登录记录客户端错误: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+                log.error("获取登录记录客户端错误: status={}", e.getStatusCode());
             }
             return null;
         } catch (HttpServerErrorException e) {
-            log.error("获取登录记录服务器错误: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("获取登录记录服务器错误: status={}", e.getStatusCode());
             return null;
         } catch (ResourceAccessException e) {
             log.error("获取登录记录网络错误: {}", e.getMessage());
@@ -250,10 +246,9 @@ public class CentralDataService {
     }
 
     @java.lang.SuppressWarnings("all")
-    public CentralDataService(final CentralServerConfig config, final RestTemplate restTemplate, final ObjectMapper objectMapper, final CentralWebSocketClient webSocketClient) {
+    public CentralDataService(final CentralServerConfig config, final RestTemplate restTemplate, final CentralWebSocketClient webSocketClient) {
         this.config = config;
         this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
         this.webSocketClient = webSocketClient;
     }
 }

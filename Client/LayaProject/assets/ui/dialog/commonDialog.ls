@@ -13,10 +13,10 @@
     {
       "_$id": "common-dialog-mask",
       "_$type": "GBox",
-      "name": "modalMask",
+      "name": "fullBleedDimOverlay",
       "width": 750,
       "height": 1334,
-      "alpha": 0.6,
+      "alpha": 0.42,
       "relations": [
         {
           "_$type": "Relation",
@@ -31,6 +31,15 @@
           ]
         }
       ]
+    },
+    {
+      "_$id": "common-dialog-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
     },
     {
       "_$id": "common-dialog-panel",
@@ -55,7 +64,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "common-dialog-root"
+            "_$ref": "common-dialog-safe-area-root"
           },
           "data": [
             6,

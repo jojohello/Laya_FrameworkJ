@@ -13,7 +13,7 @@
     {
       "_$id": "0gfwvrjg",
       "_$type": "GImage",
-      "name": "bg",
+      "name": "fullBleedBackground",
       "x": -20,
       "y": -25,
       "width": 779,
@@ -38,6 +38,15 @@
       "autoSize": false
     },
     {
+      "_$id": "battle-defeat-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
+    },
+    {
       "_$id": "battle-defeat-art",
       "_$type": "GImage",
       "name": "defeatArt",
@@ -49,7 +58,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-defeat-root"
+            "_$ref": "battle-defeat-safe-area-root"
           },
           "data": [
             6,
@@ -74,7 +83,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-defeat-root"
+            "_$ref": "battle-defeat-safe-area-root"
           },
           "data": [
             6,
@@ -99,7 +108,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-defeat-root"
+            "_$ref": "battle-defeat-safe-area-root"
           },
           "data": [
             6,
@@ -130,7 +139,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-defeat-root"
+            "_$ref": "battle-defeat-safe-area-root"
           },
           "data": [
             6,
@@ -245,7 +254,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "battle-defeat-root"
+            "_$ref": "battle-defeat-safe-area-root"
           },
           "data": [
             6,

@@ -14,11 +14,19 @@
     {
       "_$id": "battle-pause-overlay",
       "_$type": "GBox",
-      "name": "pauseOverlay",
+      "name": "fullBleedDimOverlay",
       "width": 750,
       "height": 1334,
+      "alpha": 0.62,
       "visible": false,
       "mouseEnabled": false,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "battle-main-view" },
+          "data": [1, 0, 2, 0]
+        }
+      ],
       "_$child": [
         {
           "_$id": "battle-paused-label",
@@ -28,6 +36,13 @@
           "y": 590,
           "width": 250,
           "height": 70,
+          "relations": [
+            {
+              "_$type": "Relation",
+              "target": { "_$ref": "battle-pause-overlay" },
+              "data": [6, 0, 13, 0]
+            }
+          ],
           "text": "战斗暂停",
           "fontSize": 38,
           "color": "#fff3d9",
@@ -40,14 +55,30 @@
       ]
     },
     {
+      "_$id": "battle-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
+    },
+    {
       "_$id": "battle-toolbar",
       "_$type": "GBox",
-      "name": "toolbar",
+      "name": "menuButtonAvoidanceRoot",
       "x": 502,
       "y": 14,
       "width": 232,
       "height": 81,
       "mouseThrough": true,
+      "relations": [
+        {
+          "_$type": "Relation",
+          "target": { "_$ref": "battle-safe-area-root" },
+          "data": [9, 0]
+        }
+      ],
       "_$child": [
         {
           "_$id": "battle-speed-button",

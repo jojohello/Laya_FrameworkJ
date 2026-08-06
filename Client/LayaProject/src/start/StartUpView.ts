@@ -1,5 +1,6 @@
 import { StartMain } from "./StartMain";
 import { StartUpViewBase } from "./StartUpView.generated";
+import { ScreenAdapter } from "./screen/ScreenAdapter";
 
 const { regClass, property } = Laya;
 
@@ -18,6 +19,9 @@ export class StartUpView extends StartUpViewBase {
     private _animationInterval: number = 500; // 动画间隔（毫秒）
 
     public async onOpened(): Promise<void> {
+        ScreenAdapter.instance.init();
+        ScreenAdapter.instance.bind(this);
+
         // 开始文字动画
         this.startTextAnimation();
 

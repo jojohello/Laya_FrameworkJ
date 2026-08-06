@@ -7,6 +7,7 @@
 import type { NetworkContext } from "../start/network/NetworkContext";
 import type { LayerMgr } from "../start/utils/LayerMgr";
 import type { MyGameConfigSnapshot } from "../start/MyGameConfig";
+import type { ScreenAdapter } from "../start/screen/ScreenAdapter";
 import * as MessageIds from "./common/MessageIds";
 import { ItemMgr } from "./item/ItemMgr";
 import { BagMgr } from "./item/BagMgr";
@@ -34,6 +35,7 @@ export class App {
     static systemProtocol: any;
     static loadingMgr: LoadingService;
     static gameConfig: Readonly<MyGameConfigSnapshot>;
+    static screenAdapter: ScreenAdapter;
 
     // SceneMgr（Logic 分包，直接导入）
     static sceneMgr: SceneMgr;
@@ -72,6 +74,8 @@ export class App {
         this.loadingMgr = (Laya.Browser.window as any).loadingMgr as LoadingService;
         this.gameConfig = (Laya.Browser.window as any).myGameConfig as Readonly<MyGameConfigSnapshot>;
         if (!this.gameConfig) throw new Error("MyGameConfig 尚未由 Start 发布");
+        this.screenAdapter = (Laya.Browser.window as any).screenAdapter as ScreenAdapter;
+        if (!this.screenAdapter) throw new Error("ScreenAdapter 尚未由 Start 发布");
 
         // Logic 分包的 Manager（直接导入单例）
         this.sceneMgr = SceneMgr.instance;

@@ -90,7 +90,7 @@ bullet.initLineMovement(caster.uid, target.x, target.y, 500, 20, target.team);
 
 ### 5. 运行对象池回归用例
 
-编辑器专用的无 UI 测试包位于 `assets/testAndSample/testBulletLifecycle/`，场景、脚本、公共夹具和用例都在该主题包内。直接挂载的 `HeadlessTestScene.ls` 入口保留为 IDE 兼容回退；正式调用式入口由 `assets/testAndSample/testBulletLifecycleEditorPlugin/` 提供，以 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 隔离编辑器脚本，正式入口不得导入测试脚本。其中 `BulletLiveTargetHitCase` 验证直线子弹正常命中存活目标并回收，`BulletReleaseRegressionCase` 使用真实 `BaseScene.update()` 验证目标在子弹更新前释放并回池复用后，追踪子弹必须取消，不能命中复用实例。运行方式见测试包 README；正式微信构建产物仍须搜索验证不含测试脚本或资源。
+编辑器专用的无 UI 测试包位于 `assets/testAndSample/testBulletLifecycle/`，场景、脚本、公共夹具和用例都在该主题包内。脚本集允许编辑器加载但禁止 Runtime 加载，唯一受支持的调用式入口由 `assets/testAndSample/testBulletLifecycleEditorPlugin/` 提供，以 `@IEditor.menu` → `Editor.scene.runScript` → `@IEditorEnv.regClass` 隔离编辑器脚本，正式入口不得导入测试脚本。其中 `BulletLiveTargetHitCase` 验证直线子弹正常命中存活目标并回收，`BulletReleaseRegressionCase` 使用真实 `BaseScene.update()` 验证目标在子弹更新前释放并回池复用后，追踪子弹必须取消，不能命中复用实例。运行方式见测试包 README；正式微信构建产物仍须搜索验证不含测试脚本或资源。
 
 ---
 

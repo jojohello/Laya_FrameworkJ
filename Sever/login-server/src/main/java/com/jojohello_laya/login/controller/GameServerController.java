@@ -25,7 +25,6 @@ public class GameServerController {
      */
     @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getGameServerList() {
-        log.info("收到获取游戏服务器列表请求");
         try {
             // 检查WebSocket连接状态
             if (!webSocketClient.isConnected()) {
@@ -34,7 +33,6 @@ public class GameServerController {
             }
             // 获取游戏服信息
             Map<String, Object> gameServerInfo = centralDataService.getGameServerInfo();
-            log.info("成功获取游戏服务器列表");
             return ResponseEntity.ok(gameServerInfo);
         } catch (Exception e) {
             log.error("获取游戏服务器列表异常: {}", e.getMessage(), e);
@@ -78,7 +76,6 @@ public class GameServerController {
      */
     @GetMapping("/gateway/{userId}")
     public ResponseEntity<Map<String, Object>> getGatewayAssignment(@PathVariable String userId) {
-        log.info("收到获取网关分配请求: userId={}", userId);
         try {
             // 检查WebSocket连接状态
             if (!webSocketClient.isConnected()) {
@@ -86,7 +83,6 @@ public class GameServerController {
                 return ResponseEntity.ok(Map.of("success", false, "message", "登录服务器未连接到中心服务器"));
             }
             Map<String, Object> gatewayInfo = centralDataService.getGatewayAssignment(userId);
-            log.info("成功获取网关分配信息: userId={}", userId);
             return ResponseEntity.ok(gatewayInfo);
         } catch (Exception e) {
             log.error("获取网关分配异常: userId={}, error={}", userId, e.getMessage(), e);

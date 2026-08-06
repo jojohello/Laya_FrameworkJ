@@ -2,7 +2,9 @@
 // Web平台SDK实现
 
 import { ISDK } from "./ISDK";
-import { Platform, LoginRequest, LoginResponse } from "./SDKMgr";
+import { Platform } from "../MyGameConfig";
+import type { LoginRequest, LoginResponse } from "../login/LoginPayloads.generated";
+import { isLoginResponse } from "../login/LoginPayloads.generated";
 import { SDKUtils } from "./SDKUtils";
 
 export class WebSDK implements ISDK {
@@ -17,44 +19,38 @@ export class WebSDK implements ISDK {
     }
     
     async login(accountName: string = "jojohello"): Promise<LoginResponse> {
-        try {
-            const requestData: LoginRequest = {
-                type: "GUEST",
-                authCode: `dev_${accountName}_${Date.now()}`,
-                platform: this.getPlatform(),
-                deviceInfo: Laya.Browser.userAgent,
-                version: "1.0.0",
-                extraParams: JSON.stringify({
-                    developer: accountName,
-                    mode: "development"
-                })
-            };
-            
-            const response = await this.sendLoginRequest(requestData);
-            return response;
-            
-        } catch (error) {
-            console.error("WebSDK: 开发登录失败:", error);
-            throw error;
-        }
+        const requestData: LoginRequest = {
+            type: "GUEST",
+            authCode: `dev_${accountName}_${Date.now()}`,
+            platform: this.getPlatform(),
+            deviceInfo: Laya.Browser.userAgent,
+            version: "1.0.0"
+        };
+        return this.sendLoginRequest(requestData);
+    }
+
+    async isProfileAuthorizationRequired(): Promise<boolean> {
+        return false;
+    }
+
+    showProfileAuthorizationButton(): void {
+        // Web/desktop developer login uses the Laya account input.
+    }
+
+    hideProfileAuthorizationButton(): void {
+        // No native platform control exists on Web.
     }
     
     private async sendLoginRequest(requestData: LoginRequest): Promise<LoginResponse> {
-        try {
-            const response = await SDKUtils.post<LoginResponse>(
-                `${this._serverUrl}/login`,
-                requestData,
-                3000 // 3秒超时
-            );
-
-            if (response.success) {
-                return response;
-            } else {
-                throw new Error(response.errorMessage || "登录失败");
-            }
-        } catch (error) {
-            console.error("WebSDK: 登录请求失败", error);
-            throw error;
+        const response = await SDKUtils.post<LoginResponse>(
+            `${this._serverUrl}/login`,
+            requestData,
+            3000
+        );
+        if (!isLoginResponse(response)) {
+            throw new Error("登录服务器响应结构无效");
         }
+        if (!response.success) throw new Error(response.errorMessage || "登录失败");
+        return response;
     }
 } 

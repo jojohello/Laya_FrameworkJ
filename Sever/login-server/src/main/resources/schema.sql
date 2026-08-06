@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     enabled BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否启用',
 
     INDEX idx_user_id (user_id),
-    INDEX idx_third_party (third_party_type, third_party_user_id),
+    UNIQUE KEY uk_third_party_identity (third_party_type, third_party_user_id),
     INDEX idx_nickname (nickname),
     INDEX idx_created_time (created_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';

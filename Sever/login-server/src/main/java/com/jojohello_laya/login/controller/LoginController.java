@@ -1,12 +1,11 @@
 package com.jojohello_laya.login.controller;
 
-import com.jojohello_laya.login.model.LoginRequest;
-import com.jojohello_laya.login.model.LoginResponse;
+import com.jojohello_laya.login.protocol.payload.login.LoginPayloads.LoginRequest;
+import com.jojohello_laya.login.protocol.payload.login.LoginPayloads.LoginResponse;
 import com.jojohello_laya.login.service.LoginService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 
 /**
  * 登录控制器
@@ -16,8 +15,6 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api")
 public class LoginController {
-    @java.lang.SuppressWarnings("all")
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoginController.class);
     private final LoginService loginService;
 
     /**
@@ -28,18 +25,13 @@ public class LoginController {
      * @return 登录响应
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        log.info("收到登录请求: {}", request);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         // 获取客户端IP
         String clientIp = getClientIp(httpRequest);
-        request.setClientIp(clientIp);
-        // 处理登录
-        LoginResponse response = loginService.login(request);
-        if (response.isSuccess()) {
-            log.info("登录成功: userId={}", response.getUserId());
+        LoginResponse response = loginService.login(request, clientIp);
+        if (response.success()) {
             return ResponseEntity.ok(response);
         } else {
-            log.warn("登录失败: errorCode={}, errorMessage={}", response.getErrorCode(), response.getErrorMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
@@ -78,7 +70,6 @@ public class LoginController {
         return request.getRemoteAddr();
     }
 
-    @java.lang.SuppressWarnings("all")
     public LoginController(final LoginService loginService) {
         this.loginService = loginService;
     }

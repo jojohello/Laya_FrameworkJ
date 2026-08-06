@@ -1,116 +1,183 @@
-// jojohello 2025-07-29
-// 微信小游戏平台SDK实现
-
-import { ISDK } from "./ISDK";
-import type { LoginRequest, LoginResponse } from "./SDKMgr";
+import { ISDK, NativeAuthorizationButtonRect } from "./ISDK";
 import { SDKUtils } from "./SDKUtils";
-import { LoginMode, MyGameConfig, Platform } from "../MyGameConfig";
+import { GameEnvironment, MyGameConfig, Platform } from "../MyGameConfig";
+import {
+    isLoginResponse,
+    type LoginRequest,
+    type LoginResponse,
+} from "../login/LoginPayloads.generated";
 
+/** WeChat client adapter. Account ownership is resolved only by Login Server. */
 export class WechatMiniGameSDK implements ISDK {
-    private _serverUrl: string = "";
-    
+    private _serverUrl = "";
+    private _userInfoButton: any | null = null;
+
     getPlatform(): Platform {
         return Platform.MINIGAME;
     }
-    
+
     setServerUrl(url: string): void {
         this._serverUrl = url;
     }
-    
+
     async login(accountName?: string): Promise<LoginResponse> {
-        try {
-            // Local only: the checked-in Login Server currently exposes a fixed
-            // development credential. Test/Production must use the real wx.login code.
-            const isDeveloperLogin = MyGameConfig.loginMode === LoginMode.Developer;
-            const wechatCode = isDeveloperLogin
-                ? this.getDeveloperWechatCode()
-                : await this.getWechatCode();
-            
-            // 获取微信用户信息（可选）
-            const userInfo = await this.getWechatUserInfo();
-            
-            // 构建登录请求
-            const requestData: LoginRequest = {
+        const isDeveloperLogin = MyGameConfig.forceAccountLogin;
+        let requestData: LoginRequest;
+
+        if (isDeveloperLogin) {
+            if (MyGameConfig.environment === GameEnvironment.Production) {
+                throw new Error("账号登录不能用于 Production 环境");
+            }
+            const developerAccount = accountName?.trim();
+            if (!developerAccount) throw new Error("请输入开发测试账号");
+            requestData = {
                 type: "WECHAT",
-                authCode: wechatCode,
+                authCode: "test_wechat_code",
                 platform: this.getPlatform(),
-                deviceInfo: "WeChat MiniGame",
+                deviceInfo: this.getDeviceInfo(),
                 version: "1.0.0",
-                extraParams: JSON.stringify({
-                    userInfo: userInfo || {},
-                    openId: userInfo?.openId || "",
-                    unionId: userInfo?.unionId || "",
-                    mode: MyGameConfig.loginMode,
-                    developer: accountName?.trim() || ""
-                })
+                developerAccount,
             };
-            
-            const response = await this.sendLoginRequest(requestData);
-            return response;
-            
-        } catch (error) {
-            console.error("WechatMiniGameSDK: 微信登录失败:", error);
-            throw error;
+        } else {
+            // Account authentication depends only on the short-lived wx.login code.
+            // Profile permission is optional and must never block account login.
+            const authCode = await this.getWechatCode();
+            requestData = {
+                type: "WECHAT",
+                authCode,
+                platform: this.getPlatform(),
+                deviceInfo: this.getDeviceInfo(),
+                version: "1.0.0",
+            };
+            const profile = await this.tryGetAuthorizedWechatUserInfo();
+            if (profile?.encryptedData && profile?.iv) {
+                requestData.profileEncryptedData = profile.encryptedData;
+                requestData.profileIv = profile.iv;
+            }
+        }
+
+        return this.sendLoginRequest(requestData);
+    }
+
+    async isProfileAuthorizationRequired(): Promise<boolean> {
+        if (MyGameConfig.forceAccountLogin) return false;
+        const wx = this.getWx();
+        if (typeof wx.getSetting !== "function") return true;
+        try {
+            const result = await SDKUtils.wxApiCall<any>((success, fail) => {
+                wx.getSetting({ success, fail });
+            }, 5000);
+            return result?.authSetting?.["scope.userInfo"] !== true;
+        } catch {
+            // Failing closed still gives the user a native authorization/retry entry.
+            return true;
         }
     }
 
-    private getDeveloperWechatCode(): string {
-        if (!MyGameConfig.isLocalEnvironment) {
-            throw new Error("开发微信登录凭据只能用于 Local 环境");
+    showProfileAuthorizationButton(
+        rect: NativeAuthorizationButtonRect,
+        onAuthorized: () => void,
+        onRejected: (error: Error) => void,
+    ): void {
+        this.hideProfileAuthorizationButton();
+        const wx = this.getWx();
+        if (typeof wx.createUserInfoButton !== "function") {
+            onRejected(new Error("当前微信版本不支持用户信息授权按钮"));
+            return;
         }
-        return "test_wechat_code";
+
+        const button = wx.createUserInfoButton({
+            type: "text",
+            text: "微信授权登录",
+            withCredentials: true,
+            lang: "zh_CN",
+            style: {
+                left: Math.round(rect.left),
+                top: Math.round(rect.top),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height),
+                lineHeight: Math.round(rect.height),
+                backgroundColor: "#f7e7bd",
+                color: "#292980",
+                textAlign: "center",
+                fontSize: Math.max(14, Math.round(rect.height * 0.38)),
+            },
+        });
+        this._userInfoButton = button;
+        button.onTap((result: any) => {
+            const authorized = result?.errMsg === "getUserInfo:ok" || !!result?.userInfo;
+            this.hideProfileAuthorizationButton();
+            if (authorized) onAuthorized();
+            else onRejected(new Error("未授权微信昵称和头像"));
+        });
     }
-    
-    /**
-     * 获取微信授权码
-     */
+
+    hideProfileAuthorizationButton(): void {
+        if (!this._userInfoButton) return;
+        try {
+            this._userInfoButton.destroy();
+        } finally {
+            this._userInfoButton = null;
+        }
+    }
+
     private async getWechatCode(): Promise<string> {
-        const result = await SDKUtils.wxApiCall<any>((success, fail) => {
-            (window as any).wx.login({
-                success: success,
-                fail: fail
-            });
-        }, 3000); // 3秒超时
-        
-        return result.code;
-    }
-    
-    /**
-     * 获取微信用户信息
-     */
-    private async getWechatUserInfo(): Promise<any> {
+        const wx = this.getWx();
         try {
             const result = await SDKUtils.wxApiCall<any>((success, fail) => {
-                (window as any).wx.getUserInfo({
-                    success: success,
-                    fail: fail
-                });
-            }, 3000); // 3秒超时
-            
-            return result.userInfo;
-        } catch (error) {
-            // 用户拒绝授权或超时，返回空对象
-            console.warn("WechatMiniGameSDK: 获取微信用户信息失败，返回空对象", error);
-            return {};
+                wx.login({ timeout: 5000, success, fail });
+            }, 6000);
+            if (!result?.code) throw new Error("missing code");
+            return result.code;
+        } catch {
+            throw new Error("获取微信登录凭证失败，请重试");
         }
     }
-    
-    private async sendLoginRequest(requestData: LoginRequest): Promise<LoginResponse> {
+
+    private async getWechatUserInfo(): Promise<any> {
+        const wx = this.getWx();
         try {
-            const response = await SDKUtils.post<LoginResponse>(
-                `${this._serverUrl}/login`,
-                requestData,
-                3000 // 3秒超时
-            );
-            
-            if (response.success) {
-                return response;
-            } else {
-                throw new Error(response.errorMessage || "登录失败");
-            }
-        } catch (error) {
-            console.error("WechatMiniGameSDK: 登录请求失败", error);
-            throw error;
+            return await SDKUtils.wxApiCall<any>((success, fail) => {
+                wx.getUserInfo({ withCredentials: true, lang: "zh_CN", success, fail });
+            }, 6000);
+        } catch {
+            throw new Error("获取微信昵称头像失败，请重新授权");
         }
     }
-} 
+
+    private async tryGetAuthorizedWechatUserInfo(): Promise<any | null> {
+        if (await this.isProfileAuthorizationRequired()) return null;
+        try {
+            return await this.getWechatUserInfo();
+        } catch {
+            // Profile is presentation-only. A stale permission or profile API failure
+            // must not turn a valid wx.login identity into a login failure.
+            return null;
+        }
+    }
+
+    private async sendLoginRequest(requestData: LoginRequest): Promise<LoginResponse> {
+        const response = await SDKUtils.post<unknown>(
+            `${this._serverUrl}/login`,
+            requestData,
+            8000,
+        );
+        if (!isLoginResponse(response)) {
+            throw new Error("登录服务器响应结构无效");
+        }
+        if (!response.success) {
+            throw new Error(response.errorMessage || "微信登录失败");
+        }
+        return response;
+    }
+
+    private getDeviceInfo(): string {
+        return JSON.stringify(SDKUtils.getDeviceInfo()).slice(0, 512);
+    }
+
+    private getWx(): any {
+        const wx = (Laya.Browser.window as any).wx;
+        if (!wx) throw new Error("当前环境不是微信小游戏");
+        return wx;
+    }
+}

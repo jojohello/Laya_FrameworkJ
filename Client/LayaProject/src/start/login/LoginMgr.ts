@@ -10,6 +10,7 @@ export class LoginMgr {
     private _sdkMgr: SDKMgr;
     private _isLoggedIn: boolean = false;
     private _loginInfo: LoginResponse | null = null;
+    private _pendingPlatformLogin: Promise<LoginResponse> | null = null;
     private _protocol: LoginProtocol | null = null;
     private _pendingGameLogin: {
         resolve: () => void;
@@ -111,6 +112,10 @@ export class LoginMgr {
      * 保存登录信息到本地
      */
     private saveLoginInfo(response: LoginResponse, inputAccountName?: string): void {
+        if (!response.success || !response.userId || !response.token
+                || response.loginTimestamp === undefined || !response.gatewayWsUrl) {
+            throw new Error("登录成功响应缺少必要字段");
+        }
         // 记录用户输入的账号名称，如果没有则使用服务器返回的userId
         const accountToSave = inputAccountName || response.userId;
         Laya.LocalStorage.setItem("lastLoginAccount", accountToSave);
@@ -143,19 +148,7 @@ export class LoginMgr {
             return this._loginInfo;
         }
         
-        try {
-            // 使用统一的登录接口
-            const response = await this._sdkMgr.login();
-            
-            // 保存登录信息（自动登录时没有用户输入的账号名称）
-            this.saveLoginInfo(response);
-            
-            return response;
-            
-        } catch (error) {
-            console.error("LoginMgr: 自动登录失败:", error);
-            throw error;
-        }
+        return this.executePlatformLogin();
     }
     
     /**
@@ -163,32 +156,46 @@ export class LoginMgr {
      * @param accountName 账号名称（微信平台下此参数无效）
      */
     public async login(accountName?: string): Promise<LoginResponse> {
-        try {
-            const response = await this._sdkMgr.login(accountName);
-            
-            // 保存登录信息，传入用户输入的账号名称
-            this.saveLoginInfo(response, accountName);
-            
-            return response;
-        } catch (error) {
-            console.error("LoginMgr: 登录失败:", error);
-            throw error;
-        }
+        return this.executePlatformLogin(accountName);
     }
-    
+
+    /** One platform login request at a time; a WeChat code must never be submitted twice. */
+    private executePlatformLogin(accountName?: string): Promise<LoginResponse> {
+        if (this._pendingPlatformLogin) return this._pendingPlatformLogin;
+        const request = (async () => {
+            const response = await this._sdkMgr.login(accountName);
+            this.saveLoginInfo(response, accountName);
+            return response;
+        })();
+        this._pendingPlatformLogin = request;
+        const clearPending = () => {
+            if (this._pendingPlatformLogin === request) this._pendingPlatformLogin = null;
+        };
+        void request.then(clearPending, clearPending);
+        return request;
+    }
+
+    public isProfileAuthorizationRequired(): Promise<boolean> {
+        return this._sdkMgr.isProfileAuthorizationRequired();
+    }
+
+    public showProfileAuthorizationButton(
+        rect: { left: number; top: number; width: number; height: number },
+        onAuthorized: () => void,
+        onRejected: (error: Error) => void,
+    ): void {
+        this._sdkMgr.showProfileAuthorizationButton(rect, onAuthorized, onRejected);
+    }
+
+    public hideProfileAuthorizationButton(): void {
+        this._sdkMgr.hideProfileAuthorizationButton();
+    }
+
     /**
      * 登出
      */
     public logout(): void {
         this.clearLocalLoginInfo();
-    }
-    
-    /**
-     * 设置服务器地址
-     */
-    public setServerUrl(url: string): void {
-        // MyGameConfig is the single source of truth and is immutable at runtime.
-        console.warn("LoginMgr: 如需修改登录 URL，请修改 MyGameConfig 的环境配置");
     }
     
     /**
@@ -235,13 +242,8 @@ export class LoginMgr {
             this._pendingGameLogin = null;
             pending.reject(new Error(String(data?.reason || "Unknown game login error")));
         }
-        console.error("[LoginMgr] 处理登录失败:", data);
-
         const reason = data?.reason || "未知错误";
-
-        // TODO: 显示错误提示
-        // TODO: 停留在登录界面
-        console.warn(`[LoginMgr] 登录失败原因: ${reason}`);
+        console.error(`[LoginMgr] 游戏登录失败: ${reason}`);
     }
 
     /**

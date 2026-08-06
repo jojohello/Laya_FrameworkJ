@@ -14,23 +14,9 @@
     {
       "_$id": "r69o2nz8",
       "_$type": "GImage",
-      "name": "img",
+      "name": "fullBleedBackground",
       "width": 750,
       "height": 1400,
-      "relations": [
-        {
-          "_$type": "Relation",
-          "target": {
-            "_$ref": "yo1v68rt"
-          },
-          "data": [
-            1,
-            0,
-            13,
-            0
-          ]
-        }
-      ],
       "src": "res://1f4b2188-00b3-4f1c-af3b-ad8e7564353f",
       "autoSize": false,
       "_$comp": [
@@ -39,6 +25,15 @@
           "scriptPath": "../src/script/LockRatio.ts"
         }
       ]
+    },
+    {
+      "_$id": "startup-safe-area-root",
+      "_$type": "GBox",
+      "name": "safeAreaRoot",
+      "width": 750,
+      "height": 1334,
+      "mouseThrough": true,
+      "touchable": false
     },
     {
       "_$id": "96izeqyk",
@@ -52,7 +47,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "yo1v68rt"
+            "_$ref": "startup-safe-area-root"
           },
           "data": [
             6,
@@ -77,7 +72,7 @@
         {
           "_$type": "Relation",
           "target": {
-            "_$ref": "yo1v68rt"
+            "_$ref": "startup-safe-area-root"
           },
           "data": [
             6,

@@ -48,18 +48,14 @@ export class SDKUtils {
             const timeoutHandler = () => {
                 if (!isCompleted) {
                     isCompleted = true;
-                    console.warn(`SDKUtils: HTTP请求超时（${timeout}ms）`, config.url);
                     reject(new Error(`请求超时（${timeout}ms）`));
                 }
             };
-            const timeoutId = Laya.timer.once(timeout, null, timeoutHandler);
+            Laya.timer.once(timeout, null, timeoutHandler);
             
             // 请求成功回调
             http.on(Laya.Event.COMPLETE, (data: any) => {
-                if (isCompleted) {
-                    console.warn("SDKUtils: 收到响应但已超时，忽略处理", config.url);
-                    return;
-                }
+                if (isCompleted) return;
                 
                 isCompleted = true;
                 Laya.timer.clear(null, timeoutHandler); // 清除超时定时器
@@ -81,7 +77,9 @@ export class SDKUtils {
                     resolve(response);
                     
                 } catch (error) {
-                    console.error("SDKUtils: 响应解析失败", error, "原始数据:", data);
+                    // Responses can contain login tokens or platform data. Never echo
+                    // an unparsed response body into client logs.
+                    console.error("SDKUtils: 响应解析失败", error);
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     reject(new Error(`响应解析失败: ${errorMessage}`));
                 }
@@ -89,10 +87,7 @@ export class SDKUtils {
             
             // 请求失败回调
             http.on(Laya.Event.ERROR, (error: any) => {
-                if (isCompleted) {
-                    console.warn("SDKUtils: 收到错误但已超时，忽略处理", config.url);
-                    return;
-                }
+                if (isCompleted) return;
                 
                 isCompleted = true;
                 Laya.timer.clear(null, timeoutHandler); // 清除超时定时器
@@ -179,7 +174,6 @@ export class SDKUtils {
                 if (!isCompleted) {
                     isCompleted = true;
                     const message = timeoutMessage || `操作超时（${timeout}ms）`;
-                    console.warn("SDKUtils:", message);
                     reject(new Error(message));
                 }
             };
@@ -187,19 +181,13 @@ export class SDKUtils {
             
             // 处理原始Promise
             promise.then((result) => {
-                if (isCompleted) {
-                    console.warn("SDKUtils: 收到结果但已超时，忽略处理");
-                    return;
-                }
+                if (isCompleted) return;
                 
                 isCompleted = true;
                 Laya.timer.clear(null, timeoutHandler);
                 resolve(result);
             }).catch((error) => {
-                if (isCompleted) {
-                    console.warn("SDKUtils: 收到错误但已超时，忽略处理");
-                    return;
-                }
+                if (isCompleted) return;
                 
                 isCompleted = true;
                 Laya.timer.clear(null, timeoutHandler);
@@ -225,7 +213,6 @@ export class SDKUtils {
             const timeoutHandler = () => {
                 if (!isCompleted) {
                     isCompleted = true;
-                    console.warn(`SDKUtils: 微信API调用超时（${timeout}ms）`);
                     reject(new Error(`微信API调用超时（${timeout}ms）`));
                 }
             };
@@ -234,20 +221,14 @@ export class SDKUtils {
             // 调用微信API
             apiCall(
                 (res: any) => {
-                    if (isCompleted) {
-                        console.warn("SDKUtils: 收到微信API响应但已超时，忽略处理");
-                        return;
-                    }
+                    if (isCompleted) return;
                     
                     isCompleted = true;
                     Laya.timer.clear(null, timeoutHandler);
                     resolve(res);
                 },
                 (error: any) => {
-                    if (isCompleted) {
-                        console.warn("SDKUtils: 微信API调用失败但已超时，忽略处理");
-                        return;
-                    }
+                    if (isCompleted) return;
                     
                     isCompleted = true;
                     Laya.timer.clear(null, timeoutHandler);

@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "token": "fixture-jwt-token",
+  "userId": "wechat_fixture_user",
+  "loginTimestamp": 1700000000000,
+  "nickname": "FixtureUser",
+  "avatar": "https://example.invalid/avatar.png",
+  "gatewayWsUrl": "wss://gateway.example.invalid/ws/native"
+}
+

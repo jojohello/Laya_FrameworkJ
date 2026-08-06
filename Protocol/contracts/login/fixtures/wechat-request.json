@@ -1,0 +1,10 @@
+{
+  "type": "WECHAT",
+  "authCode": "fixture-one-time-code",
+  "platform": "minigame",
+  "deviceInfo": "WeChat MiniGame",
+  "version": "1.0.0",
+  "profileEncryptedData": "fixture-encrypted-profile",
+  "profileIv": "fixture-iv"
+}
+

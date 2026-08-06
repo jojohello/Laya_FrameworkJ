@@ -13,14 +13,16 @@ export class MainScene extends BaseScene {
 
     onEnter(param?: any): void {
         super.onEnter(param);
+        Laya.stage.off(Laya.Event.RESIZE, this, this.refreshGroundFallback);
+        Laya.stage.on(Laya.Event.RESIZE, this, this.refreshGroundFallback);
 
         const belowScene = (Laya.Browser.window as any).LayerMgr?.layers?.BelowScene as Laya.Sprite | undefined;
         if (belowScene) {
             if (!this._groundFallback) {
                 this._groundFallback = new Laya.Sprite();
                 this._groundFallback.name = "MainSceneGroundFallback";
-                this._groundFallback.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#d7e4df");
             }
+            this.refreshGroundFallback();
             belowScene.addChildAt(this._groundFallback, 0);
         }
         
@@ -29,10 +31,18 @@ export class MainScene extends BaseScene {
     }
 
     onExit(): void {
+        Laya.stage.off(Laya.Event.RESIZE, this, this.refreshGroundFallback);
         this._groundFallback?.removeSelf();
         super.onExit();
         
         // 场景特有的清理逻辑
+    }
+
+    private refreshGroundFallback(): void {
+        if (!this._groundFallback) return;
+        this._groundFallback.graphics.clear();
+        this._groundFallback.graphics.drawRect(
+            0, 0, Laya.stage.width, Laya.stage.height, "#d7e4df");
     }
 
     onDestroy(): void {

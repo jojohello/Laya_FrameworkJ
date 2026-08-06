@@ -1,36 +1,14 @@
 // jojohello 2025-07-29
 // SDK管理器，根据不同平台提供不同的接口
 
-import { ISDK } from "./ISDK";
+import { ISDK, NativeAuthorizationButtonRect } from "./ISDK";
 import { WebSDK } from "./WebSDK";
 import { WechatMiniGameSDK } from "./WechatMiniGameSDK";
 import { MyGameConfig, Platform } from "../MyGameConfig";
+import type { LoginResponse } from "../login/LoginPayloads.generated";
 
 export { Platform };
-
-export interface LoginRequest {
-    type: "GUEST" | "WECHAT";
-    authCode: string;
-    platform: string;
-    deviceInfo: string;
-    version: string;
-    extraParams: string;
-}
-
-export interface LoginResponse {
-    success: boolean;
-    errorCode?: string;
-    errorMessage?: string;
-    token: string;
-    userId: string;
-    loginTimestamp: number;
-    nickname?: string;
-    avatar?: string;
-    // Gateway 连接信息
-    gatewayIp: string;           // Gateway IP 地址
-    gatewayPort: number;         // Gateway 端口
-    gatewayWsUrl: string;        // 完整的 WebSocket URL（推荐使用）
-}
+export type { LoginRequest, LoginResponse } from "../login/LoginPayloads.generated";
 
 // 主SDK管理器
 export class SDKMgr {
@@ -44,7 +22,7 @@ export class SDKMgr {
         return SDKMgr._instance;
     }
     
-    constructor() {
+    private constructor() {
         // 根据 MyGameConfig 的运行平台创建对应 SDK。
         this._currentSDK = this.createSDKByConfig();
     }
@@ -69,26 +47,10 @@ export class SDKMgr {
     }
     
     /**
-     * 设置平台（手动指定）
-     */
-    public setPlatform(platform: Platform): void {
-        const sdk = platform === Platform.MINIGAME ? new WechatMiniGameSDK() : new WebSDK();
-        sdk.setServerUrl(MyGameConfig.loginApiBaseUrl);
-        this._currentSDK = sdk;
-    }
-    
-    /**
      * 获取当前平台
      */
     public getPlatform(): Platform {
         return this._currentSDK.getPlatform();
-    }
-    
-    /**
-     * 设置服务器地址
-     */
-    public setServerUrl(url: string): void {
-        this._currentSDK.setServerUrl(url);
     }
     
     /**
@@ -97,6 +59,22 @@ export class SDKMgr {
      */
     public async login(accountName?: string): Promise<LoginResponse> {
         return this._currentSDK.login(accountName);
+    }
+
+    public isProfileAuthorizationRequired(): Promise<boolean> {
+        return this._currentSDK.isProfileAuthorizationRequired();
+    }
+
+    public showProfileAuthorizationButton(
+        rect: NativeAuthorizationButtonRect,
+        onAuthorized: () => void,
+        onRejected: (error: Error) => void,
+    ): void {
+        this._currentSDK.showProfileAuthorizationButton(rect, onAuthorized, onRejected);
+    }
+
+    public hideProfileAuthorizationButton(): void {
+        this._currentSDK.hideProfileAuthorizationButton();
     }
     
     /**

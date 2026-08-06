@@ -1,5 +1,6 @@
 import { LoadingView } from "./LoadingView";
 import { LayerMgr } from "../utils/LayerMgr";
+import { ScreenAdapter } from "../screen/ScreenAdapter";
 
 export interface LoadingProcessInfo {
     /** Current progress in [0, 1]. */
@@ -118,6 +119,7 @@ export class LoadingMgr {
             }
 
             this._loadingView = scene;
+            ScreenAdapter.instance.bind(scene);
             LayerMgr.setLayer(scene, "Top");
             this.applyProcessToView(state.lastProcess);
         } catch (error) {

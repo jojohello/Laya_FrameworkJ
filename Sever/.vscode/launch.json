@@ -40,7 +40,7 @@
             "projectName": "login-server",
             "cwd": "${workspaceFolder}/output/servers/login-server",
             "console": "integratedTerminal",
-            "args": "--logging.charset.console=UTF-8 --logging.charset.file=UTF-8",
+            "args": "--spring.config.location=classpath:/application.yml --logging.charset.console=UTF-8 --logging.charset.file=UTF-8",
             "vmArgs": "-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"
         },
         {

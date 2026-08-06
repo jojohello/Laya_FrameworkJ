@@ -79,7 +79,7 @@ const result = await SDKUtils.wxApiCall((success, fail) => {
 
 ### 3. 微信登录模式
 
-`WechatMiniGameSDK` 始终负责微信小游戏平台接入，登录凭据由 `MyGameConfig.loginMode` 决定：`Local` 使用 Login Server 现有的固定开发微信凭据，方便微信开发者工具联调；`Test` 与 `Production` 使用 `wx.login()` 返回的真实临时代码。开发凭据只能在 `Local` 环境生成，正式环境还要求服务端通过微信 `code2Session` 校验。
+`WechatMiniGameSDK` 始终负责微信小游戏平台接入。`MyGameConfig.forceAccountLogin=true` 时使用 Login Server 显式开启的固定开发 code 和 `developerAccount`，仅供 Local/Test 建立测试账号；开关为 `false` 时使用 `wx.login()` 返回的真实临时代码，Production 强制采用此模式。仅在用户已经授权且 `wx.getUserInfo(withCredentials=true)` 成功时附带 `encryptedData/iv`；未授权或读取失败时仍只凭 code 登录。客户端不上传 `openid`、`unionid` 或内部 `userId`；服务端通过 `code2Session` 校验并解析账号。
 
 ### 4. 工具函数
 
@@ -225,6 +225,6 @@ try {
 
 1. 默认超时时间为3秒，可根据需要调整
 2. 超时后会自动忽略后续的响应，避免重复处理
-3. 微信API调用失败时会自动返回空对象，不影响主流程
+3. `wx.login` 或登录 HTTP 请求失败时回到重试状态；昵称头像未授权、权限失效或资料 API 失败不得阻断账号登录
 4. 所有网络请求都会自动添加 `Content-Type: application/json` 头
 5. GET请求的参数会自动转换为查询字符串

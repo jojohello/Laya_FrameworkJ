@@ -62,8 +62,8 @@ login:
     # WeChat login configuration
     wechat:
       enabled: true
-      app-id: your-wechat-app-id
-      app-secret: your-wechat-app-secret
+      # AppID、AppSecret 与开发 code 开关由认证适配器直接读取进程环境变量。
+      code2-session-url: https://api.weixin.qq.com/sns/jscode2session
     # QQ login configuration
     qq:
       enabled: true

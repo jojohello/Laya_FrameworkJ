@@ -1,6 +1,6 @@
 ---
 name: laya-ui-art-builder
-description: Design, generate, assemble, revise, audit, and clean up LayaAir 3 UI screens and reusable components. Use when Codex needs an end-to-end independent-screen workflow, panel/button/background art, nine-slice planning and sizeGrid validation, PNG slicing, common-resource reuse, .lh/.ls assembly, res:// and meta handling, visual validation, or redundant UI asset removal.
+description: Design, generate, assemble, adapt, revise, audit, and clean up LayaAir 3 UI screens and reusable components. Use when Codex needs an end-to-end independent-screen workflow, safe-area and Relation layout, panel/button/background art, nine-slice planning and sizeGrid validation, PNG slicing, common-resource reuse, .lh/.ls assembly, res:// and meta handling, visual validation, or redundant UI asset removal.
 ---
 
 # Laya UI Art Builder
@@ -23,7 +23,9 @@ Then read only the needed follow-up docs, usually:
 - `docs/ArtStyleDecisionLog.md` for style decisions
 - `docs/ArtAssetReplacementMap.md` for final asset paths and status
 
-For a new independent screen, a complete screen redesign, or a screen whose parts must be generated and assembled, read `references/independent-ui-production-workflow.md` completely before producing art. The default project design canvas is `750x1335`; confirm actual target serialization and safe areas before fixing logical bounds.
+For a new independent screen, a complete screen redesign, or a screen whose parts must be generated and assembled, read `references/independent-ui-production-workflow.md` completely before producing art. The default project design canvas is `750x1334`; confirm actual target serialization and safe areas before fixing logical bounds.
+
+For screen adaptation, safe areas, top/bottom anchoring, notch or mini-game capsule avoidance, or any Relation edit on an adaptive page, read `references/safe-area-layout.md` completely before editing.
 
 ## Workflow
 
@@ -47,6 +49,7 @@ For a new independent screen, a complete screen redesign, or a screen whose part
    - JSON parse for `.ls/.lh` when possible
    - missing references / stale temporary files
    - project docs updated
+   - `tools/ui/validate-safe-area-relations.ps1` when the project provides it and adaptive UI was touched
 
 For redundant-resource cleanup, migrate every filename, runtime path, and UUID reference to one canonical resource before deleting the duplicate PNG and `.meta`. Keep the canonical reusable asset under `assets/ui/common/` when its meaning is not module-specific.
 

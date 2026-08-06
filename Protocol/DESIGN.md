@@ -51,7 +51,7 @@ Gateway 与 Game Server 的 Java 类位于不同包且消费的作用域不同�
 
 统一 ID 不代表负载已经统一。新增跨端业务消息时必须建立 `contracts/<feature>/schema.json`、`DESIGN.md` 和必要 fixtures。账号 `userId`、角色 `playerId` 与连接 `sessionId` 必须遵循根级 DESIGN 的语义。
 
-Schema 使用版本化的项目方言并采用关键字白名单。每个 definition 必须是 `additionalProperties: false` 的对象，或值唯一且稳定的小写 string enum；整数必须声明 Java `int/long` 映射及安全范围；bindings 必须引用 `message-ids.yaml` 中存在的消息。生成器输出 Java records/enums、TypeScript interfaces/enums 和客户端结构守卫，同时校验 fixtures。未知关键字必须失败，不得静默忽略。
+Schema 使用版本化的项目方言并采用关键字白名单。每个 definition 必须是 `additionalProperties: false` 的对象，或值唯一且稳定的小写 string enum；整数必须声明 Java `int/long` 映射及安全范围。WebSocket `bindings` 必须引用 `message-ids.yaml` 中存在的消息；HTTP 契约使用 `httpBindings` 声明方法、路径、请求和响应类型。生成目标除 Logic、Game Server 和 Gateway 外，还可覆盖先于 Logic 加载的 Start 包和 Login Server，但 Start 生成物不得反向依赖 Logic。生成器输出 Java records/enums、TypeScript interfaces/enums 和客户端结构守卫，同时校验 fixtures。未知关键字必须失败，不得静默忽略。
 
 Schema 只负责可机械验证的 wire 结构。权限、身份来源、事务、幂等、排序、版本连续性、字段间领域关系和部署兼容窗口仍由 DESIGN 与领域测试负责。生成的结构守卫必须在客户端网络边界使用；服务端请求必须先转成生成 DTO 并执行领域校验，不能因为类型由生成器产生就信任客户端。
 

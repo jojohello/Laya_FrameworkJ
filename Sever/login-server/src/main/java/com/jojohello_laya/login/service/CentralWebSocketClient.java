@@ -33,8 +33,10 @@ public class CentralWebSocketClient {
     private WebSocketSession session;
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final AtomicBoolean connecting = new AtomicBoolean(false);
+    private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor();
     private final WebSocketClient webSocketClient = new StandardWebSocketClient();
 
     /**
@@ -55,6 +57,7 @@ public class CentralWebSocketClient {
      */
     @PreDestroy
     public void destroy() {
+        if (!shuttingDown.compareAndSet(false, true)) return;
         log.info("正在关闭WebSocket客户端...");
         connected.set(false);
         connecting.set(false);
@@ -65,6 +68,7 @@ public class CentralWebSocketClient {
                 log.warn("关闭WebSocket会话时出错: {}", e.getMessage());
             }
         }
+        connectionExecutor.shutdownNow();
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -80,6 +84,7 @@ public class CentralWebSocketClient {
      * 连接到中心服务器
      */
     public void connect() {
+        if (shuttingDown.get()) return;
         if (connected.get() || connecting.get()) {
             log.debug("WebSocket已连接或正在连接中，跳过连接请求");
             return;
@@ -102,7 +107,12 @@ public class CentralWebSocketClient {
                 } catch (Exception e) {
                     throw new CompletionException(e);
                 }
-            }, Executors.newSingleThreadExecutor()).thenAccept(result -> {
+            }, connectionExecutor).thenAccept(result -> {
+                if (shuttingDown.get()) {
+                    connecting.set(false);
+                    closeQuietly(result);
+                    return;
+                }
                 log.info("WebSocket连接成功建立");
                 this.session = result;
                 connected.set(true);
@@ -111,6 +121,7 @@ public class CentralWebSocketClient {
                 startHeartbeat();
                 sendAuthMessage();
             }).exceptionally(failure -> {
+                if (shuttingDown.get()) return null;
                 log.error("WebSocket连接失败: {}", failure.getMessage());
                 connected.set(false);
                 connecting.set(false);
@@ -119,6 +130,7 @@ public class CentralWebSocketClient {
                 return null;
             });
         } catch (Exception e) {
+            if (shuttingDown.get()) return;
             log.error("WebSocket连接异常: {}", e.getMessage(), e);
             connected.set(false);
             connecting.set(false);
@@ -148,23 +160,28 @@ public class CentralWebSocketClient {
      * 启动心跳检测
      */
     private void startHeartbeat() {
-        scheduler.scheduleAtFixedRate(() -> {
-            if (connected.get() && session != null && session.isOpen()) {
-                try {
-                    WSMessage heartbeat = new WSMessage("HEARTBEAT", "ping", Map.of("timestamp", System.currentTimeMillis()));
-                    sendMessage(heartbeat);
-                    log.debug("发送心跳包到中心服务器");
-                } catch (Exception e) {
-                    log.warn("发送心跳包失败: {}", e.getMessage());
+        if (shuttingDown.get() || scheduler.isShutdown()) return;
+        try {
+            scheduler.scheduleAtFixedRate(() -> {
+                if (!shuttingDown.get() && connected.get() && session != null && session.isOpen()) {
+                    try {
+                        WSMessage heartbeat = new WSMessage("HEARTBEAT", "ping", Map.of("timestamp", System.currentTimeMillis()));
+                        sendMessage(heartbeat);
+                    } catch (Exception e) {
+                        log.warn("发送心跳包失败: {}", e.getMessage());
+                    }
                 }
-            }
-        }, config.getWebsocket().getHeartbeatInterval(), config.getWebsocket().getHeartbeatInterval(), TimeUnit.MILLISECONDS);
+            }, config.getWebsocket().getHeartbeatInterval(), config.getWebsocket().getHeartbeatInterval(), TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            if (!shuttingDown.get()) throw e;
+        }
     }
 
     /**
      * 安排重连
      */
     private void scheduleReconnect() {
+        if (shuttingDown.get() || scheduler.isShutdown()) return;
         int attempts = reconnectAttempts.incrementAndGet();
         int maxAttempts = config.getWebsocket().getMaxReconnectAttempts();
         if (maxAttempts > 0 && attempts > maxAttempts) {
@@ -173,18 +190,23 @@ public class CentralWebSocketClient {
         }
         long delay = config.getWebsocket().getReconnectInterval();
         log.info("将在 {} 毫秒后进行第 {} 次重连", delay, attempts);
-        scheduler.schedule(() -> {
-            if (!connected.get()) {
-                log.info("开始第 {} 次重连尝试", attempts);
-                connect();
-            }
-        }, delay, TimeUnit.MILLISECONDS);
+        try {
+            scheduler.schedule(() -> {
+                if (!shuttingDown.get() && !connected.get()) {
+                    log.info("开始第 {} 次重连尝试", attempts);
+                    connect();
+                }
+            }, delay, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            if (!shuttingDown.get()) throw e;
+        }
     }
 
     /**
      * 发送消息
      */
     public void sendMessage(WSMessage message) {
+        if (shuttingDown.get()) return;
         if (!connected.get() || session == null || !session.isOpen()) {
             log.warn("WebSocket未连接，无法发送消息: {}", message.getType());
             return;
@@ -192,7 +214,9 @@ public class CentralWebSocketClient {
         try {
             String json = objectMapper.writeValueAsString(message);
             session.sendMessage(new TextMessage(json));
-            log.debug("发送WebSocket消息: {}", message.getType());
+            if (!"HEARTBEAT".equals(message.getType())) {
+                log.debug("发送WebSocket消息: {}", message.getType());
+            }
         } catch (Exception e) {
             log.error("发送WebSocket消息失败: {}", e.getMessage(), e);
         }
@@ -219,15 +243,22 @@ public class CentralWebSocketClient {
     private class CentralWebSocketHandler implements WebSocketHandler {
         @Override
         public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
+            if (shuttingDown.get()) {
+                closeQuietly(session);
+                return;
+            }
             log.info("WebSocket连接已建立: {}", session.getId());
         }
 
         @Override
         public void handleMessage(@NonNull WebSocketSession session, @NonNull WebSocketMessage<?> message) throws Exception {
+            if (shuttingDown.get()) return;
             try {
                 String payload = message.getPayload().toString();
                 WSMessage wsMessage = objectMapper.readValue(payload, WSMessage.class);
-                log.debug("收到WebSocket消息: {}", wsMessage.getType());
+                if (!"HEARTBEAT_RESPONSE".equals(wsMessage.getType())) {
+                    log.debug("收到WebSocket消息: {}", wsMessage.getType());
+                }
                 switch (wsMessage.getType()) {
                 case "WELCOME":
                     log.info("收到中心服务器欢迎消息: {}", wsMessage.getMessage());
@@ -239,7 +270,6 @@ public class CentralWebSocketClient {
                     log.warn("认证失败: {}", wsMessage.getMessage());
                     break;
                 case "HEARTBEAT_RESPONSE":
-                    log.debug("收到心跳响应");
                     break;
                 case "ERROR":
                     log.error("收到错误消息: {}", wsMessage.getMessage());
@@ -254,6 +284,7 @@ public class CentralWebSocketClient {
 
         @Override
         public void handleTransportError(@NonNull WebSocketSession session, @NonNull Throwable exception) throws Exception {
+            if (shuttingDown.get()) return;
             log.error("WebSocket传输错误: {}", exception.getMessage(), exception);
             connected.set(false);
             scheduleReconnect();
@@ -261,6 +292,7 @@ public class CentralWebSocketClient {
 
         @Override
         public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus closeStatus) throws Exception {
+            if (shuttingDown.get()) return;
             log.warn("WebSocket连接已关闭: {} - {}", closeStatus.getCode(), closeStatus.getReason());
             connected.set(false);
             // 如果不是正常关闭，启动重连
@@ -272,6 +304,14 @@ public class CentralWebSocketClient {
         @Override
         public boolean supportsPartialMessages() {
             return false;
+        }
+    }
+
+    private void closeQuietly(WebSocketSession session) {
+        try {
+            if (session != null && session.isOpen()) session.close(CloseStatus.GOING_AWAY);
+        } catch (Exception ignored) {
+            // Shutdown is already in progress; there is no useful recovery action.
         }
     }
 

@@ -11,11 +11,6 @@ export enum Platform {
     MINIGAME = "minigame",
 }
 
-export enum LoginMode {
-    Developer = "developer",
-    Wechat = "wechat",
-}
-
 export interface GameEndpointConfig {
     loginApiBaseUrl: string;
     resourceBaseUrl: string;
@@ -26,16 +21,10 @@ export interface GameEndpointConfig {
 export interface MyGameConfigSnapshot {
     environment: GameEnvironment;
     platform: Platform;
-    loginMode: LoginMode;
+    forceAccountLogin: boolean;
     endpoints: Readonly<GameEndpointConfig>;
     remoteResourcePackages: ReadonlyArray<string>;
 }
-
-const LOGIN_MODE_PROFILES: Record<GameEnvironment, LoginMode> = {
-    [GameEnvironment.Local]: LoginMode.Developer,
-    [GameEnvironment.Test]: LoginMode.Wechat,
-    [GameEnvironment.Production]: LoginMode.Wechat,
-};
 
 const ENDPOINT_PROFILES: Record<GameEnvironment, GameEndpointConfig> = {
     [GameEnvironment.Local]: {
@@ -44,9 +33,9 @@ const ENDPOINT_PROFILES: Record<GameEnvironment, GameEndpointConfig> = {
         gatewayFallbackUrl: "ws://127.0.0.1:8082/ws/native",
     },
     [GameEnvironment.Test]: {
-        loginApiBaseUrl: "",
-        resourceBaseUrl: "",
-        gatewayFallbackUrl: "",
+        loginApiBaseUrl: "http://127.0.0.1:8081/api",
+        resourceBaseUrl: "http://127.0.0.1:8080/",
+        gatewayFallbackUrl: "ws://127.0.0.1:8082/ws/native",
     },
     [GameEnvironment.Production]: {
         loginApiBaseUrl: "",
@@ -60,7 +49,10 @@ const ENDPOINT_PROFILES: Record<GameEnvironment, GameEndpointConfig> = {
  * Logic receives only the immutable snapshot published on window.
  */
 export class MyGameConfig {
-    static readonly environment: GameEnvironment = GameEnvironment.Local;
+    static readonly environment: GameEnvironment = GameEnvironment.Test;
+
+    /** Mini-game debugging switch. Production must always keep this false. */
+    static readonly forceAccountLogin = false;
 
     static readonly remoteResourcePackages = Object.freeze([
         "bigImg",
@@ -80,10 +72,6 @@ export class MyGameConfig {
         if (Laya.Browser.onAndroid) return Platform.ANDROID;
         if (Laya.Browser.onIOS) return Platform.IOS;
         return Platform.WEB;
-    }
-
-    static get loginMode(): LoginMode {
-        return LOGIN_MODE_PROFILES[this.environment];
     }
 
     static get loginApiBaseUrl(): string {
@@ -106,10 +94,6 @@ export class MyGameConfig {
         return this.currentEndpoints.gatewayFallbackUrl.trim();
     }
 
-    static get isLocalEnvironment(): boolean {
-        return this.environment === GameEnvironment.Local;
-    }
-
     static createSnapshot(): Readonly<MyGameConfigSnapshot> {
         this.validateCurrentProfile();
         const endpoints = Object.freeze({
@@ -120,7 +104,7 @@ export class MyGameConfig {
         return Object.freeze({
             environment: this.environment,
             platform: this.platform,
-            loginMode: this.loginMode,
+            forceAccountLogin: this.forceAccountLogin,
             endpoints,
             remoteResourcePackages: this.remoteResourcePackages,
         });
@@ -152,8 +136,8 @@ export class MyGameConfig {
             throw new Error(`远程资源服务器必须使用 HTTP/HTTPS：${resourceUrl}`);
         }
         if (this.environment === GameEnvironment.Production) {
-            if (this.loginMode !== LoginMode.Wechat) {
-                throw new Error("Production 环境必须使用真实微信登录模式");
+            if (this.forceAccountLogin) {
+                throw new Error("Production 环境不得强制使用账号登录");
             }
             if (!loginUrl.toLowerCase().startsWith("https://") || !resourceUrl.toLowerCase().startsWith("https://")) {
                 throw new Error("Production 环境的登录与资源服务器必须使用 HTTPS");

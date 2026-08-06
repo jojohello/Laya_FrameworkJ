@@ -23,7 +23,6 @@ public class GuestAuthServiceImpl implements ThirdPartyAuthService {
 
     @Override
     public ThirdPartyAuthResult authenticate(ThirdPartyAuthRequest request) {
-        log.info("游客登录开始，clientIp: {}, deviceInfo: {}", request.getClientIp(), request.getDeviceInfo());
         try {
             // 检查是否是开发模式
             boolean isDeveloperMode = request.getAuthCode().startsWith("dev_");
@@ -42,11 +41,9 @@ public class GuestAuthServiceImpl implements ThirdPartyAuthService {
                         long currentTime = System.currentTimeMillis();
                         // 时间戳应该在合理范围内（比如24小时内）
                         if (Math.abs(currentTime - timestampValue) > 24 * 60 * 60 * 1000) {
-                            log.warn("时间戳过期或无效: {}", timestamp);
                             return ThirdPartyAuthResult.failure("INVALID_TIMESTAMP", "时间戳无效");
                         }
                     } catch (NumberFormatException e) {
-                        log.warn("时间戳格式无效: {}", timestamp);
                         return ThirdPartyAuthResult.failure("INVALID_TIMESTAMP", "时间戳格式无效");
                     }
                     // 用户标识只使用开发者名称和设备信息，不包含时间戳
@@ -54,9 +51,7 @@ public class GuestAuthServiceImpl implements ThirdPartyAuthService {
                     String deviceHash = deviceInfo != null ? String.valueOf(deviceInfo.hashCode()) : "unknown";
                     guestUserId = "dev_" + developerName + "_" + deviceHash;
                     nickname = "开发者_" + developerName;
-                    log.info("开发模式登录: developer={}, userId={}, timestamp={}", developerName, guestUserId, timestamp);
                 } else {
-                    log.warn("开发模式格式无效: {}", request.getAuthCode());
                     return ThirdPartyAuthResult.failure("INVALID_FORMAT", "开发模式格式无效");
                 }
             } else {
@@ -65,7 +60,6 @@ public class GuestAuthServiceImpl implements ThirdPartyAuthService {
                 String deviceHash = deviceInfo != null ? String.valueOf(deviceInfo.hashCode()) : "unknown";
                 guestUserId = "guest_" + deviceHash;
                 nickname = "游客_" + deviceHash.substring(0, Math.min(6, deviceHash.length()));
-                log.info("游客登录成功，userId: {}, nickname: {}", guestUserId, nickname);
             }
             // 为游客登录生成sessionKey
             String sessionKey = "guest_session_" + System.currentTimeMillis() + "_" + guestUserId;

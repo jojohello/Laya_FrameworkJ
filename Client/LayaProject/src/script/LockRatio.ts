@@ -1,4 +1,4 @@
-const { regClass, property } = Laya;
+const { regClass } = Laya;
 
 @regClass()
 export class LockRatio extends Laya.Script {
@@ -24,15 +24,16 @@ export class LockRatio extends Laya.Script {
 
     onDisable(): void {
         Laya.stage.off(Laya.Event.RESIZE, this, this._onScreenResize);
+        this.owner?.off(Laya.Event.LOADED, this, this._onTextureLoaded);
     }
 
     onDestroy(): void {
         Laya.stage.off(Laya.Event.RESIZE, this, this._onScreenResize);
+        this.owner?.off(Laya.Event.LOADED, this, this._onTextureLoaded);
     }
 
     // 公共接口也使用_开头
     public _refreshSize(): void {
-        this._cacheOriginalSize();
         this._adjustImageSize();
     }
 
@@ -40,7 +41,6 @@ export class LockRatio extends Laya.Script {
         this._originalWidth = width;
         this._originalHeight = height;
         this._adjustImageSize();
-        console.log(`LockRatio: 设置原始尺寸 ${width}x${height}`);
     }
 
     public _getOriginalSize(): { width: number, height: number } {
@@ -59,15 +59,11 @@ export class LockRatio extends Laya.Script {
 
         this._cacheOriginalSize();
         this._isInitialized = true;
-        console.log(`LockRatio: 初始化完成 ${this._originalWidth}x${this._originalHeight}`);
     }
 
     private _cacheOriginalSize(): void {
-        // 优先使用当前设置的宽高
         this._originalWidth = this.owner.width || 0;
         this._originalHeight = this.owner.height || 0;
-
-        console.log(`jojohello log LockRatio: 缓存原始尺寸 ${this._originalWidth}x${this._originalHeight}`);
 
         // 备选方案：从纹理获取
         if (this._originalWidth === 0 || this._originalHeight === 0) {
@@ -90,7 +86,6 @@ export class LockRatio extends Laya.Script {
             this._originalWidth = this.owner.texture.width;
             this._originalHeight = this.owner.texture.height;
             this._adjustImageSize();
-            console.log(`LockRatio: 纹理加载完成 ${this._originalWidth}x${this._originalHeight}`);
         }
     }
 
@@ -103,13 +98,21 @@ export class LockRatio extends Laya.Script {
             return;
         }
 
-        const screenWidth = Laya.stage.width;
-        const scaleRatio = screenWidth / this._originalWidth;
+        const container = this.owner.parent as Laya.Sprite | null;
+        // Stage RESIZE can be dispatched before a serialized root has finished
+        // resolving its edge anchors, so never let a stale parent size shrink the target.
+        const targetWidth = Math.max(container?.width || 0, Laya.stage.width);
+        const targetHeight = Math.max(container?.height || 0, Laya.stage.height);
+        const scaleRatio = Math.max(
+            targetWidth / this._originalWidth,
+            targetHeight / this._originalHeight,
+        );
+        const newWidth = this._originalWidth * scaleRatio;
         const newHeight = this._originalHeight * scaleRatio;
 
-        this.owner.width = screenWidth;
-        this.owner.height = newHeight;
-
-        console.log(`LockRatio: 缩放至 ${screenWidth}x${newHeight.toFixed(1)} (${scaleRatio.toFixed(3)}x)`);
+        // Painted backgrounds must cover the viewport without non-uniform stretch.
+        // Overflow is cropped symmetrically; focal art therefore stays in the center safe area.
+        this.owner.size(newWidth, newHeight);
+        this.owner.pos((targetWidth - newWidth) * 0.5, (targetHeight - newHeight) * 0.5);
     }
 }

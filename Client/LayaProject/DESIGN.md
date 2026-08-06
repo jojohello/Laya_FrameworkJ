@@ -55,9 +55,9 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 - 代码动态加载的资源目录同时列入 `alwaysIncluded` 和对应的远程 `subpackages`：前者保证导出器不会裁剪资源，后者使它们输出到 `wxgame-remote` 而不是微信本地包。两个列表必须与 `MyGameConfig.remoteResourcePackages` 同步。
 - 所有游戏分包关闭构建器的启动前自动加载。首包 Loading 先注册微信本地 `logic` 代码包；资源包地址选择只能由 `MyGameConfig.resourcePackageBaseUrl` 决定：IDE 预览调用本地 `loadPackage(name)`，发布产物（包括微信开发者工具）调用远程 `loadPackage(name, remoteUrl)`。LogicMain、ConfigMgr 和 UIManager 只能在全部分包注册后初始化。
 - `MyGameConfig` 由 Start 首包拥有，统一选择环境、登录 API、远程资源地址和仅限开发环境的 Gateway 兜底。Start 在加载 Logic 前向 `window.myGameConfig` 发布不可变快照；Logic 只能通过 `App.gameConfig` 和 type-only 契约读取，不得静态导入 Start 配置实现。正常 Gateway 地址继续以登录服务器返回值为权威来源。
-- 平台 SDK 与认证环境不得通过组合子类交叉膨胀：`WechatMiniGameSDK` 负责微信平台 API，`MyGameConfig.loginMode` 决定开发凭据或真实微信凭据。开发微信凭据只能用于 `Local`；`Test`/`Production` 必须使用 `wx.login`，且服务端 Production 必须执行真实平台验证。
+- 登录入口必须先按运行平台分流：非微信小游戏平台显示账号输入；微信小游戏仅在 `MyGameConfig.forceAccountLogin` 为真时显示账号输入，否则进入页面后自动执行 `wx.login` 并显示底部登录进度。强制账号登录只用于 Local/Test 联调，Production 必须关闭，且服务端仍须用环境变量显式开启开发 code。
 - `Local` 允许 HTTP/WS 以支持本机和局域网联调；`Production` 的登录 API 与远程资源地址必须为 HTTPS，且不得设置 Gateway 兜底。微信开发者工具中的本地发布测试与 IDE 预览不是同一加载模式，不得用 `LayaEnv.isPreview` 以外的零散条件在业务代码中重复判断。
-- `assets/testAndSample/` 下脚本集必须关闭 `allowLoadInRuntime`。正式构建后必须同时检查资源清单和 JS bundle；只确认测试场景未导出不足以证明测试代码已排除。
+- `assets/testAndSample/` 下脚本集必须关闭 `allowLoadInRuntime`。正式构建后必须同时检查资源清单和 JS bundle；只确认测试场景未导出不足以证明测试代码已排除。LayaAir 3.3.11 仍生成不含测试逻辑的空注册壳，当前按 [LayaAir 版本缺陷](docs/LayaAirVersionBugs.md) 跟踪，不以项目级构建补丁规避。
 - 微信移动端纹理默认在 Android 与 iOS 统一使用 `ASTC_6X6`，PC 开发环境显式使用 `R8G8B8A8`，不得让启用默认压缩后的 PC 格式隐式落入 BC1。非自动图集图片的目录策略由 `settings/plugin-JFrameworkTextureImportRules.json` 和 `src/editor/textureImport/` 的导入处理器统一维护，`.meta` 只是导入结果，不是人工配置入口。`startupUI` 和 `ui` 中真正符合纹理类型、递归范围与单图尺寸上限的精灵由各自 `.atlascfg` 处理；角色与特效的手工 `.atlas` 纹理、大地图以及超过图集上限的 UI 散图继续由目录导入规则处理，不得为了套用目录规则再次打成自动图集。
 - 发布配置必须开启压缩纹理。当前保留 PNG/JPG 源图作为开发者工具和不支持 ASTC 设备的兼容回退；只有完成目标真机覆盖验证后，才能为了包体关闭源图保留。普通 IDE 预览不用于判断 ASTC 是否生效，发布后以 `fileconfig.json`、生成的 KTX 文件和真机网络请求为准。
 - `assets/config/*.json` 属于数据资源并进入 `config` 分包，不参与 ASTC 纹理压缩；其输入和生成约束继续遵循“配置输入与生成物”。
@@ -97,7 +97,11 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 
 **页面底面选择。** 全屏美术背景只用于 Loading、登录、地图或确有独立场景叙事的页面；普通功能页、弹窗、结算页和信息面板默认保留其宿主场景，仅使用输入遮罩和局部承载面板。底面能用纯色或低细节填充时不得额外生成花哨背景；可拉伸的标题条、按钮和面板优先使用已验证的九宫格资源。
 
-**界面适配。** 先按设计画布完成视觉层级，再为每个根级节点选择明确的 Relation：全屏遮罩或背景绑定根节点宽高；固定尺寸的主视觉、标题、信息面板和主操作以根节点横向中心、纵向中线为锚点，使画布比例变化时整体平移而不拉伸或挤压；面板内部元素仅绑定其直接父容器，保持已确认的相对节奏。不得把所有节点盲目拉伸到全屏；安全区、顶部 HUD 或底部导航有明确依附语义时，改用相应边缘 Relation 并在真实设备验收后固化。
+**界面适配。** 使用全屏页面根 + 普通 `GBox safeAreaRoot` + `SafeAreaLayout` 的统一结构。`safeAreaRoot` 保持 `0,0,750,1334` 设计矩形，由通用组件在运行时只改为平台安全区的 Stage 坐标；它可以作为页面根下的空白兄弟参照，不要求重挂现有内容父子关系。全屏背景、场景底面和遮罩只绑定页面根；顶部 HUD、底部导航、主操作、弹窗面板和其他安全内容通过 Relation 指向 `safeAreaRoot`；分组内部元素只绑定其直接父容器。页面 Controller 只处理状态、数据和交互，不读取安全区后再写 UI 坐标或尺寸。新增或修改此类页面后必须运行 `tools/ui/validate-safe-area-relations.ps1`。
+
+屏幕策略按运行能力而不是设备型号识别：微信、抖音等小游戏优先读取平台窗口安全区，Web 使用 CSS `env(safe-area-inset-*)`，微信右上操作区额外读取胶囊矩形；平台/CSS 像素按 `fixedwidth` 的统一比例换算为当前 Laya Stage 逻辑坐标。平台没有安全区能力时才允许按实际 viewport 比例提供显式标记为 `estimated` 的长屏兜底，不维护 iPhone/Android 型号白名单。`750×1334`、`fixedwidth` 是竖屏核心内容基线；绘画型全屏背景使用等比 cover 并允许裁掉低信息边缘，纯色、遮罩和已验证九宫格可以拉伸，关键 UI 始终位于安全区。移动端超出 16:9 不留黑边，也不得通过非等比缩放填满背景。
+
+同一节点的同一布局轴只能有一个所有者。`SafeAreaLayout` 独占 `safeAreaRoot` 的 `x/y/width/height`；普通内容的轴由 Relation 所有，Controller 不得重复写；微信胶囊避让节点命名为 `menuButtonAvoidanceRoot`，纵轴由 `SafeAreaLayout` 所有，只允许用 Relation 管理横轴。移动整组容器后，其子节点不得再通过 Relation 绑定页面根或安全区根，否则父容器位移和根节点差值会叠加；子节点只保留相对直接父容器的内部布局。涉及自适应的页面验收必须检查设计尺寸、至少一个长屏尺寸、平台安全区和胶囊区域，不能只用 TypeScript 或 JSON 检查代替坐标验证。
 
 **主界面内页层级。** 背包、征战等需要保留主界面顶部 HUD 和底部导航的内页使用 `UILayer.MainContent`（`zOrder=90`），低于 `MainUI` 壳层（`zOrder=100`），不得使用 `UIWindow` 弹窗层。内页的可交互内容只能位于当前主界面 HUD 与底部导航之间的安全区域；主界面壳层继续负责其自身的显示和点击，避免内页被 HUD/导航遮住或反向拦截导航。
 
@@ -110,6 +114,8 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 以下做法视为已确认的错误：未确认整屏就逐个拼组件；把参考布局误当参考风格；让通用面板反向决定信息层级；把生成器大图直接缩放使用；为了复用混入不同材质或色温；把动态文字烘焙进 PNG；用 `GTextField` 或 Controller 绘图代替正式背景；把 PNG 放在 UI 模块根目录；手写 `.meta` 或猜测 UUID；只通过静态检查就宣布界面完成。
 
 ## LayaAir 3.3 约束
+
+- 每次更新 LayaAir IDE 或引擎库前，必须阅读官方目标版本 Release/更新说明和对应版本文档，并逐项复查 [LayaAirVersionBugs.md](docs/LayaAirVersionBugs.md) 中仍开放的问题；升级后记录复现结果，已修复项同步移除临时约束，未修复或出现回归则更新影响版本和证据。仅完成工程可编译不能视为升级复查完成。
 
 - 运行时资源路径相对 `assets/` 根，例如 `startupUI/login/Login.lh`，不得写成 `assets/startupUI/login/Login.lh`。
 - 新 UI 序列化节点使用 LayaAir 3.3 对应的 `GBox`、`GImage`、`GTextInput` 等类型；修改 `.ls/.lh` 前先核对同项目的有效文件。

@@ -209,7 +209,6 @@ export class BagViewController {
             // Category changes must not move the tab strip; selection is communicated by the embedded-page art only.
             button.scaleX = 1;
             button.scaleY = 1;
-            button.y = 218;
             const activeBackground = button.getChildByName("activeBackground") as Laya.GLoader;
             const normalBackground = button.getChildByName("normalBackground") as Laya.GLoader;
             if (activeBackground) {

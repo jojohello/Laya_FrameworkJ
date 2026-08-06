@@ -19,3 +19,9 @@
 - 刷新 IDE 或重新打开测试场景可以用于确认缓存判断，但测试包本身仍须对旧夹具状态保持可运行，避免每次改动都依赖人工清缓存。
 
 这些约束来自子弹生命周期和同队避让回归测试中重复出现的旧类缺方法、缺属性问题；它们用于让失败日志直接指向正确的排查层级。
+
+## 编辑器脚本集边界
+
+- 调用式测试脚本集保持 `enabled=true`、`allowLoadInEditor=true` 和 `allowLoadInRuntime=false`，以便 IDE 独立编译测试代码且正式入口不加载测试逻辑。
+- 不得通过 `enabled=false` 消除 LayaAir 3.3.11 生成的 Runtime 空注册壳；关闭脚本集会把测试源码合并进主 Scene bundle，并可能因 Logic bundle 尚未注册而触发 `Class extends value undefined`。
+- 空注册壳作为已知引擎版本问题记录在 [LayaAirVersionBugs.md](../../docs/LayaAirVersionBugs.md)，升级 LayaAir 时复查，不维护项目级构建过滤插件。

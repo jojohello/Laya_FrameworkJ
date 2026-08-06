@@ -290,6 +290,10 @@ export class UIManager implements IManager {
 
         // UI 直接挂到 GRoot，同 zOrder 下后添加的 UI 会覆盖先添加的 UI。
         uiRoot.addChild(scene);
+        // Geometry is owned by the Start-bundle component. Pages only declare
+        // a normal safeAreaRoot GBox and editor Relations to that target.
+        const screenAdapter = (Laya.Browser.window as any).screenAdapter;
+        screenAdapter?.bind?.(scene);
 
         // 允许特定 UI 的根节点在空白区域穿透鼠标事件。
         // 子控件仍保留自己的命中能力，适用于 MainUI 这类跨场景壳层。

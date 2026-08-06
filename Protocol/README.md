@@ -43,12 +43,13 @@ npm run generate
 - `Protocol/generated/{java,typescript}/contracts/<feature>/...`
 - 对应 Client 模块的 `*Payloads.generated.ts`
 - `Sever/game-server/.../protocol/payload/<feature>/*Payloads.java`
+- HTTP 登录契约需要的 `Client/LayaProject/src/start/<module>/*Payloads.generated.ts` 与 `Sever/login-server/.../protocol/payload/<feature>/*Payloads.java`
 
 生成器会按每个消费端写入消息 ID，并从 payload Schema 生成 Java records、TypeScript interfaces 和结构守卫。协议变更后不得手工复制或修补任何生成文件。
 
 ## 添加或修改负载
 
-在 `contracts/<feature>/schema.json` 定义字段、必填性、数值边界、条件规则、fixture 映射和消息字段绑定。Schema 是 wire 字段唯一编辑入口；`DESIGN.md` 记录权限、事务、幂等、跨字段业务不变量和兼容策略。
+在 `contracts/<feature>/schema.json` 定义字段、必填性、数值边界、条件规则、fixture 映射和传输绑定。WebSocket 消息使用 `bindings`，HTTP 接口使用 `httpBindings`；Schema 是 wire 字段唯一编辑入口，`DESIGN.md` 记录权限、事务、幂等、跨字段业务不变量和兼容策略。
 
 当前 Schema 方言采用封闭白名单；生成器遇到未知关键字、未知引用、未知消息绑定或额外 fixture 字段会直接失败。不要手工创建生成 TypeScript 的 `.meta` UUID；需要资源元数据时由 LayaAir IDE 导入生成。
 
@@ -93,4 +94,4 @@ npm.cmd test
 
 不要手动修改生成文件来绕过 YAML；下一次生成会覆盖这些修改。
 
-跨端负载结构见 `contracts/<feature>/schema.json`，业务语义见同目录 `DESIGN.md`；canonical fixtures 必须由生成器及双端测试共同校验。当前背包契约入口见 [contracts/bag/DESIGN.md](contracts/bag/DESIGN.md)。
+跨端负载结构见 `contracts/<feature>/schema.json`，业务语义见同目录 `DESIGN.md`；canonical fixtures 必须由生成器及双端测试共同校验。当前契约入口包括 [背包](contracts/bag/DESIGN.md) 和 [HTTP 登录](contracts/login/DESIGN.md)。

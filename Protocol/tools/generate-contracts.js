@@ -27,13 +27,14 @@ function loadSchemas() {
 }
 
 function validateSchema(schema, file) {
-    const allowedRoot = new Set(['schemaVersion', 'feature', 'targets', 'clientModule', 'definitions', 'fixtures', 'bindings']);
+    const allowedRoot = new Set(['schemaVersion', 'feature', 'targets', 'clientModule', 'startModule', 'definitions', 'fixtures', 'bindings', 'httpBindings']);
     for (const key of Object.keys(schema)) if (!allowedRoot.has(key)) fail(`${file}: unsupported root key ${key}`);
     if (schema.schemaVersion !== 1) fail(`${file}: schemaVersion must be 1`);
     if (!/^[a-z][a-z0-9-]*$/.test(schema.feature || '')) fail(`${file}: invalid feature`);
     if (!Array.isArray(schema.targets) || schema.targets.length === 0) fail(`${file}: targets required`);
-    for (const target of schema.targets) if (!['client', 'game', 'gateway'].includes(target)) fail(`${file}: unsupported target ${target}`);
+    for (const target of schema.targets) if (!['client', 'start', 'game', 'gateway', 'login'].includes(target)) fail(`${file}: unsupported target ${target}`);
     if (schema.targets.includes('client') && !/^[a-z][A-Za-z0-9]*$/.test(schema.clientModule || '')) fail(`${file}: clientModule required`);
+    if (schema.targets.includes('start') && !/^[a-z][A-Za-z0-9]*$/.test(schema.startModule || '')) fail(`${file}: startModule required`);
     if (!schema.definitions || typeof schema.definitions !== 'object') fail(`${file}: definitions required`);
     for (const [name, definition] of Object.entries(schema.definitions)) {
         if (!/^[A-Z][A-Za-z0-9]*$/.test(name)) fail(`${file}: invalid definition name ${name}`);
@@ -44,8 +45,12 @@ function validateSchema(schema, file) {
         if (!schema.definitions[type]) fail(`${file}: fixture ${fixture} references unknown ${type}`);
     }
     const messageConfig = yaml.load(fs.readFileSync(path.join(repoRoot, 'Protocol', 'message-ids.yaml'), 'utf8'));
-    if (!Array.isArray(schema.bindings) || schema.bindings.length === 0) fail(`${file}: bindings required`);
-    for (const [index, binding] of schema.bindings.entries()) {
+    const bindings = schema.bindings || [];
+    const httpBindings = schema.httpBindings || [];
+    if (!Array.isArray(bindings)) fail(`${file}: bindings must be an array`);
+    if (!Array.isArray(httpBindings)) fail(`${file}: httpBindings must be an array`);
+    if (bindings.length === 0 && httpBindings.length === 0) fail(`${file}: bindings or httpBindings required`);
+    for (const [index, binding] of bindings.entries()) {
         const keys = new Set(['message', 'path', 'type']);
         for (const key of Object.keys(binding)) if (!keys.has(key)) fail(`${file}: binding ${index} unsupported key ${key}`);
         if (!messageConfig[binding.message]) fail(`${file}: binding ${index} unknown message ${binding.message}`);
@@ -54,6 +59,14 @@ function validateSchema(schema, file) {
         if (scope === 'gateway' && !schema.targets.includes('gateway')) fail(`${file}: binding ${index} requires gateway target`);
         if (typeof binding.path !== 'string' || !binding.path) fail(`${file}: binding ${index} path required`);
         if (!schema.definitions[binding.type]) fail(`${file}: binding ${index} unknown type ${binding.type}`);
+    }
+    for (const [index, binding] of httpBindings.entries()) {
+        const keys = new Set(['method', 'path', 'request', 'response']);
+        for (const key of Object.keys(binding)) if (!keys.has(key)) fail(`${file}: httpBinding ${index} unsupported key ${key}`);
+        if (!['GET', 'POST', 'PUT', 'DELETE'].includes(binding.method)) fail(`${file}: httpBinding ${index} invalid method`);
+        if (typeof binding.path !== 'string' || !binding.path.startsWith('/')) fail(`${file}: httpBinding ${index} invalid path`);
+        if (!schema.definitions[binding.request]) fail(`${file}: httpBinding ${index} unknown request ${binding.request}`);
+        if (!schema.definitions[binding.response]) fail(`${file}: httpBinding ${index} unknown response ${binding.response}`);
     }
 }
 
@@ -65,7 +78,7 @@ function validateNode(node, schema, location, definition = false) {
         return;
     }
     const allowed = new Set(['type', 'additionalProperties', 'required', 'properties', 'items',
-        'minimum', 'maximum', 'not', 'pattern', 'minItems', 'minLength', 'javaType', 'rules', 'enum']);
+        'minimum', 'maximum', 'not', 'pattern', 'minItems', 'minLength', 'maxLength', 'javaType', 'rules', 'enum']);
     for (const key of Object.keys(node)) if (!allowed.has(key)) fail(`${location}: unsupported keyword ${key}`);
     if (!['object', 'array', 'string', 'integer', 'boolean'].includes(node.type)) fail(`${location}: unsupported type`);
     if (definition && node.type !== 'object' && !(node.type === 'string' && Array.isArray(node.enum))) {
@@ -171,6 +184,7 @@ function tsCheck(node, expression) {
         const checks = [`typeof ${expression} === "string"`];
         if (node.enum) checks.push(`${JSON.stringify(node.enum)}.includes(${expression})`);
         if (node.minLength !== undefined) checks.push(`${expression}.length >= ${node.minLength}`);
+        if (node.maxLength !== undefined) checks.push(`${expression}.length <= ${node.maxLength}`);
         if (node.pattern) checks.push(`new RegExp(${JSON.stringify(node.pattern)}).test(${expression})`);
         return checks.join(' && ');
     }
@@ -252,6 +266,7 @@ function validateValue(value, node, schema, location) {
         if (typeof value !== 'string') fail(`${location}: expected string`);
         if (node.enum && !node.enum.includes(value)) fail(`${location}: unknown enum value`);
         if (node.minLength !== undefined && value.length < node.minLength) fail(`${location}: string too short`);
+        if (node.maxLength !== undefined && value.length > node.maxLength) fail(`${location}: string too long`);
         if (node.pattern && !new RegExp(node.pattern).test(value)) fail(`${location}: pattern mismatch`);
         return;
     }
@@ -294,8 +309,22 @@ function outputsFor(schema) {
         });
         outputs.push({ file: path.join(repoRoot, 'Protocol', 'generated', 'java', 'contracts', schema.feature, 'gateway', `${className}.java`), content: java });
     }
+    if (schema.targets.includes('login')) {
+        const packageName = `com.jojohello_laya.login.protocol.payload.${schema.feature.replace(/-/g, '')}`;
+        const java = generateJava(schema, packageName);
+        outputs.push({
+            file: path.join(repoRoot, 'Sever', 'login-server', 'src', 'main', 'java', 'com', 'jojohello_laya', 'login', 'protocol', 'payload', schema.feature.replace(/-/g, ''), `${className}.java`),
+            content: java
+        });
+        outputs.push({ file: path.join(repoRoot, 'Protocol', 'generated', 'java', 'contracts', schema.feature, 'login', `${className}.java`), content: java });
+    }
     if (schema.targets.includes('client')) {
         outputs.push({ file: path.join(repoRoot, 'Client', 'LayaProject', 'src', 'logic', schema.clientModule, `${className}.generated.ts`), content: ts });
+    }
+    if (schema.targets.includes('start')) {
+        outputs.push({ file: path.join(repoRoot, 'Client', 'LayaProject', 'src', 'start', schema.startModule, `${className}.generated.ts`), content: ts });
+    }
+    if (schema.targets.includes('client') || schema.targets.includes('start')) {
         outputs.push({ file: path.join(repoRoot, 'Protocol', 'generated', 'typescript', 'contracts', schema.feature, `${className}.ts`), content: ts });
     }
     return outputs;

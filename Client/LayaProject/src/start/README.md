@@ -10,9 +10,14 @@
 - `login/`：`LoginMgr`、登录协议和登录界面逻辑。
 - `network/`：`NetworkManager`、Socket、心跳、重连和消息分发。
 - `sdk/`：`SDKMgr` 与平台策略实现。
+- `screen/ScreenAdapter.ts`：统一屏幕能力入口；读取平台/CSS 安全区与微信胶囊矩形，换算为 Laya Stage 坐标，并通过 `SafeAreaLayout` 更新页面的普通 `safeAreaRoot` GBox。
 - `utils/`：首包层级等局部工具。
 
 Start 创建的跨分包服务通过 `window` 暴露，由 Logic 的 `App` 统一取得。不要让 Logic 直接静态导入这里的实现类。
+
+页面不直接消费安全区坐标。Start 的场景入口和 Logic 的 `UIManager` 调用 `ScreenAdapter.bind(scene)` 挂载通用 `SafeAreaLayout`；组件只更新名为 `safeAreaRoot` 的普通 GBox，具体内容继续使用编辑器 Relation。只有胶囊避让节点的纵轴由组件额外处理。`layout` 快照保留给诊断与非 UI 基础设施，包含来源和 `exact/estimated/none` 置信度；业务页面不得自行判断设备型号、重复调用平台 API或写安全区坐标。
+
+当前启动、登录、Loading、主界面、背包、战斗 HUD、胜负结算和通用弹窗均已接入该适配结构。微信小游戏发布包已在微信开发者工具的多种设备分辨率下完成界面位置验收；新增或调整自适应页面时仍需运行 `tools/ui/validate-safe-area-relations.ps1`，并重新检查顶部安全区、底部导航、系统胶囊和点击热区。
 
 `LoadingMgr.show(options)` 是全项目唯一的 Loading 显示入口。LoadingMgr 只负责界面显示、逐帧刷新、最短显示时间和关闭动画；调用模块通过 `onProcess()` 返回当前文字与 `0..1` 进度，通过 `isEnd()` 定义本次工作何时完成。`show()` 返回的 Promise 在界面完全关闭后完成。同一时刻只允许一个 Loading 会话，调用模块必须在自己的串行边界内使用。
 
@@ -31,11 +36,11 @@ Start 创建的跨分包服务通过 `window` 暴露，由 Logic 的 `App` 统�
 | 运行方式 | 环境配置 | 资源包注册方式 |
 | --- | --- | --- |
 | LayaAir IDE 预览 | 通常为 `Local` | `LayaEnv.isPreview` 为真，调用 `loadPackage(name)`，直接使用项目内资源 |
-| 微信开发者工具本地联调 | `Local` | 发布产物中调用 `loadPackage(name, "http://127.0.0.1:8080/")`；远程包目录需由本机 HTTP 服务托管 |
+| 微信开发者工具真实微信登录联调 | `Test`（当前选中） | 发布产物中调用 `loadPackage(name, "http://127.0.0.1:8080/")`；远程包目录需由本机 HTTP 服务托管，并通过 `wx.login` 登录本机 Login Server |
 | 正式远端环境 | `Production` | 发布产物中调用 `loadPackage(name, resourceBaseUrl)`；登录与资源地址强制使用 HTTPS |
 
-微信开发者工具与 HTTP 服务在同一台电脑时可使用 `127.0.0.1`；真机联调必须改用电脑局域网 IP，并保证手机可访问。正式环境不得配置 Gateway 兜底地址，Gateway 连接地址以登录响应为准。
+当前 `Test` 配置只用于同机微信开发者工具验收真实微信自动登录。微信开发者工具与 HTTP 服务在同一台电脑时可使用 `127.0.0.1`；真机联调必须改用电脑局域网 IP，并保证手机可访问。正式环境不得配置 Gateway 兜底地址，Gateway 连接地址以登录响应为准。
 
-平台 SDK 与登录环境是两个独立维度：微信小游戏始终使用 `WechatMiniGameSDK` 访问微信能力；`Local` 的 `loginMode` 使用 Login Server 现有的开发微信凭据，`Test`/`Production` 必须使用 `wx.login` 返回的真实临时代码。开发凭据不得用于非 Local 环境；正式微信认证仍要求 Login Server 接入微信 `code2Session` 并从服务端环境变量取得 AppID/AppSecret。
+登录入口先按运行平台分流：非微信小游戏平台始终显示账号输入；微信小游戏在 `MyGameConfig.forceAccountLogin=false` 时隐藏输入并自动执行 `wx.login`，界面显示登录状态与进度条；Local/Test 联调可把该开关设为 `true`，改用账号输入，但 Login Server 当前进程还必须显式设置 `WECHAT_DEVELOPER_CODE_ENABLED=true`。Production 禁止强制账号登录。昵称头像授权是可选资料能力；未授权、拒绝或资料 API 失败时仍只凭 code 登录。Login Server 通过 `code2Session` 验证身份，AppID/AppSecret 只从服务端进程环境变量取得。
 
 运行时场景路径相对 `assets/` 根。修改启动流程后必须验证登录场景关闭、Loading 生命周期、Logic 重复初始化和失败恢复。

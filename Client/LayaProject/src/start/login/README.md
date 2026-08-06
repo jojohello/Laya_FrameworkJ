@@ -1,206 +1,64 @@
-# 登录模块说明
+# 登录模块
 
-## 概述
-登录模块提供了完整的登录功能，支持多种登录方式，包括开发登录、微信登录和游客登录。
+登录模块在 Start 首包内完成平台认证、登录响应校验和进入 Logic 前的网络信息保存。跨端字段与安全语义以 `Protocol/contracts/login/` 为唯一来源；客户端消费 IDE 已导入的 `LoginPayloads.generated.ts`，不得另写 wire DTO。
 
-## 文件结构
+## 入口与职责
+
+- `LoginMgr`：串行化平台登录，同一时刻只允许一个请求；保存当前会话结果与上次开发账号。
+- `LoginView`：根据平台与强制账号开关显示账号输入或微信自动登录状态；自动登录使用底部进度条，账号提交期间使用 `loginProgressMask` 阻断输入和重复点击。
+- `SDKMgr`：按运行平台选择 `WebSDK` 或 `WechatMiniGameSDK`。
+- `WechatMiniGameSDK`：调用微信客户端 API，只提交一次性 code 与 `encryptedData/iv`；不提交客户端声明的 `openid`、`unionid` 或 `userId`。
+- `LoginPayloads.generated.ts`：由登录 Schema 生成的请求、响应类型与结构守卫。
+
+## 配置
+
+平台与 `MyGameConfig.forceAccountLogin` 共同决定登录入口：
+
+| 运行条件 | 登录页行为 |
+| --- | --- |
+| 非微信小游戏平台 | 显示账号输入并走对应平台的账号登录 |
+| 微信小游戏，`forceAccountLogin=false` | 隐藏账号输入，显示底部“正在登录”进度并自动使用真实微信身份 |
+| 微信小游戏，`forceAccountLogin=true` | 显示账号输入，使用开发 code；仅限 Local/Test 联调 |
+
+Production 必须保持 `forceAccountLogin=false`。真实微信模式没有手动触发开关，进入登录页后始终自动提交；失败时显示重试入口。
+
+Local/Test 微信开发账号要求 Login Server 当前进程显式设置：
+
+```powershell
+$env:WECHAT_DEVELOPER_CODE_ENABLED="true"
 ```
-src/start/
-├── MyGameConfig.ts     # 环境、平台和服务器地址的唯一配置入口
 
-├── login/
-│   ├── LoginMgr.ts     # 登录管理器主类
-│   └── README.md       # 说明文档
-└── sdk/
-    ├── ISDK.ts         # SDK接口定义
-    ├── WebSDK.ts       # Web平台实现
-    ├── WechatMiniGameSDK.ts # 微信小游戏平台实现
-    └── SDKMgr.ts       # 主管理器（类型定义和工厂）
-```
+Production 禁止开启该变量。
 
-## 核心类说明
+## 真实微信流程
 
-### SDKMgr (SDK管理器)
-- **功能**: 根据不同平台提供统一的登录接口
-- **架构**: 采用策略模式，自动根据环境选择对应的SDK实现
-- **支持的平台**: Web、微信小游戏
-- **支持的登录方式**: 开发登录、微信登录、游客登录
-- **单例模式**: 全局唯一实例
+1. 微信小游戏且未强制账号登录时，登录页直接调用 `wx.login`，不检查昵称头像权限。
+2. 客户端仅在已有 `scope.userInfo` 权限且资料 API 成功时附带 `encryptedData/iv`；否则只提交 code。
+3. 客户端向 `POST /api/login` 提交生成契约定义的微信请求。
+4. Login Server 调用 `code2Session`，以服务端获得的 `openid` 查找或创建内部 `userId`。
+5. 没有可验证资料时服务端生成默认昵称和头像；有资料时验证后更新，二者都返回登录成功。
+6. 客户端先用 `isLoginResponse` 校验完整响应，再保存 `userId + token + loginTimestamp + gatewayWsUrl`，加载 Logic 分包。
 
-### 配置系统
-- **MyGameConfig**: 按 Local/Test/Production 环境集中提供登录 API、远程资源地址和开发 Gateway 兜底；平台由运行环境识别
+昵称头像授权是独立的资料完善能力，拒绝或失败不得影响账号登录。登录失败会撤销阻断遮罩并允许重试。原始 code、`session_key`、AppSecret、Token 和未解析的响应体不得写入日志。
 
-### 平台SDK实现
-- **ISDK**: SDK接口，定义所有平台必须实现的方法（getPlatform、login、setServerUrl）
-- **WebSDK**: Web平台实现，使用开发登录方式
-- **WechatMiniGameSDK**: 微信小游戏平台实现，自动获取微信授权码进行登录
+当前 Test 配置已在微信开发者工具完成真实微信账号的单次登录验证。重复登录身份一致性、Test HTTPS 环境与微信登录界面样式仍按登录契约 Plan 验收。
 
-### LoginMgr (登录管理器)
-- **功能**: 登录逻辑的主入口，通过SDKMgr调用登录接口
-- **特性**: 
-  - 自动检测运行环境并设置合适的平台
-  - 本地登录信息缓存和验证
-  - 登录状态管理
-  - 自动登录功能
-- **单例模式**: 全局唯一实例
+## 本地状态
 
-## 使用方法
+客户端只在 `lastLoginAccount` 中记录上次开发账号或服务端返回的 `userId`，不持久化 Token。每次启动重新完成平台认证。
 
-### 1. 配置修改
+## 使用
+
+通常由 `LoginView` 驱动：
+
 ```typescript
-// 在 src/start/MyGameConfig.ts 选择环境并维护对应地址：
-static readonly environment = GameEnvironment.Local;
-
-// Local 默认值：
-// loginApiBaseUrl = "http://127.0.0.1:8081/api"
-// resourceBaseUrl = "http://127.0.0.1:8080/"
-// gatewayFallbackUrl = "ws://127.0.0.1:8082/ws/native"
+const result = await LoginMgr.instance.login(accountName);
 ```
 
-### 2. 基本初始化
+真实微信自动登录使用：
+
 ```typescript
-// 获取登录管理器实例
-const loginMgr = LoginMgr.instance;
-
-// 检查登录状态
-if (loginMgr.isLoggedIn()) {
-    console.log("用户已登录");
-    const loginInfo = loginMgr.getLoginInfo();
-    console.log("登录信息:", loginInfo);
-}
+const result = await LoginMgr.instance.autoLogin();
 ```
 
-### 3. 自动登录
-```typescript
-try {
-    // 自动登录（根据配置的平台选择合适的登录方式）
-    const result = await loginMgr.autoLogin();
-    console.log("登录成功:", result);
-} catch (error) {
-    console.error("登录失败:", error);
-}
-```
-
-### 4. 手动登录
-```typescript
-// 统一登录接口（根据配置的平台自动选择登录方式）
-const result = await loginMgr.login("jojohello"); // 账号名称在微信平台下无效
-```
-
-### 5. 登出
-```typescript
-loginMgr.logout();
-```
-
-### 6. 获取上次登录账号
-```typescript
-const lastAccount = loginMgr.getLastLoginAccount();
-if (lastAccount) {
-    console.log("上次登录账号:", lastAccount);
-    // 可以在登录界面显示上次登录的账号
-}
-```
-
-### 7. 配置查询
-```typescript
-const platform = MyGameConfig.platform;
-const loginUrl = MyGameConfig.loginApiBaseUrl;
-const resourceUrl = MyGameConfig.resourceBaseUrl;
-const isLocal = MyGameConfig.isLocalEnvironment;
-```
-
-## 登录流程
-
-### Web平台登录流程
-1. 调用 `loginMgr.login(accountName)`
-2. WebSDK生成开发授权码: `dev_${accountName}_${timestamp}`
-3. 发送POST请求到登录服务器
-4. 服务器验证并返回Token
-5. 保存登录信息到本地存储
-
-### 微信小游戏登录流程
-1. 调用 `loginMgr.login()` (accountName参数无效)
-2. WechatMiniGameSDK自动获取微信授权码 (code)
-3. 获取微信用户信息 (可选)
-4. 发送POST请求到登录服务器
-5. 服务器验证微信授权码
-6. 返回Token和用户信息
-
-### 自动登录流程
-1. 检查是否已登录（当前会话）
-2. 如果已登录，直接返回登录信息
-3. 如果未登录，根据环境选择登录方式
-4. 执行相应的登录流程
-5. 登录成功后记录账号到本地存储
-
-## 服务器接口
-
-### 登录请求格式
-```http
-POST /api/login
-Content-Type: application/json
-
-{
-    "type": "GUEST|WECHAT",
-    "authCode": "授权码",
-    "platform": "web|miniprogram",
-    "deviceInfo": "设备信息",
-    "version": "1.0.0",
-    "extraParams": "额外参数JSON字符串"
-}
-```
-
-### 登录响应格式
-```json
-{
-    "success": true,
-    "token": "JWT令牌",
-    "userId": "用户ID",
-    "loginTimestamp": 1703123456789,
-    "nickname": "用户昵称",
-    "avatar": "头像URL"
-}
-```
-
-## 本地存储
-
-登录成功后，只记录上次登录的账号：
-- `lastLoginAccount`: 上次登录成功的用户ID
-
-**注意**: 不保存Token、时间戳等敏感信息，每次启动都需要重新登录。
-
-## 错误处理
-
-所有登录方法都会抛出异常，需要适当的错误处理：
-```typescript
-try {
-    const result = await loginMgr.autoLogin();
-    console.log("登录成功:", result);
-} catch (error) {
-    console.error("登录失败:", error);
-    // 显示错误提示给用户
-}
-```
-
-## 平台配置
-
-系统根据 Laya 运行环境确定当前平台：
-- `Platform.WEB` - Web平台
-- `Platform.ANDROID` - Android平台
-- `Platform.IOS` - iOS平台  
-- `Platform.MINIGAME` - 微信小游戏平台
-
-## 注意事项
-
-1. **配置修改**: 在 `MyGameConfig.ts` 中选择环境并维护该环境的公开地址
-2. **平台发布**: 平台由运行环境识别，不再为每次发布手工切换平台常量
-3. **服务器地址**: Test/Production 未配置时会尽早报错；正式 Gateway URL 由登录服务器返回
-4. **本地存储**: 只记录上次登录账号，不保存Token等敏感信息
-5. **微信环境**: 微信登录只能在微信环境中使用
-6. **错误处理**: 建议在UI层面提供友好的错误提示
-7. **网络请求**: 使用Laya的HttpRequest进行网络通信
-8. **重新登录**: 每次启动应用都需要重新登录
-
-## 示例代码
-
-参考 `MyGameConfig.ts` 中的环境配置和只读快照接口。
+UI 不得构造登录请求或把本地账号值作为正式身份；平台请求由 SDK 适配器构造，账号归属由 Login Server 决定。

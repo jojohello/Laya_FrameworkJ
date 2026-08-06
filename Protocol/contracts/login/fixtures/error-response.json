@@ -1,0 +1,6 @@
+{
+  "success": false,
+  "errorCode": "WECHAT_CODE_INVALID",
+  "errorMessage": "微信登录凭据无效，请重试"
+}
+

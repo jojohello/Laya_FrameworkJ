@@ -2,10 +2,13 @@ package com.jojohello_laya.login.service;
 
 import com.jojohello_laya.login.entity.User;
 import com.jojohello_laya.login.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * 用户服务
@@ -17,56 +20,80 @@ public class UserService {
     @java.lang.SuppressWarnings("all")
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
+    private final TransactionTemplate transactionTemplate;
 
     /**
      * 根据第三方信息查找或创建用户
      */
-    @Transactional
     public User findOrCreateUser(String thirdPartyUserId, User.ThirdPartyType thirdPartyType, String deviceInfo, String platform, String version, String extraParams) {
-        // 先查找现有用户
-        Optional<User> existingUser = userRepository.findByThirdPartyTypeAndThirdPartyUserId(thirdPartyType, thirdPartyUserId);
-        if (existingUser.isPresent()) {
-            User user = existingUser.get();
-            LocalDateTime oldLoginTime = user.getLastLoginTime();
-            LocalDateTime newLoginTime = LocalDateTime.now();
-            // 更新最后登录时间
-            user.setLastLoginTime(newLoginTime);
-            user.setDeviceInfo(deviceInfo);
-            user.setPlatform(platform);
-            user.setVersion(version);
-            user.setExtraParams(extraParams);
-            User savedUser = userRepository.save(user);
-            log.info("更新现有用户: userId={}, thirdPartyType={}, oldLoginTime={}, newLoginTime={}", savedUser.getUserId(), thirdPartyType, oldLoginTime, newLoginTime);
-            return savedUser;
+        return findOrCreateUser(thirdPartyUserId, thirdPartyType, deviceInfo, platform, version, extraParams, null, null);
+    }
+
+    /**
+     * Resolves a platform identity and refreshes only provider-verified profile
+     * fields. Nickname and avatar never participate in account ownership.
+     */
+    public User findOrCreateUser(String thirdPartyUserId, User.ThirdPartyType thirdPartyType,
+            String deviceInfo, String platform, String version, String extraParams,
+            String verifiedNickname, String verifiedAvatar) {
+        User existing = transactionTemplate.execute(status -> updateExistingUser(thirdPartyUserId,
+                thirdPartyType, deviceInfo, platform, version, extraParams,
+                verifiedNickname, verifiedAvatar).orElse(null));
+        if (existing != null) return existing;
+
+        try {
+            // Creation has its own transaction so a unique-key conflict can roll back
+            // before the winning account is read. Catching a flush failure inside the
+            // same transaction would leave that transaction rollback-only.
+            return transactionTemplate.execute(status -> createUser(thirdPartyUserId,
+                    thirdPartyType, deviceInfo, platform, version, extraParams,
+                    verifiedNickname, verifiedAvatar));
+        } catch (DataIntegrityViolationException duplicateIdentity) {
+            User winner = transactionTemplate.execute(status -> updateExistingUser(thirdPartyUserId,
+                    thirdPartyType, deviceInfo, platform, version, extraParams,
+                    verifiedNickname, verifiedAvatar).orElse(null));
+            if (winner != null) {
+                log.info("并发账号创建命中既有身份: userId={}, thirdPartyType={}",
+                        winner.getUserId(), thirdPartyType);
+                return winner;
+            }
+            throw duplicateIdentity;
         }
-        // 创建新用户
+    }
+
+    private Optional<User> updateExistingUser(String thirdPartyUserId, User.ThirdPartyType thirdPartyType,
+            String deviceInfo, String platform, String version, String extraParams,
+            String verifiedNickname, String verifiedAvatar) {
+        Optional<User> existingUser = userRepository
+                .findByThirdPartyTypeAndThirdPartyUserId(thirdPartyType, thirdPartyUserId);
+        if (existingUser.isEmpty()) return Optional.empty();
+
+        User user = existingUser.get();
+        LocalDateTime newLoginTime = LocalDateTime.now();
+        user.setLastLoginTime(newLoginTime);
+        user.setDeviceInfo(deviceInfo);
+        user.setPlatform(platform);
+        user.setVersion(version);
+        user.setExtraParams(extraParams);
+        if (StringUtils.hasText(verifiedNickname)) user.setNickname(verifiedNickname);
+        if (StringUtils.hasText(verifiedAvatar)) user.setAvatar(verifiedAvatar);
+        return Optional.of(userRepository.save(user));
+    }
+
+    private User createUser(String thirdPartyUserId, User.ThirdPartyType thirdPartyType,
+            String deviceInfo, String platform, String version, String extraParams,
+            String verifiedNickname, String verifiedAvatar) {
         String userId = generateUserId(thirdPartyType);
-        User newUser = User.builder().userId(userId).thirdPartyType(thirdPartyType).thirdPartyUserId(thirdPartyUserId).nickname(generateNickname(thirdPartyType, thirdPartyUserId)).deviceInfo(deviceInfo).platform(platform).version(version).extraParams(extraParams).lastLoginTime(LocalDateTime.now()).enabled(true).build();
-        User savedUser = userRepository.save(newUser);
-        log.info("创建新用户: userId={}, thirdPartyType={}, thirdPartyUserId={}", savedUser.getUserId(), thirdPartyType, thirdPartyUserId);
+        String nickname = StringUtils.hasText(verifiedNickname)
+                ? verifiedNickname : generateNickname(thirdPartyType, thirdPartyUserId);
+        String avatar = StringUtils.hasText(verifiedAvatar) ? verifiedAvatar : "default-avatar";
+        User newUser = User.builder().userId(userId).thirdPartyType(thirdPartyType)
+                .thirdPartyUserId(thirdPartyUserId).nickname(nickname).avatar(avatar)
+                .deviceInfo(deviceInfo).platform(platform).version(version).extraParams(extraParams)
+                .lastLoginTime(LocalDateTime.now()).enabled(true).build();
+        User savedUser = userRepository.saveAndFlush(newUser);
+        log.info("创建新用户: userId={}, thirdPartyType={}", savedUser.getUserId(), thirdPartyType);
         return savedUser;
-    }
-
-    /**
-     * 根据用户ID查找用户
-     */
-    public Optional<User> findByUserId(String userId) {
-        return userRepository.findByUserId(userId);
-    }
-
-    /**
-     * 根据第三方信息查找用户
-     */
-    public Optional<User> findByThirdPartyInfo(User.ThirdPartyType thirdPartyType, String thirdPartyUserId) {
-        return userRepository.findByThirdPartyTypeAndThirdPartyUserId(thirdPartyType, thirdPartyUserId);
-    }
-
-    /**
-     * 更新用户信息
-     */
-    @Transactional
-    public User updateUser(User user) {
-        return userRepository.save(user);
     }
 
     /**
@@ -74,8 +101,7 @@ public class UserService {
      */
     private String generateUserId(User.ThirdPartyType thirdPartyType) {
         String prefix = thirdPartyType.getCode();
-        long timestamp = System.currentTimeMillis();
-        return prefix + "_" + timestamp;
+        return prefix + "_" + UUID.randomUUID().toString().replace("-", "");
     }
 
     /**
@@ -87,29 +113,9 @@ public class UserService {
         return prefix + "_" + suffix;
     }
 
-    /**
-     * 检查用户是否存在
-     */
-    public boolean existsByUserId(String userId) {
-        return userRepository.existsByUserId(userId);
-    }
-
-    /**
-     * 统计用户数量
-     */
-    public long countUsers() {
-        return userRepository.count();
-    }
-
-    /**
-     * 统计指定类型的用户数量
-     */
-    public long countUsersByType(User.ThirdPartyType type) {
-        return userRepository.countByThirdPartyType(type);
-    }
-
     @java.lang.SuppressWarnings("all")
-    public UserService(final UserRepository userRepository) {
+    public UserService(final UserRepository userRepository, final TransactionTemplate transactionTemplate) {
         this.userRepository = userRepository;
+        this.transactionTemplate = transactionTemplate;
     }
 }

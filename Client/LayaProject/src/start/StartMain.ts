@@ -12,6 +12,7 @@ import { MessageDispatcher } from "./network/MessageDispatcher";
 import { LoginProtocol } from "./login/LoginProtocol";
 import { SystemProtocol } from "./network/SystemProtocol";
 import { MyGameConfig } from "./MyGameConfig";
+import { ScreenAdapter } from "./screen/ScreenAdapter";
 
 /**
  * StartMain - 主包入口
@@ -44,6 +45,10 @@ export class StartMain {
     async start() {
         // 1. 初始化引擎相关配置
         this.initEngine();
+
+        // Screen geometry belongs to Start so login/loading and the later Logic
+        // bundle consume one platform-safe coordinate contract.
+        ScreenAdapter.instance.init();
 
         // Start owns environment selection; Logic receives only this immutable snapshot.
         MyGameConfig.publish();
@@ -247,6 +252,7 @@ export class StartMain {
 
             if (loginScene) {
                 this._loginScene = loginScene;
+                ScreenAdapter.instance.bind(loginScene);
 
                 // 将登录场景挂载到Login层
                 LayerMgr.setLayer(loginScene, "Login");

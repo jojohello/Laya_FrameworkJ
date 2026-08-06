@@ -24,14 +24,12 @@ export class BattleMainViewController implements TransitionReady {
     private _transitionError = "";
 
     constructor(view: Laya.Scene) {
-        const toolbar = view.getChildByName("toolbar") as Laya.GBox;
+        const toolbar = view.getChildByName("menuButtonAvoidanceRoot") as Laya.GBox;
         this._speedButton = toolbar.getChildByName("speedButton") as Laya.GButton;
         this._speedLabel = this._speedButton.getChildByName("speedLabel") as Laya.GTextField;
         this._pauseButton = toolbar.getChildByName("pauseButton") as Laya.GButton;
         this._backButton = toolbar.getChildByName("backButton") as Laya.GButton;
-        this._pauseOverlay = view.getChildByName("pauseOverlay") as Laya.GBox;
-
-        this._pauseOverlay.graphics.drawRect(0, 0, 750, 1334, "rgba(10, 25, 34, 0.62)");
+        this._pauseOverlay = view.getChildByName("fullBleedDimOverlay") as Laya.GBox;
     }
 
     onOpened(param?: BattleViewOpenParam): void {

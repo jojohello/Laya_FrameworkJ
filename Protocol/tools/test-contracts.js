@@ -19,7 +19,7 @@ const schema = {
                 id: { type: 'integer', minimum: 1, maximum: 10, javaType: 'int' },
                 version: { type: 'string', pattern: '^(0|[1-9]\\d*)$' },
                 kind: { $ref: 'SampleKind' },
-                note: { type: 'string', minLength: 1 }
+                note: { type: 'string', minLength: 1, maxLength: 8 }
             },
             rules: [{ when: { field: 'id', equals: 1 }, required: ['note'] }]
         }
@@ -35,6 +35,7 @@ assert.throws(() => validateValue({ id: 1, version: '01', kind: 'primary' }, sch
 assert.throws(() => validateValue({ id: 1, version: '0', kind: 'primary', extra: true }, schema.definitions.Sample, schema, 'sample'), /unexpected/);
 assert.throws(() => validateValue({ id: 1, version: '0', kind: 'primary' }, schema.definitions.Sample, schema, 'sample'), /requires note/);
 assert.throws(() => validateValue({ id: 2, version: '0', kind: 'unknown' }, schema.definitions.Sample, schema, 'sample'), /enum/);
+assert.throws(() => validateValue({ id: 2, version: '0', kind: 'primary', note: 'too-long-note' }, schema.definitions.Sample, schema, 'sample'), /too long/);
 assert.match(generateJava(schema), /enum SampleKind/);
 assert.match(generateJava(schema), /record Sample\(int id, String version, SampleKind kind, String note\)/);
 assert.match(generateTypeScript(schema), /export enum SampleKind/);
@@ -48,5 +49,15 @@ const gatewaySchema = {
 };
 validateSchema(gatewaySchema, 'gateway-schema');
 assert.match(generateJava(gatewaySchema, 'test.gateway.payload'), /^package test\.gateway\.payload;/);
+
+const httpSchema = {
+    ...schema,
+    targets: ['start', 'login'],
+    clientModule: undefined,
+    startModule: 'login',
+    bindings: [],
+    httpBindings: [{ method: 'POST', path: '/api/login', request: 'Sample', response: 'Sample' }]
+};
+validateSchema(httpSchema, 'http-schema');
 
 console.log('Contract generator tests passed.');
