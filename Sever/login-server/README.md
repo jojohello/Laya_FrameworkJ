@@ -40,11 +40,11 @@ $env:WECHAT_APP_SECRET = [Environment]::GetEnvironmentVariable("WECHAT_APP_SECRE
 mvn -pl login-server spring-boot:run
 ```
 
-真实微信账号只依赖 `wx.login` code 和服务端 `code2Session` 返回的 `openid`。昵称头像资料为可选展示信息：没有授权时照常登录并使用默认资料；请求带有成对的 `profileEncryptedData/profileIv` 时才解密校验并更新资料。
+真实微信账号只依赖 `wx.login` code 和服务端 `code2Session` 返回的 `openid`。昵称头像资料为可选展示信息：没有授权时照常登录并使用默认资料；请求带有成对的 `profileEncryptedData/profileIv` 时才解密校验并更新资料。已有历史账号若昵称或头像为空，会在登录时补齐默认资料，确保成功响应始终符合生成契约。
 
 缺少微信 AppID/AppSecret 时 Login Server 仍会启动，游客和显式开启的本地开发登录不受影响；真实微信请求会返回稳定的 `WECHAT_CONFIG_MISSING`。Test/Production 部署不得把可启动误判为可发布，必须在对外开放前检查真实微信配置完整。
 
-当前本机 Login Server 已与微信开发者工具完成真实微信账号的单次登录验证。重复登录身份一致性仍按登录契约 Plan 完成最终验收。
+当前本机 Login Server 已分别通过 LayaAir IDE 账号登录和微信开发者工具真实微信自动登录验证；两条路径均可完成 Gateway 认证并进入游戏。真实微信重复登录返回同一 `userId`，客户端重新进入后的玩家名称和背包数据一致。
 
 Local/Test 固定 code 联调不需要真实微信凭据，但必须显式开启且只对当前进程生效：
 

@@ -167,12 +167,19 @@ public class GatewayService {
     @Transactional
     @CacheEvict(value = "gateway-allocations", key = "#userId")
     public boolean confirmConnection(String userId, String gatewayIp, Integer gatewayPort) {
-        Optional<GatewayAllocation> allocationOpt = allocationRepository.findByUserIdAndStatus(userId, GatewayAllocation.AllocationStatus.ALLOCATED);
+        Optional<GatewayAllocation> allocationOpt = allocationRepository.findByUserId(userId);
         if (allocationOpt.isEmpty()) {
-            log.warn("No allocated gateway found for user: {}", userId);
+            log.warn("No gateway allocation found for user: {}", userId);
             return false;
         }
         GatewayAllocation allocation = allocationOpt.get();
+        if (allocation.getStatus() == GatewayAllocation.AllocationStatus.CONNECTED) {
+            return gatewayIp != null && gatewayPort != null
+                    && gatewayIp.equals(allocation.getGatewayIp()) && gatewayPort.equals(allocation.getGatewayPort());
+        }
+        if (allocation.getStatus() != GatewayAllocation.AllocationStatus.ALLOCATED) {
+            return false;
+        }
         // 检查是否过期
         if (allocation.getExpiresAt().isBefore(LocalDateTime.now())) {
             log.warn("Gateway allocation expired for user: {}", userId);
@@ -267,8 +274,8 @@ public class GatewayService {
                 throw new IllegalArgumentException("网关信息不匹配");
             }
         } else {
-            log.warn("No allocation found for user: {}", userId);
-            throw new IllegalArgumentException("未找到分配记录");
+            // Release is idempotent: a repeated notification after cleanup remains successful.
+            log.debug("No allocation found while releasing user {}; treating as already released", userId);
         }
     }
 
@@ -308,12 +315,17 @@ public class GatewayService {
         }
         // 更新实际负载
         for (Object[] data : loadData) {
-            String ip = (String) data[0];
-            Integer port = (Integer) data[1];
-            Long load = (Long) data[2];
-            String serverKey = ip + ":" + port;
+            // Repository aggregates by the canonical "ip:port" key and returns a Long count.
+            // Keep this boundary aligned with that tuple shape; the positional casts
+            // to ip/port/load make allocation fail as soon as the first CONNECTED record exists.
+            if (data == null || data.length < 2 || !(data[1] instanceof Number loadNum)) {
+                log.warn("Ignoring malformed gateway load row");
+                continue;
+            }
+            String serverKey = String.valueOf(data[0]);
+            int loadVal = loadNum.intValue();
             if (loadMap.containsKey(serverKey)) {
-                loadMap.get(serverKey).setCurrentLoad(load.intValue());
+                loadMap.get(serverKey).setCurrentLoad(loadVal);
             }
         }
         return new ArrayList<>(loadMap.values());

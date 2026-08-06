@@ -47,6 +47,8 @@ Gateway and Game Server report to Central every 5 seconds. Central treats 15 sec
 
 Central pushes Game Server status changes to Gateways. Polling the registry is a recovery path, not the primary discovery mechanism.
 
+Client connection state follows the generated `Protocol/contracts/gateway-lifecycle` contract. Gateway must confirm the configured `GATEWAY_IP:GATEWAY_PORT` through `PUT /api/v1/gateway/confirm-connection` before acknowledging client authentication, and releases the allocation through `DELETE /api/v1/gateway/release` only when the closing socket is still the user's current session. Confirm and release are retry-safe for the same Gateway identity; a mismatched identity is rejected.
+
 ## Client Gateway Heartbeat Contract
 
 - `2001 (HEARTBEAT)` and `2002 (HEARTBEAT_RESPONSE)` are Gateway-scoped transport messages, not gameplay messages.

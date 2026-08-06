@@ -60,6 +60,10 @@ export class MainSceneView extends MainSceneViewBase {
      * @param param 打开参数
      */
     onOpened(param?: any): void {
+        // MainUI is cached across scene switches. Always restore canonical root
+        // geometry so an interrupted or legacy exit tween cannot shrink the shell.
+        Laya.Tween.clearAll(this);
+        this.scale(1, 1);
         this.clearButtonListEvents();
         PlayerMgr.instance.removeListener(this.onPlayerChanged);
         WalletMgr.instance.removeListener(this.onWalletChanged);

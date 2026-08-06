@@ -32,7 +32,7 @@ function validateSchema(schema, file) {
     if (schema.schemaVersion !== 1) fail(`${file}: schemaVersion must be 1`);
     if (!/^[a-z][a-z0-9-]*$/.test(schema.feature || '')) fail(`${file}: invalid feature`);
     if (!Array.isArray(schema.targets) || schema.targets.length === 0) fail(`${file}: targets required`);
-    for (const target of schema.targets) if (!['client', 'start', 'game', 'gateway', 'login'].includes(target)) fail(`${file}: unsupported target ${target}`);
+    for (const target of schema.targets) if (!['client', 'start', 'game', 'gateway', 'central', 'login'].includes(target)) fail(`${file}: unsupported target ${target}`);
     if (schema.targets.includes('client') && !/^[a-z][A-Za-z0-9]*$/.test(schema.clientModule || '')) fail(`${file}: clientModule required`);
     if (schema.targets.includes('start') && !/^[a-z][A-Za-z0-9]*$/.test(schema.startModule || '')) fail(`${file}: startModule required`);
     if (!schema.definitions || typeof schema.definitions !== 'object') fail(`${file}: definitions required`);
@@ -308,6 +308,15 @@ function outputsFor(schema) {
             content: java
         });
         outputs.push({ file: path.join(repoRoot, 'Protocol', 'generated', 'java', 'contracts', schema.feature, 'gateway', `${className}.java`), content: java });
+    }
+    if (schema.targets.includes('central')) {
+        const packageName = `com.laya.game.central.protocol.payload.${schema.feature.replace(/-/g, '')}`;
+        const java = generateJava(schema, packageName);
+        outputs.push({
+            file: path.join(repoRoot, 'Sever', 'central-data-server', 'src', 'main', 'java', 'com', 'laya', 'game', 'central', 'protocol', 'payload', schema.feature.replace(/-/g, ''), `${className}.java`),
+            content: java
+        });
+        outputs.push({ file: path.join(repoRoot, 'Protocol', 'generated', 'java', 'contracts', schema.feature, 'central', `${className}.java`), content: java });
     }
     if (schema.targets.includes('login')) {
         const packageName = `com.jojohello_laya.login.protocol.payload.${schema.feature.replace(/-/g, '')}`;

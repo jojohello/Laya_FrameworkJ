@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "feature": "gateway-lifecycle",
+  "targets": ["gateway", "central"],
+  "definitions": {
+    "GatewayLifecycleRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["userId", "gatewayIp", "gatewayPort"],
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "gatewayIp": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "gatewayPort": { "type": "integer", "minimum": 1, "maximum": 65535, "javaType": "int" }
+      }
+    },
+    "GatewayRegistrationRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gatewayIp", "gatewayPort"],
+      "properties": {
+        "gatewayIp": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "gatewayPort": { "type": "integer", "minimum": 1, "maximum": 65535, "javaType": "int" }
+      }
+    },
+    "GatewayLifecycleResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["success", "message"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "message": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    }
+  },
+  "fixtures": {
+    "confirm-request.json": "GatewayLifecycleRequest",
+    "confirm-response.json": "GatewayLifecycleResponse",
+    "release-request.json": "GatewayLifecycleRequest",
+    "release-response.json": "GatewayLifecycleResponse",
+    "unregister-request.json": "GatewayRegistrationRequest",
+    "unregister-response.json": "GatewayLifecycleResponse"
+  },
+  "httpBindings": [
+    {
+      "method": "PUT",
+      "path": "/api/v1/gateway/confirm-connection",
+      "request": "GatewayLifecycleRequest",
+      "response": "GatewayLifecycleResponse"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/gateway/release",
+      "request": "GatewayLifecycleRequest",
+      "response": "GatewayLifecycleResponse"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/gateway/unregister",
+      "request": "GatewayRegistrationRequest",
+      "response": "GatewayLifecycleResponse"
+    }
+  ]
+}

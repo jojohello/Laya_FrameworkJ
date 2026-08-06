@@ -52,6 +52,12 @@ public class GatewayHeartbeatService {
         }
     }
 
+    /** Marks a Gateway offline immediately; missing entries are already offline. */
+    public void unregisterGateway(String gatewayIp, Integer gatewayPort) {
+        GatewayInfo gateway = gatewayMap.get(gatewayIp + ":" + gatewayPort);
+        if (gateway != null) gateway.markOffline();
+    }
+
     /**
      * 定时检查心跳超时
      * 每分钟执行一次

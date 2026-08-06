@@ -17,6 +17,12 @@ if ($routeRegistry -notmatch 'case "main\.world":[\s\S]*case "battle\.stage":[\s
 if ($mainScene -notmatch 'MainNavRouteRegistry\.closeMainContent\(\);\s*void SceneMgr\.instance\.switchScene\(SceneType\.BattleStageScene\)') {
     throw "Direct battle-stage navigation must close MainContent before switching scenes"
 }
+if ($uiManager -notmatch 'if \(instance\.config\.enterAnim === true\) \{\s*this\.playExitAnimation\(instance\.script, finishClose\)') {
+    throw "Cached UI exit animation must use the same explicit opt-in as enter animation"
+}
+if ($mainScene -notmatch 'Laya\.Tween\.clearAll\(this\);\s*this\.scale\(1, 1\);\s*this\.clearButtonListEvents\(\)') {
+    throw "MainUI reopen must restore canonical scale before reusing the cached shell"
+}
 
 $characters = Import-Csv -Encoding UTF8 (Join-Path $repoRoot "Config/csv/Character.csv")
 $soldierTypes = @{}

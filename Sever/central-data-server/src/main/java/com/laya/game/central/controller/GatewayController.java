@@ -1,6 +1,9 @@
 package com.laya.game.central.controller;
 
 import com.laya.game.central.model.GatewayAllocation;
+import com.laya.game.central.protocol.payload.gatewaylifecycle.GatewayLifecyclePayloads.GatewayLifecycleRequest;
+import com.laya.game.central.protocol.payload.gatewaylifecycle.GatewayLifecyclePayloads.GatewayLifecycleResponse;
+import com.laya.game.central.protocol.payload.gatewaylifecycle.GatewayLifecyclePayloads.GatewayRegistrationRequest;
 import com.laya.game.central.service.GatewayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,17 +60,20 @@ public class GatewayController {
      */
     @PutMapping("/confirm-connection")
     @Operation(summary = "确认连接", description = "确认用户已成功连接到分配的网关")
-    public ResponseEntity<ApiResponse<Void>> confirmConnection(@Valid @RequestBody ConfirmConnectionRequest request) {
+    public ResponseEntity<GatewayLifecycleResponse> confirmConnection(@RequestBody GatewayLifecycleRequest request) {
         try {
-            boolean confirmed = gatewayService.confirmConnection(request.getUserId(), request.getGatewayIp(), request.getGatewayPort());
+            if (!isValidLifecycleRequest(request)) {
+                return ResponseEntity.ok(new GatewayLifecycleResponse(false, "invalid gateway lifecycle request"));
+            }
+            boolean confirmed = gatewayService.confirmConnection(request.userId(), request.gatewayIp(), request.gatewayPort());
             if (confirmed) {
-                return ResponseEntity.ok(ApiResponse.success(null));
+                return ResponseEntity.ok(new GatewayLifecycleResponse(true, "connection confirmed"));
             } else {
-                return ResponseEntity.ok(ApiResponse.error("确认连接失败，分配记录不存在或已过期"));
+                return ResponseEntity.ok(new GatewayLifecycleResponse(false, "allocation missing, expired, or mismatched"));
             }
         } catch (Exception e) {
-            log.error("Failed to confirm connection for user {}: {}", request.getUserId(), e.getMessage());
-            return ResponseEntity.ok(ApiResponse.error("确认连接失败"));
+            log.error("Failed to confirm connection for user {}: {}", request != null ? request.userId() : null, e.getMessage());
+            return ResponseEntity.ok(new GatewayLifecycleResponse(false, "connection confirmation failed"));
         }
     }
 
@@ -95,14 +101,42 @@ public class GatewayController {
      */
     @DeleteMapping("/release")
     @Operation(summary = "释放分配", description = "释放用户的网关分配")
-    public ResponseEntity<ApiResponse<Void>> releaseAllocation(@Valid @RequestBody ReleaseAllocationRequest request) {
+    public ResponseEntity<GatewayLifecycleResponse> releaseAllocation(@RequestBody GatewayLifecycleRequest request) {
         try {
-            gatewayService.releaseAllocation(request.getUserId(), request.getGatewayIp(), request.getGatewayPort());
-            return ResponseEntity.ok(ApiResponse.success(null));
+            if (!isValidLifecycleRequest(request)) {
+                return ResponseEntity.ok(new GatewayLifecycleResponse(false, "invalid gateway lifecycle request"));
+            }
+            gatewayService.releaseAllocation(request.userId(), request.gatewayIp(), request.gatewayPort());
+            return ResponseEntity.ok(new GatewayLifecycleResponse(true, "allocation released"));
         } catch (Exception e) {
-            log.error("Failed to release allocation for user {}: {}", request.getUserId(), e.getMessage());
-            return ResponseEntity.ok(ApiResponse.error("释放分配失败"));
+            log.error("Failed to release allocation for user {}: {}", request != null ? request.userId() : null, e.getMessage());
+            return ResponseEntity.ok(new GatewayLifecycleResponse(false, "allocation release failed"));
         }
+    }
+
+    @DeleteMapping("/unregister")
+    @Operation(summary = "注销 Gateway", description = "Gateway 优雅关闭时立即标记为离线")
+    public ResponseEntity<GatewayLifecycleResponse> unregisterGateway(
+            @RequestBody GatewayRegistrationRequest request) {
+        if (!isValidRegistrationRequest(request)) {
+            return ResponseEntity.ok(new GatewayLifecycleResponse(false, "invalid gateway registration request"));
+        }
+        heartbeatService.unregisterGateway(request.gatewayIp(), request.gatewayPort());
+        return ResponseEntity.ok(new GatewayLifecycleResponse(true, "gateway unregistered"));
+    }
+
+    private static boolean isValidLifecycleRequest(GatewayLifecycleRequest request) {
+        return request != null
+                && request.userId() != null && !request.userId().isBlank() && request.userId().length() <= 100
+                && request.gatewayIp() != null && !request.gatewayIp().isBlank() && request.gatewayIp().length() <= 255
+                && request.gatewayPort() >= 1 && request.gatewayPort() <= 65535;
+    }
+
+    private static boolean isValidRegistrationRequest(GatewayRegistrationRequest request) {
+        return request != null
+                && request.gatewayIp() != null && !request.gatewayIp().isBlank()
+                && request.gatewayIp().length() <= 255
+                && request.gatewayPort() >= 1 && request.gatewayPort() <= 65535;
     }
 
     /**
@@ -346,41 +380,6 @@ public class GatewayController {
     }
 
 
-    public static class ConfirmConnectionRequest {
-        @NotNull(message = "用户ID不能为空")
-        private String userId;
-        @NotBlank(message = "网关IP不能为空")
-        private String gatewayIp;
-        @NotNull(message = "网关端口不能为空")
-        private Integer gatewayPort;
-
-        // Getters and Setters
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getGatewayIp() {
-            return gatewayIp;
-        }
-
-        public void setGatewayIp(String gatewayIp) {
-            this.gatewayIp = gatewayIp;
-        }
-
-        public Integer getGatewayPort() {
-            return gatewayPort;
-        }
-
-        public void setGatewayPort(Integer gatewayPort) {
-            this.gatewayPort = gatewayPort;
-        }
-    }
-
-
     public static class ExtendAllocationRequest {
         @NotNull(message = "用户ID不能为空")
         private String userId;
@@ -422,41 +421,6 @@ public class GatewayController {
 
         public void setExtendMinutes(Integer extendMinutes) {
             this.extendMinutes = extendMinutes;
-        }
-    }
-
-
-    public static class ReleaseAllocationRequest {
-        @NotNull(message = "用户ID不能为空")
-        private String userId;
-        @NotBlank(message = "网关IP不能为空")
-        private String gatewayIp;
-        @NotNull(message = "网关端口不能为空")
-        private Integer gatewayPort;
-
-        // Getters and Setters
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getGatewayIp() {
-            return gatewayIp;
-        }
-
-        public void setGatewayIp(String gatewayIp) {
-            this.gatewayIp = gatewayIp;
-        }
-
-        public Integer getGatewayPort() {
-            return gatewayPort;
-        }
-
-        public void setGatewayPort(Integer gatewayPort) {
-            this.gatewayPort = gatewayPort;
         }
     }
 

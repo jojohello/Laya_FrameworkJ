@@ -20,6 +20,37 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class UserServiceTest {
     @Test
+    void existingAccountWithBlankProfileIsRepairedForLoginContract() {
+        User existing = User.builder()
+                .userId("guest_existing")
+                .thirdPartyType(User.ThirdPartyType.GUEST)
+                .thirdPartyUserId("legacy-guest")
+                .nickname(" ")
+                .avatar(null)
+                .enabled(true)
+                .build();
+
+        ExistingRepositoryFake repositoryFake = new ExistingRepositoryFake(existing);
+        UserService userService = new UserService(repositoryFake.createProxy(),
+                new TransactionTemplate(new NoOpTransactionManager()));
+
+        User resolved = userService.findOrCreateUser(
+                "legacy-guest",
+                User.ThirdPartyType.GUEST,
+                "test-device",
+                "web",
+                "1.0.0",
+                null,
+                null,
+                null);
+
+        assertSame(existing, resolved);
+        assertEquals("default-avatar", resolved.getAvatar());
+        assertEquals(User.ThirdPartyType.GUEST.getDescription() + "_-guest", resolved.getNickname());
+        assertEquals(1, repositoryFake.saveCount);
+    }
+
+    @Test
     void uniqueIdentityConflictReturnsTheWinningAccount() {
         User winner = User.builder()
                 .userId("wechat_winner")
@@ -82,6 +113,35 @@ class UserServiceTest {
                     yield args[0];
                 }
                 case "toString" -> "IdentityRepositoryFake";
+                default -> throw new UnsupportedOperationException(method.getName());
+            };
+        }
+    }
+
+    private static final class ExistingRepositoryFake implements InvocationHandler {
+        private final User existing;
+        private int saveCount;
+
+        private ExistingRepositoryFake(User existing) {
+            this.existing = existing;
+        }
+
+        private UserRepository createProxy() {
+            return (UserRepository) Proxy.newProxyInstance(
+                    UserRepository.class.getClassLoader(),
+                    new Class<?>[] { UserRepository.class },
+                    this);
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) {
+            return switch (method.getName()) {
+                case "findByThirdPartyTypeAndThirdPartyUserId" -> Optional.of(existing);
+                case "save" -> {
+                    saveCount++;
+                    yield args[0];
+                }
+                case "toString" -> "ExistingRepositoryFake";
                 default -> throw new UnsupportedOperationException(method.getName());
             };
         }

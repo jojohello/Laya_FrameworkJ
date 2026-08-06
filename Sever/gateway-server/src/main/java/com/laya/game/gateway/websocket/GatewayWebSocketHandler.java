@@ -35,12 +35,18 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
     private final CentralServerClient centralServerClient;
     private final GameServerConnectionManager gameServerConnectionManager;
     private final ObjectMapper objectMapper;
-    @Value("${laya.gateway.websocket.heartbeat-interval:30000}")
-    private long heartbeatInterval;
+    @Value("${laya.heartbeat-timeout:15000}")
+    private long heartbeatTimeout;
+    @Value("${laya.check-interval:5000}")
+    private long heartbeatCheckInterval;
     @Value("${laya.gateway.websocket.max-connections:10000}")
     private int maxConnections;
     @Value("${laya.gateway.websocket.connection-timeout:30000}")
     private long connectionTimeout;
+    @Value("${laya.gateway.server-ip}")
+    private String gatewayIp;
+    @Value("${laya.gateway.server-port}")
+    private int gatewayPort;
     // 存储客户端会话信息
     private final Map<String, ClientSession> sessions = new ConcurrentHashMap<>();
     // 用户ID到会话ID的映射
@@ -169,6 +175,13 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
                         Map.of("reason", "Three factors validation failed", "timestamp", System.currentTimeMillis())));
                 return;
             }
+            // Central 持有分配状态；只有它确认当前 Gateway 身份后，本地连接才能进入已认证状态。
+            if (!centralServerClient.notifyUserConnected(userId, gatewayIp, gatewayPort)) {
+                log.warn("Central server rejected connection confirmation for user {} on {}:{}", userId, gatewayIp, gatewayPort);
+                sendMessage(session, new WebSocketMessage(MessageIds.AUTH_FAILED, "Gateway connection confirmation failed",
+                        Map.of("reason", "Gateway connection confirmation failed", "timestamp", System.currentTimeMillis())));
+                return;
+            }
             // 认证成功
             clientSession.setAuthenticated(true);
             clientSession.setUserId(userId);
@@ -187,9 +200,6 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
             }
             // 从等待连接链表中移除
             waitingConnectionService.removeFromWaitingList(userId);
-            // 通知中心服务器用户连接成功
-            // TODO: 获取实际的网关IP和端口
-            centralServerClient.notifyUserConnected(userId, "localhost", 8080);
             // 发送认证成功消息
             sendMessage(session, new WebSocketMessage(MessageIds.AUTH_SUCCESS, "Authentication successful", Map.of("userId", userId, "timestamp", System.currentTimeMillis())));
             log.info("User {} authenticated successfully via gateway session: {}", userId, session.getId());
@@ -231,6 +241,7 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
                 Map<String, Object> originalData = message.getData() instanceof Map ? (Map<String, Object>) message.getData() : new java.util.HashMap<>();
                 enrichedData.putAll(originalData);
             }
+            enrichedData.put("userId", clientSession.getUserId());
             enrichedData.put("gatewayId", getGatewayId());
             enrichedData.put("sessionId", clientSession.getSessionId());
             forwardMessage.setUserId(clientSession.getUserId());
@@ -286,28 +297,33 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
      * 启动心跳检测
      */
     private void startHeartbeatCheck(String sessionId) {
-        heartbeatScheduler.scheduleAtFixedRate(() -> {
-            ClientSession clientSession = sessions.get(sessionId);
-            if (clientSession == null) {
-                return; // 会话已清理
+        heartbeatScheduler.scheduleAtFixedRate(() -> checkHeartbeat(sessionId),
+                heartbeatCheckInterval, heartbeatCheckInterval, TimeUnit.MILLISECONDS);
+    }
+
+    private void checkHeartbeat(String sessionId) {
+        ClientSession clientSession = sessions.get(sessionId);
+        if (clientSession == null) return;
+
+        WebSocketSession session = clientSession.getSession();
+        if (!session.isOpen()) {
+            cleanupSession(sessionId);
+            return;
+        }
+
+        // The public timeout is independent from the client's send interval. Using
+        // the interval here silently changes the disconnect contract configured by operators.
+        LocalDateTime deadline = clientSession.getLastActiveTime()
+                .plusNanos(TimeUnit.MILLISECONDS.toNanos(heartbeatTimeout));
+        if (deadline.isBefore(LocalDateTime.now())) {
+            log.warn("Client session {} timed out, closing connection", sessionId);
+            try {
+                session.close(CloseStatus.GOING_AWAY.withReason("Heartbeat timeout"));
+            } catch (Exception e) {
+                log.error("Failed to close timed out session: {}", sessionId, e);
             }
-            WebSocketSession session = clientSession.getSession();
-            if (!session.isOpen()) {
-                cleanupSession(sessionId);
-                return;
-            }
-            // 检查是否超时
-            LocalDateTime lastActive = clientSession.getLastActiveTime();
-            if (lastActive.plusSeconds(heartbeatInterval / 1000 * 2).isBefore(LocalDateTime.now())) {
-                log.warn("Client session {} timed out, closing connection", sessionId);
-                try {
-                    session.close(CloseStatus.GOING_AWAY.withReason("Heartbeat timeout"));
-                } catch (Exception e) {
-                    log.error("Failed to close timed out session: {}", sessionId, e);
-                }
-                cleanupSession(sessionId);
-            }
-        }, heartbeatInterval, heartbeatInterval, TimeUnit.MILLISECONDS);
+            cleanupSession(sessionId);
+        }
     }
 
     /**
@@ -317,9 +333,10 @@ public class GatewayWebSocketHandler implements WebSocketHandler, GameServerConn
         ClientSession clientSession = sessions.remove(sessionId);
         if (clientSession != null) {
             if (clientSession.getUserId() != null) {
-                // 通知中心服务器用户断开连接
-                centralServerClient.notifyUserDisconnected(clientSession.getUserId());
-                userToSessionMap.remove(clientSession.getUserId());
+                // 旧连接可能因新连接顶替而稍后触发 close；只有当前映射仍指向本 session 才能释放 Central 分配。
+                if (userToSessionMap.remove(clientSession.getUserId(), sessionId)) {
+                    centralServerClient.notifyUserDisconnected(clientSession.getUserId(), gatewayIp, gatewayPort);
+                }
                 log.info("Cleaned up client session for user {}: {}", clientSession.getUserId(), sessionId);
             }
         }

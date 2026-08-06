@@ -50,6 +50,16 @@ const gatewaySchema = {
 validateSchema(gatewaySchema, 'gateway-schema');
 assert.match(generateJava(gatewaySchema, 'test.gateway.payload'), /^package test\.gateway\.payload;/);
 
+const centralSchema = {
+    ...schema,
+    targets: ['central'],
+    clientModule: undefined,
+    bindings: [],
+    httpBindings: [{ method: 'PUT', path: '/api/v1/sample', request: 'Sample', response: 'Sample' }]
+};
+validateSchema(centralSchema, 'central-schema');
+assert.match(generateJava(centralSchema, 'test.central.payload'), /^package test\.central\.payload;/);
+
 const httpSchema = {
     ...schema,
     targets: ['start', 'login'],

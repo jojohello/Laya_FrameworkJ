@@ -75,8 +75,18 @@ public class UserService {
         user.setPlatform(platform);
         user.setVersion(version);
         user.setExtraParams(extraParams);
-        if (StringUtils.hasText(verifiedNickname)) user.setNickname(verifiedNickname);
-        if (StringUtils.hasText(verifiedAvatar)) user.setAvatar(verifiedAvatar);
+        // A successful LoginResponse requires both profile fields to be non-empty.
+        // Repair legacy rows here so existing accounts obey the same contract as new ones.
+        if (StringUtils.hasText(verifiedNickname)) {
+            user.setNickname(verifiedNickname);
+        } else if (!StringUtils.hasText(user.getNickname())) {
+            user.setNickname(generateNickname(thirdPartyType, thirdPartyUserId));
+        }
+        if (StringUtils.hasText(verifiedAvatar)) {
+            user.setAvatar(verifiedAvatar);
+        } else if (!StringUtils.hasText(user.getAvatar())) {
+            user.setAvatar("default-avatar");
+        }
         return Optional.of(userRepository.save(user));
     }
 

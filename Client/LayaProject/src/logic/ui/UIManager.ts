@@ -181,8 +181,7 @@ export class UIManager implements IManager {
         // 调用 onClosed
         this.callOnClosed(instance.script);
 
-        // 播放退出动画
-        this.playExitAnimation(instance.script, () => {
+        const finishClose = () => {
             // 从舞台移除
             instance.scene.removeSelf();
 
@@ -196,7 +195,15 @@ export class UIManager implements IManager {
                 // 缓存起来
                 this._cachedUIs.set(name, instance);
             }
-        });
+        };
+
+        // Enter/exit animation is one opt-in lifecycle contract. Running only the
+        // exit half leaks its final transform into cached UI instances.
+        if (instance.config.enterAnim === true) {
+            this.playExitAnimation(instance.script, finishClose);
+        } else {
+            finishClose();
+        }
     }
 
     /** Close every opened UI on a semantic layer, optionally preserving one named page. */

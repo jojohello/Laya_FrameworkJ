@@ -36,12 +36,12 @@ Production 禁止开启该变量。
 2. 客户端仅在已有 `scope.userInfo` 权限且资料 API 成功时附带 `encryptedData/iv`；否则只提交 code。
 3. 客户端向 `POST /api/login` 提交生成契约定义的微信请求。
 4. Login Server 调用 `code2Session`，以服务端获得的 `openid` 查找或创建内部 `userId`。
-5. 没有可验证资料时服务端生成默认昵称和头像；有资料时验证后更新，二者都返回登录成功。
+5. 没有可验证资料时服务端生成默认昵称和头像；历史账号资料为空时登录边界自动补齐；有资料时验证后更新，三者都返回符合生成契约的登录成功响应。
 6. 客户端先用 `isLoginResponse` 校验完整响应，再保存 `userId + token + loginTimestamp + gatewayWsUrl`，加载 Logic 分包。
 
 昵称头像授权是独立的资料完善能力，拒绝或失败不得影响账号登录。登录失败会撤销阻断遮罩并允许重试。原始 code、`session_key`、AppSecret、Token 和未解析的响应体不得写入日志。
 
-当前 Test 配置已在微信开发者工具完成真实微信账号的单次登录验证。重复登录身份一致性、Test HTTPS 环境与微信登录界面样式仍按登录契约 Plan 验收。
+当前本机已在 LayaAir IDE 完成账号登录，并在微信开发者工具完成真实微信自动登录、进度与失败恢复界面验收；两条路径均可完成 Gateway 认证并进入游戏。多次微信登录返回同一 `userId`，重新进入后玩家名称和背包数据一致，账号身份映射与服务器权威数据恢复已经通过实际链路验证。真实昵称头像授权/拒绝和 Test HTTPS 部署仍按当前 Plan 验收。
 
 ## 本地状态
 

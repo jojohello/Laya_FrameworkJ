@@ -38,7 +38,7 @@ laya:
 
     # 服务器IP和端口配置（用于心跳上报）
     server-ip: ${GATEWAY_IP:localhost}
-    server-port: ${server.port:8082}
+    server-port: ${GATEWAY_PORT:${server.port:8082}}
 
     # 心跳配置
     heartbeat:

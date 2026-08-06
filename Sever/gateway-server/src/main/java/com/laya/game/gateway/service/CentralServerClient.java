@@ -1,5 +1,8 @@
 package com.laya.game.gateway.service;
 
+import com.laya.game.gateway.protocol.payload.gatewaylifecycle.GatewayLifecyclePayloads.GatewayLifecycleRequest;
+import com.laya.game.gateway.protocol.payload.gatewaylifecycle.GatewayLifecyclePayloads.GatewayLifecycleResponse;
+import com.laya.game.gateway.protocol.payload.gatewaylifecycle.GatewayLifecyclePayloads.GatewayRegistrationRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -90,20 +93,16 @@ public class CentralServerClient {
     public boolean notifyUserConnected(String userId, String gatewayIp, Integer gatewayPort) {
         try {
             String url = centralServerBaseUrl + "/gateway/confirm-connection";
-            Map<String, Object> requestBody = Map.of("userId", userId, "gatewayIp", gatewayIp, "gatewayPort", gatewayPort);
+            GatewayLifecycleRequest requestBody = new GatewayLifecycleRequest(userId, gatewayIp, gatewayPort);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.POST, request, new ParameterizedTypeReference<Map<String, Object>>() {
-            });
+            HttpEntity<GatewayLifecycleRequest> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<GatewayLifecycleResponse> response = restTemplate.exchange(url, HttpMethod.PUT, request, GatewayLifecycleResponse.class);
             if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-                if (responseBody != null) {
-                    Boolean success = (Boolean) responseBody.get("success");
-                    if (Boolean.TRUE.equals(success)) {
-                        log.info("Central server notified of user {} connection", userId);
-                        return true;
-                    }
+                GatewayLifecycleResponse responseBody = response.getBody();
+                if (responseBody != null && responseBody.success()) {
+                    log.info("Central server notified of user {} connection", userId);
+                    return true;
                 }
             }
         } catch (Exception e) {
@@ -115,29 +114,43 @@ public class CentralServerClient {
     /**
      * 通知中心服务器用户断开连接
      */
-    public boolean notifyUserDisconnected(String userId) {
+    public boolean notifyUserDisconnected(String userId, String gatewayIp, Integer gatewayPort) {
         try {
-            String url = centralServerBaseUrl + "/sessions/disconnect";
-            Map<String, Object> requestBody = Map.of("userId", userId);
+            String url = centralServerBaseUrl + "/gateway/release";
+            GatewayLifecycleRequest requestBody = new GatewayLifecycleRequest(userId, gatewayIp, gatewayPort);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.POST, request, new ParameterizedTypeReference<Map<String, Object>>() {
-            });
+            HttpEntity<GatewayLifecycleRequest> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<GatewayLifecycleResponse> response = restTemplate.exchange(url, HttpMethod.DELETE, request, GatewayLifecycleResponse.class);
             if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-                if (responseBody != null) {
-                    Boolean success = (Boolean) responseBody.get("success");
-                    if (Boolean.TRUE.equals(success)) {
-                        log.info("Central server notified of user {} disconnection", userId);
-                        return true;
-                    }
+                GatewayLifecycleResponse responseBody = response.getBody();
+                if (responseBody != null && responseBody.success()) {
+                    log.info("Central server notified of user {} disconnection", userId);
+                    return true;
                 }
             }
         } catch (Exception e) {
             log.error("Error notifying central server of user {} disconnection: {}", userId, e.getMessage(), e);
         }
         return false;
+    }
+
+    /** Notifies Central immediately during graceful Gateway shutdown. */
+    public boolean unregisterGateway(String gatewayIp, Integer gatewayPort) {
+        try {
+            String url = centralServerBaseUrl + "/gateway/unregister";
+            GatewayRegistrationRequest requestBody = new GatewayRegistrationRequest(gatewayIp, gatewayPort);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<GatewayRegistrationRequest> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<GatewayLifecycleResponse> response = restTemplate.exchange(
+                    url, HttpMethod.DELETE, request, GatewayLifecycleResponse.class);
+            GatewayLifecycleResponse body = response.getBody();
+            return response.getStatusCode() == HttpStatus.OK && body != null && body.success();
+        } catch (Exception e) {
+            log.error("Error unregistering gateway {}:{}: {}", gatewayIp, gatewayPort, e.getMessage());
+            return false;
+        }
     }
 
     /**
