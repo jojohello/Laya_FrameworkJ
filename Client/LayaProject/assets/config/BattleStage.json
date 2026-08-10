@@ -5,6 +5,7 @@
     "copyType": "normal",
     "battleId": 1,
     "canEnter": true,
+    "battle_bg": "music/battle_bg_1.mp3",
     "victoryRewards": "1001:100;1101:3",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
@@ -15,6 +16,7 @@
     "copyType": "normal",
     "battleId": 2,
     "canEnter": true,
+    "battle_bg": "music/battle_bg_1.mp3",
     "victoryRewards": "1001:120;1102:4",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
@@ -25,6 +27,7 @@
     "copyType": "normal",
     "battleId": 3,
     "canEnter": true,
+    "battle_bg": "music/battle_bg_1.mp3",
     "victoryRewards": "1001:140;1103:5",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
@@ -35,6 +38,7 @@
     "copyType": "normal",
     "battleId": 4,
     "canEnter": true,
+    "battle_bg": "music/battle_bg_1.mp3",
     "victoryRewards": "1001:160;1104:6",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
@@ -45,6 +49,7 @@
     "copyType": "normal",
     "battleId": 5,
     "canEnter": true,
+    "battle_bg": "music/battle_bg_1.mp3",
     "victoryRewards": "1001:180;1101:2;1102:2;1103:2;1104:2",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"
@@ -55,6 +60,7 @@
     "copyType": "boss",
     "battleId": 6,
     "canEnter": true,
+    "battle_bg": "music/battle_bg_1.mp3",
     "victoryRewards": "1001:300;1101:12;1102:12;1103:12;1104:12",
     "mapType": "tilemap",
     "map": "map/map002/fightmap.json"

@@ -7,8 +7,9 @@ import { BuffReleaseRegressionCase } from "../../testBulletLifecycle/scripts/sce
 import { AISchedulerLifecycleRegressionCase } from "../../testBulletLifecycle/scripts/scenarios/AISchedulerLifecycleRegressionCase";
 import { CrowdAvoidanceRegressionCase } from "../../testBulletLifecycle/scripts/scenarios/CrowdAvoidanceRegressionCase";
 import { CrowdAvoidanceArrivalRegressionCase } from "../../testBulletLifecycle/scripts/scenarios/CrowdAvoidanceArrivalRegressionCase";
+import { SceneBackgroundPauseRegressionCase } from "../../testBulletLifecycle/scripts/scenarios/SceneBackgroundPauseRegressionCase";
 
-export type BulletLifecycleTestId = "lineBulletHit" | "releasedTargetReuse" | "sceneDestroyRecreate" | "skillRelease" | "buffRelease" | "aiSchedulerLifecycle" | "crowdAvoidance" | "crowdAvoidanceArrival";
+export type BulletLifecycleTestId = "lineBulletHit" | "releasedTargetReuse" | "sceneDestroyRecreate" | "skillRelease" | "buffRelease" | "aiSchedulerLifecycle" | "crowdAvoidance" | "crowdAvoidanceArrival" | "sceneBackgroundPause";
 
 /** Runs real battle lifecycle tests in LayaAir IDE's Scene process only. */
 @IEditorEnv.regClass()
@@ -30,6 +31,8 @@ export class BulletLifecycleEditorTestRunner {
                                     ? [new CrowdAvoidanceRegressionCase()]
                                     : testId === "crowdAvoidanceArrival"
                                         ? [new CrowdAvoidanceArrivalRegressionCase()]
+                                    : testId === "sceneBackgroundPause"
+                                        ? [new SceneBackgroundPauseRegressionCase()]
                             : [
                                 new BulletLiveTargetHitCase(),
                                 new BulletReleaseRegressionCase(),
@@ -39,6 +42,7 @@ export class BulletLifecycleEditorTestRunner {
                                 new AISchedulerLifecycleRegressionCase(),
                                 new CrowdAvoidanceRegressionCase(),
                                 new CrowdAvoidanceArrivalRegressionCase(),
+                                new SceneBackgroundPauseRegressionCase(),
                             ];
         const result = await new HeadlessTestRunner(cases).run();
 

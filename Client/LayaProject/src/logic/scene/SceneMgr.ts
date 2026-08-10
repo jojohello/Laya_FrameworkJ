@@ -73,15 +73,23 @@ export class SceneMgr implements IManager {
     private _backgroundStartedAt = -1;
     private _pendingBackgroundElapsed = 0;
     private _discardNextTimerDelta = false;
+    /** Laya 在后台仍可能以低频 Timer 驱动；Scene 必须在本边界显式冻结。 */
+    private _isInBackground = false;
 
     // ========== IManager 接口实现 ==========
 
     async init(): Promise<void> {
         Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, this, this.onVisibilityChange);
         Laya.stage.on(Laya.Event.VISIBILITY_CHANGE, this, this.onVisibilityChange);
+        this.resetBackgroundTracking();
+        this.onVisibilityChange();
     }
 
     update(unscaledDelta: number): void {
+        // 不调用 BaseScene.setPaused()：后台冻结与玩家主动暂停是两层独立状态，
+        // 前台恢复只能解除后台门禁，不能擅自恢复玩家已经暂停的场景。
+        if (this._isInBackground || !Laya.stage.isVisibility) return;
+
         const backgroundElapsed = this._pendingBackgroundElapsed;
         this._pendingBackgroundElapsed = 0;
 
@@ -503,12 +511,14 @@ export class SceneMgr implements IManager {
     private onVisibilityChange(): void {
         const now = this.getMonotonicSeconds();
         if (!Laya.stage.isVisibility) {
+            this._isInBackground = true;
             if (this._backgroundStartedAt < 0) {
                 this._backgroundStartedAt = now;
             }
             return;
         }
 
+        this._isInBackground = false;
         if (this._backgroundStartedAt < 0) return;
         this._pendingBackgroundElapsed += Math.max(0, now - this._backgroundStartedAt);
         this._backgroundStartedAt = -1;
@@ -519,6 +529,7 @@ export class SceneMgr implements IManager {
         this._backgroundStartedAt = -1;
         this._pendingBackgroundElapsed = 0;
         this._discardNextTimerDelta = false;
+        this._isInBackground = false;
     }
 
     private getMonotonicSeconds(): number {

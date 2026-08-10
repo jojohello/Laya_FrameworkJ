@@ -114,8 +114,26 @@ function verifyFixedTickIgnoresBackgroundElapsed(): void {
     assertNear(sceneTime.curTime, 0, "FixedTick background curTime");
 }
 
+function verifyManualPauseSurvivesBackgroundRecovery(): void {
+    const sceneTime = new SceneTime();
+    const step = 1 / SceneTime.DEFAULT_FIXED_TICK_RATE;
+    sceneTime.setMode(SceneTimeMode.FixedTick);
+    sceneTime.start();
+    sceneTime.pause();
+
+    sceneTime.beginFrame(0, 10);
+    assert(sceneTime.isPaused, "Background recovery must preserve manual pause");
+    assert(!sceneTime.hasLogicUpdate(), "Manually paused scene must not update after background recovery");
+
+    sceneTime.resume();
+    sceneTime.beginFrame(step);
+    assert(drainLogicUpdates(sceneTime).length === 1, "Explicit resume must continue from the original tick");
+    assertNear(sceneTime.curTime, step, "Manual pause recovery curTime");
+}
+
 verifyRealtime();
 verifyFixedTickCountsAndRenderSkip();
 verifyFixedTickBacklogAndScale();
 verifyFixedTickIgnoresBackgroundElapsed();
+verifyManualPauseSurvivesBackgroundRecovery();
 console.log("[SceneTime.test] PASS");

@@ -34,6 +34,7 @@ export class App {
 
     static systemProtocol: any;
     static loadingMgr: LoadingService;
+    static musicMgr: any;
     static gameConfig: Readonly<MyGameConfigSnapshot>;
     static screenAdapter: ScreenAdapter;
 
@@ -72,6 +73,7 @@ export class App {
         this.loginMgr = (Laya.Browser.window as any).loginMgr;
         this.systemProtocol = (Laya.Browser.window as any).systemProtocol;
         this.loadingMgr = (Laya.Browser.window as any).loadingMgr as LoadingService;
+        this.musicMgr = (Laya.Browser.window as any).musicMgr;
         this.gameConfig = (Laya.Browser.window as any).myGameConfig as Readonly<MyGameConfigSnapshot>;
         if (!this.gameConfig) throw new Error("MyGameConfig 尚未由 Start 发布");
         this.screenAdapter = (Laya.Browser.window as any).screenAdapter as ScreenAdapter;

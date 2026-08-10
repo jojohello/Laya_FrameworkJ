@@ -46,8 +46,10 @@ renderUpdate(renderDt, curTime, tick, interpolationAlpha)
 ## 暂停、后台与渲染
 
 - 手动暂停停止逻辑时间和 tick，但仍调用 `renderUpdate`；无待表现逻辑时间时 `renderDt` 为 0。
+- SceneMgr 在舞台不可见期间显式阻断全部 Scene 更新，不能依赖平台停止 `requestAnimationFrame`；Laya 后台低频 Timer 不得推进逻辑或表现。
 - FixedTick 进入后台按暂停处理，忽略后台经过时间并从原 tick 恢复。
 - Realtime 恢复时补入完整后台经过时间，直接推进最新状态。
+- 后台冻结不修改 `SceneTime.isPaused`。玩家进入后台前若已主动暂停，恢复前台后仍保持暂停，只有显式玩家操作可以恢复。
 - 后台经过时间只能由 SceneMgr 在可见性边界用单调时钟测量；该墙钟值不得继续向 gameplay 传播。
 - 逻辑与渲染互不驱动。动画、FSM 和 Action 完成条件使用逻辑时间；渲染只表现已经形成的最新逻辑状态。
 

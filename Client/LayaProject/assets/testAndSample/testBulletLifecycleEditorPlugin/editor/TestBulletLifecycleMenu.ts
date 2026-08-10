@@ -26,6 +26,7 @@ class BulletLifecycleTestDialog extends IEditor.Dialog<gui.Box> {
         this.addTestButton(root, "运行全部测试", 18, 154);
         this.addTestButton(root, "同队前排阻挡绕行与回池", 174, 154, "crowdAvoidance");
         this.addTestButton(root, "绕行后进入攻击距离", 330, 154, "crowdAvoidanceArrival");
+        this.addTestButton(root, "后台冻结与暂停保持", 18, 202, "sceneBackgroundPause");
 
         this._status = new gui.Label();
         this._status.text = "请选择要执行的测试。";

@@ -7,6 +7,7 @@ import { SceneCamera2D } from "../scene/SceneCamera2D";
 import { SceneMgr } from "../scene/SceneMgr";
 import { SceneType } from "../scene/SceneType";
 import { BattleSettlementMgr } from "./BattleSettlementMgr";
+import { App } from "../App";
 
 const BATTLE_UI_PATH = "ui/battlescene/imgs/";
 const STAGE_PREFAB_FALLBACK = "ui/battlescene/stage001.lh";
@@ -35,6 +36,7 @@ export class BattleStageScene extends BaseScene {
 
     onEnter(param?: any): void {
         super.onEnter(param);
+        App.musicMgr?.playGameplay();
         Laya.stage.off(Laya.Event.RESIZE, this, this.applyStageRootLayout);
         Laya.stage.on(Laya.Event.RESIZE, this, this.applyStageRootLayout);
         this._stageLoadToken++;

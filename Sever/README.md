@@ -57,3 +57,7 @@ Detailed service behavior lives in each module's `README.md`. Cross-service cons
 mvn test
 powershell -ExecutionPolicy Bypass -File tools/docs/validate-doc-system.ps1
 ```
+
+### Cross-service smoke test
+
+A process-level smoke test exercises the identity and connection lifecycle across real HTTP and WebSocket boundaries. It performs a guest login against Login Server, opens the native Gateway WebSocket, completes three-factor authentication (validated through Central), sends a 2001/2002 heartbeat, routes business messages LOGIN(101), GAME_INIT_REQUEST(105), and BAG_SNAPSHOT_REQUEST(5001) through Gateway to Game Server, confirms the connection, and disconnects cleanly. The test connects to configurable service addresses (env-overridable `SMOKE_LOGIN_URL` / `SMOKE_GATEWAY_WS`, defaults `localhost:8081`-`8084`) so it runs against already-started services rather than self-bootstrapping four Spring Boot processes. It does not replace `mvn test` for unit and contract coverage.

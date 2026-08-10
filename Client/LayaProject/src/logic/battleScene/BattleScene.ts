@@ -18,6 +18,7 @@ import { CombatFeedbackMgr } from "../combatFeedback/CombatFeedbackMgr";
 import { EffectSceneObj } from "../sceneObj/EffectSceneObj";
 import { LocalCrowdAvoidanceSystem } from "./LocalCrowdAvoidanceSystem";
 import { SceneMoveVector } from "../scene/SceneMoveVector";
+import { App } from "../App";
 
 type BattleResultUIName = "BattleVictoryUI" | "BattleDefeatUI";
 
@@ -49,6 +50,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
     private _resultExitRequested = false;
     private _battleSessionId = "";
     private _stageCopyType = "normal";
+    private _battleBgUrl = "";
     private readonly _aiScheduler = new AIScheduler<CharacterSceneObj>({
         groupCount: 3,
     });
@@ -70,8 +72,12 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._resultExitRequested = false;
         this._battleSessionId = typeof param?.battleSessionId === "string" ? param.battleSessionId : "";
         this._stageCopyType = "normal";
+        this._battleBgUrl = "";
         this._battleUnitLoadToken++;
         this.applyStageMapConfig(param);
+        if (this._battleBgUrl) {
+            App.musicMgr?.playBattle(this._battleBgUrl);
+        }
         super.onEnter(param);
     }
 
@@ -88,6 +94,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
             return;
         }
         this._stageCopyType = stage.copyType === "boss" ? "boss" : "normal";
+        this._battleBgUrl = String(stage.battle_bg || "music/battle_bg_1.mp3");
         const config: any = this._sceneConfig || (this._sceneConfig = {});
         if (stage.map) config.map = stage.map;
         if (stage.mapType) config.mapType = stage.mapType;
@@ -150,6 +157,7 @@ export class BattleScene extends BaseScene implements AIOwnerResolver<CharacterS
         this._resultExitRequested = false;
         this._battleSessionId = "";
         this._stageCopyType = "normal";
+        this._battleBgUrl = "";
         this._battleUnitLoadToken++;
         this._battleUnitsCreated = false;
         this._battleUnitsReady = false;

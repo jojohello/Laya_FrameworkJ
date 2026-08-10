@@ -13,6 +13,7 @@ import { LoginProtocol } from "./login/LoginProtocol";
 import { SystemProtocol } from "./network/SystemProtocol";
 import { MyGameConfig } from "./MyGameConfig";
 import { ScreenAdapter } from "./screen/ScreenAdapter";
+import { MusicMgr } from "./sound/MusicMgr";
 
 /**
  * StartMain - 主包入口
@@ -25,10 +26,13 @@ import { ScreenAdapter } from "./screen/ScreenAdapter";
  */
 export class StartMain {
     private static readonly LOGIC_SUBPACKAGE = "logic";
+    private static readonly MUSIC_PACKAGE = "music";
 
     private _logicMain: any | null = null; // LogicMain 类型（分包加载后才有）
     private _loginScene: Laya.Scene | null = null;
     private _systemProtocol: SystemProtocol | null = null;
+    private readonly _loadedPackages = new Set<string>();
+    private readonly _packageLoadPromises = new Map<string, Promise<void>>();
 
     /** Loading 进度追踪 */
     private _loadingProgress: number = 0;        // 当前进度 (0-1)
@@ -59,6 +63,10 @@ export class StartMain {
         // 3. 初始化层级管理器
         LayerMgr.init();
 
+        // 音频播放基础设施：登录与加载阶段即可用，Logic 通过 App.musicMgr 访问。
+        MusicMgr.instance.init();
+        (Laya.Browser.window as any)["musicMgr"] = MusicMgr.instance;
+
         // 4. 初始化网络上下文（挂载到 window.network）
         const networkContext = new NetworkContext();
         (Laya.Browser.window as any)["network"] = networkContext;
@@ -88,6 +96,19 @@ export class StartMain {
 
         // 10. 打开登录界面
         await this.openLoginScene();
+
+        // 只注册远程 music 包的 fileconfig/URL 映射，不通过 Loader 预载 MP3；
+        // MusicMgr 随后以该映射解析带版本哈希的远程地址并启动平台长音频通道。
+        try {
+            await this.loadPackageOnce(
+                StartMain.MUSIC_PACKAGE,
+                MyGameConfig.resourcePackageBaseUrl,
+            );
+            MusicMgr.instance.playMusic("music/bg_1.mp3", 0);
+        } catch (error) {
+            // 音乐不阻断登录；登录成功后的全量分包阶段会再次尝试未完成的包。
+            console.warn("[StartMain] 登录背景音乐包注册失败，暂不播放背景音乐", error);
+        }
     }
 
     /**
@@ -192,8 +213,7 @@ export class StartMain {
             };
 
             try {
-                if (remoteUrl) await Laya.loader.loadPackage(packageName, remoteUrl, onProgress);
-                else await Laya.loader.loadPackage(packageName, onProgress);
+                await this.loadPackageOnce(packageName, remoteUrl, onProgress);
                 completedCount++;
                 this._loadingProgress = 0.1 + completedCount / packageCount * 0.3;
             } catch (error) {
@@ -206,6 +226,34 @@ export class StartMain {
         const remoteUrl = MyGameConfig.resourcePackageBaseUrl;
         for (const packageName of remotePackages) {
             await loadPackage(packageName, remoteUrl);
+        }
+    }
+
+    /**
+     * 注册一次资源包。远程包只读取轻量 fileconfig 并建立 URL 映射，不预加载包内
+     * 的 MP3/纹理等资源；实际内容仍由各 Loader 或长音频通道按需请求。
+     */
+    private async loadPackageOnce(
+        packageName: string,
+        remoteUrl?: string,
+        onProgress?: (progress: any) => void,
+    ): Promise<void> {
+        if (this._loadedPackages.has(packageName)) return;
+
+        const pending = this._packageLoadPromises.get(packageName);
+        if (pending) return pending;
+
+        const loadPromise = (async () => {
+            if (remoteUrl) await Laya.loader.loadPackage(packageName, remoteUrl, onProgress);
+            else await Laya.loader.loadPackage(packageName, onProgress);
+            this._loadedPackages.add(packageName);
+        })();
+        this._packageLoadPromises.set(packageName, loadPromise);
+
+        try {
+            await loadPromise;
+        } finally {
+            this._packageLoadPromises.delete(packageName);
         }
     }
 

@@ -4,6 +4,7 @@
  */
 const { regClass } = Laya;
 import { BaseScene } from "../scene/BaseScene";
+import { App } from "../App";
 
 @regClass()
 export class MainScene extends BaseScene {
@@ -13,6 +14,7 @@ export class MainScene extends BaseScene {
 
     onEnter(param?: any): void {
         super.onEnter(param);
+        App.musicMgr?.playGameplay();
         Laya.stage.off(Laya.Event.RESIZE, this, this.refreshGroundFallback);
         Laya.stage.on(Laya.Event.RESIZE, this, this.refreshGroundFallback);
 

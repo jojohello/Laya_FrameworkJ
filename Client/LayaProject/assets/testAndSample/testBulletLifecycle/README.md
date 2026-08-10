@@ -28,6 +28,8 @@
 
 `CrowdAvoidanceArrivalRegressionCase` 验证绕行后 Run 能进入攻击距离并回 Idle，同时锁定“技能范围触碰目标 `range` 边沿即可释放”的共享距离契约。`CrowdAvoidanceRegressionCase` 还验证修改实体 `range` 会直接改变局部避让占位，不存在独立 `radius`。
 
+`SceneBackgroundPauseRegressionCase` 验证后台低频 Laya 帧不会推进 FixedTick Scene，恢复前台后从原 tick 继续；若玩家进入后台前已经主动暂停，恢复前台后仍保持暂停。
+
 ## 新增用例
 
 在 `scripts/scenarios/` 新建一个实现 `HeadlessTestCase` 的类，再在 `scripts/HeadlessTestScene.ts` 的数组中注册。用例必须：

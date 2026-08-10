@@ -61,8 +61,10 @@ export class MyGameConfig {
         "effects",
         "guides",
         "map",
+        "music",
         "scene",
         "shaders",
+        "sound",
         "ui",
     ]);
 

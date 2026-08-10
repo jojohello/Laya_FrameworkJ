@@ -11,8 +11,10 @@
     "effects",
     "guides",
     "map",
+    "music",
     "scene",
     "shaders",
+    "sound",
     "ui"
   ],
   "enableVersion": true,
@@ -47,11 +49,19 @@
       "remote": true
     },
     {
+      "path": "music",
+      "remote": true
+    },
+    {
       "path": "scene",
       "remote": true
     },
     {
       "path": "shaders",
+      "remote": true
+    },
+    {
+      "path": "sound",
       "remote": true
     },
     {

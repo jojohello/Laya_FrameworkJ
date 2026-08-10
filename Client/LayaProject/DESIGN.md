@@ -52,7 +52,8 @@ Plan 是工作面板，不是历史档案。工作完成后，公开结果归入
 
 - 微信首包只保留启动场景、`startupUI` 和 `ttf`；Loading 背景属于 `startupUI`，不得通过 `alwaysIncluded` 强制打入整个大图目录。
 - `logic` 是微信本地纯代码分包：`assets/logic/` 是分包资源锚点，构建路径为 `logic`；入口为 `src/logic/LogicLib.bundledef`，不得标记为远程包。不得把 `src/logic` 的源码路径填写到资源文件夹，否则微信分包会被发布到包体根目录之外。正式资源按现有顶层路径形成 `bigImg/character/config/effects/guides/map/scene/shaders/ui` 远程分包，以保持运行时 URL 不变。
-- 代码动态加载的资源目录同时列入 `alwaysIncluded` 和对应的远程 `subpackages`：前者保证导出器不会裁剪资源，后者使它们输出到 `wxgame-remote` 而不是微信本地包。两个列表必须与 `MyGameConfig.remoteResourcePackages` 同步。
+- 代码动态加载的资源目录同时列入 `alwaysIncluded` 和对应的远程 `subpackages`：前者保证导出器不会裁剪资源，后者使它们输出到 `wxgame-remote` 而不是微信本地包。两个列表必须与 `MyGameConfig.remoteResourcePackages` 同步；字符串 URL 引用不会形成 Laya 资源依赖，`music`/`sound` 也不得遗漏。
+- 登录 BGM 使用远程 `music` 包时，Start 必须先通过 `loadPackage` 注册该包的 fileconfig 与 URL 映射，再调用 `MusicMgr.playMusic`。微信小游戏不能把 `useAudioMusic=true` 或 `longAudioClass` 等同于流式播放：LayaAir 3.3 的 `MgInnerAudioChannel` 会先以 `filePath` 下载完整远程文件。微信 BGM 必须复用 `Laya.URL.formatURL`/`postFormatURL` 解析 fileconfig 中的版本哈希与远程基址，再把最终 HTTP(S) URL 直接交给 `wx.createInnerAudioContext()`；不得手工拼接哈希文件名，也不得先用 Loader 预载 MP3。其他平台继续使用 Laya 长音频通道。
 - 所有游戏分包关闭构建器的启动前自动加载。首包 Loading 先注册微信本地 `logic` 代码包；资源包地址选择只能由 `MyGameConfig.resourcePackageBaseUrl` 决定：IDE 预览调用本地 `loadPackage(name)`，发布产物（包括微信开发者工具）调用远程 `loadPackage(name, remoteUrl)`。LogicMain、ConfigMgr 和 UIManager 只能在全部分包注册后初始化。
 - `MyGameConfig` 由 Start 首包拥有，统一选择环境、登录 API、远程资源地址和仅限开发环境的 Gateway 兜底。Start 在加载 Logic 前向 `window.myGameConfig` 发布不可变快照；Logic 只能通过 `App.gameConfig` 和 type-only 契约读取，不得静态导入 Start 配置实现。正常 Gateway 地址继续以登录服务器返回值为权威来源。
 - 登录入口必须先按运行平台分流：非微信小游戏平台显示账号输入；微信小游戏仅在 `MyGameConfig.forceAccountLogin` 为真时显示账号输入，否则进入页面后自动执行 `wx.login` 并显示底部登录进度。强制账号登录只用于 Local/Test 联调，Production 必须关闭，且服务端仍须用环境变量显式开启开发 code。
