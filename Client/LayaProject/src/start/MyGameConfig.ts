@@ -52,7 +52,7 @@ export class MyGameConfig {
     static readonly environment: GameEnvironment = GameEnvironment.Test;
 
     /** Mini-game debugging switch. Production must always keep this false. */
-    static readonly forceAccountLogin = false;
+    static readonly forceAccountLogin = true;
 
     static readonly remoteResourcePackages = Object.freeze([
         "bigImg",

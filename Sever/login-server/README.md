@@ -46,13 +46,13 @@ mvn -pl login-server spring-boot:run
 
 当前本机 Login Server 已分别通过 LayaAir IDE 账号登录和微信开发者工具真实微信自动登录验证；两条路径均可完成 Gateway 认证并进入游戏。真实微信重复登录返回同一 `userId`，客户端重新进入后的玩家名称和背包数据一致。
 
-Local/Test 固定 code 联调不需要真实微信凭据，但必须显式开启且只对当前进程生效：
+Local/Test 直接测试微信认证适配器的固定 code 时不需要真实微信凭据，但必须显式开启且只对当前进程生效：
 
 ```powershell
 $env:WECHAT_DEVELOPER_CODE_ENABLED="true"
 mvn -pl login-server spring-boot:run
 ```
 
-Production 不得设置 `WECHAT_DEVELOPER_CODE_ENABLED=true`。真实模式缺少 AppID/AppSecret 时只拒绝微信登录请求，不会回退到开发凭据。
+微信小游戏客户端的 `forceAccountLogin=true` 路径使用 `GUEST` 开发凭据，不需要开启该变量；它只验证公共登录/UI 链路，不代表微信身份。Production 不得设置 `WECHAT_DEVELOPER_CODE_ENABLED=true`。真实模式缺少 AppID/AppSecret 时只拒绝微信登录请求，不会回退到开发凭据。
 
 The Login database defaults to `laya_login` and is configured with `LOGIN_DB_HOST`, `LOGIN_DB_PORT`, `LOGIN_DB_NAME`, `LOGIN_DB_USERNAME`, and `LOGIN_DB_PASSWORD`.

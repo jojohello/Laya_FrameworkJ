@@ -55,7 +55,7 @@ export class SDKMgr {
     
     /**
      * 登录接口
-     * @param accountName 账号名称（微信平台下此参数无效）
+     * @param accountName Local/Test 强制账号模式下的开发测试账号
      */
     public async login(accountName?: string): Promise<LoginResponse> {
         return this._currentSDK.login(accountName);

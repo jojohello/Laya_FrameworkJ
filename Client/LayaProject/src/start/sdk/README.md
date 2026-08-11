@@ -79,7 +79,9 @@ const result = await SDKUtils.wxApiCall((success, fail) => {
 
 ### 3. 微信登录模式
 
-`WechatMiniGameSDK` 始终负责微信小游戏平台接入。`MyGameConfig.forceAccountLogin=true` 时使用 Login Server 显式开启的固定开发 code 和 `developerAccount`，仅供 Local/Test 建立测试账号；开关为 `false` 时使用 `wx.login()` 返回的真实临时代码，Production 强制采用此模式。仅在用户已经授权且 `wx.getUserInfo(withCredentials=true)` 成功时附带 `encryptedData/iv`；未授权或读取失败时仍只凭 code 登录。客户端不上传 `openid`、`unionid` 或内部 `userId`；服务端通过 `code2Session` 校验并解析账号。
+`WechatMiniGameSDK` 始终负责微信小游戏平台接入。`MyGameConfig.forceAccountLogin=true` 时使用 `GUEST` 类型的短时开发凭据，仅供 Local/Test 建立测试账号和验证公共登录/UI 链路，不调用微信 `code2Session`，也不代表微信身份；开关为 `false` 时使用 `wx.login()` 返回的真实临时代码，Production 强制采用此模式。仅在用户已经授权且 `wx.getUserInfo(withCredentials=true)` 成功时附带 `encryptedData/iv`；未授权或读取失败时仍只凭 code 登录。真实微信路径不上传 `openid`、`unionid` 或内部 `userId`；服务端通过 `code2Session` 校验并解析账号。
+
+LayaAir 在小游戏适配器中会把非 2xx HTTP 状态派发为 `ERROR`。`SDKUtils` 会从底层请求对象解析结构化 JSON 错误体，使登录调用方仍能消费服务端 `LoginResponse`；无法解析契约响应时才抛出网络/HTTP 错误，且不记录原始响应体。
 
 ### 4. 工具函数
 

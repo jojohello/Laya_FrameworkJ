@@ -8,7 +8,8 @@
     "FlyTime": -1,
     "CheckCollision": true,
     "Resource": "",
-    "OnHitAction": "Damage;1001;1001"
+    "OnHitAction": "Damage;1001;1001",
+    "ClientOnHitAction": "Sound;sound/Fireball_explosion.mp3"
   },
   {
     "ID": 1002,
@@ -19,7 +20,8 @@
     "FlyTime": -1,
     "CheckCollision": true,
     "Resource": "",
-    "OnHitAction": "Damage;1002;1001"
+    "OnHitAction": "Damage;1002;1001",
+    "ClientOnHitAction": "Sound;sound/Fireball_explosion.mp3"
   },
   {
     "ID": 1003,
@@ -30,7 +32,8 @@
     "FlyTime": -1,
     "CheckCollision": true,
     "Resource": "effects/projectile/fireball.atlas",
-    "OnHitAction": "Damage;1001;1001"
+    "OnHitAction": "Damage;1001;1001",
+    "ClientOnHitAction": "Sound;sound/Fireball_explosion.mp3"
   },
   {
     "ID": 1004,
@@ -41,6 +44,7 @@
     "FlyTime": -1,
     "CheckCollision": true,
     "Resource": "effects/projectile/light-orb.atlas",
-    "OnHitAction": "Damage;1001;1001"
+    "OnHitAction": "Damage;1001;1001",
+    "ClientOnHitAction": "Sound;sound/Fireball_explosion.mp3"
   }
 ]

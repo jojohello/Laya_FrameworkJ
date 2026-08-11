@@ -27,6 +27,7 @@ import { MusicMgr } from "./sound/MusicMgr";
 export class StartMain {
     private static readonly LOGIC_SUBPACKAGE = "logic";
     private static readonly MUSIC_PACKAGE = "music";
+    private static readonly SOUND_PACKAGE = "sound";
 
     private _logicMain: any | null = null; // LogicMain 类型（分包加载后才有）
     private _loginScene: Laya.Scene | null = null;
@@ -93,6 +94,17 @@ export class StartMain {
         // 9. 挂载 Manager 单例到 window（供 Logic 分包通过 App 访问）
         (Laya.Browser.window as any)["networkManager"] = NetworkManager.instance;
         (Laya.Browser.window as any)["loginMgr"] = LoginMgr.instance;
+
+        // 登录按钮的短音效位于远程 sound 包。微信发布包必须先注册 fileconfig，
+        // 才能把 sound/click.mp3 解析为带版本哈希的最终 URL；注册失败不阻断登录。
+        try {
+            await this.loadPackageOnce(
+                StartMain.SOUND_PACKAGE,
+                MyGameConfig.resourcePackageBaseUrl,
+            );
+        } catch (error) {
+            console.warn("[StartMain] 登录音效包注册失败，登录按钮将暂时无音效", error);
+        }
 
         // 10. 打开登录界面
         await this.openLoginScene();

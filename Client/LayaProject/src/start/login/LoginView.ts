@@ -2,11 +2,14 @@ import { LoginViewBase } from "./LoginView.generated";
 import { LoginMgr } from "./LoginMgr";
 import type { LoginResponse } from "./LoginPayloads.generated";
 import { MyGameConfig, Platform } from "../MyGameConfig";
+import { MusicMgr } from "../sound/MusicMgr";
 
 const { regClass } = Laya;
 
 @regClass()
 export class LoginView extends LoginViewBase {
+    private static readonly LOGIN_CLICK_SOUND = "sound/click.mp3";
+
     private readonly _loginMgr = LoginMgr.instance;
     private _loginMask: Laya.Sprite | null = null;
     private _loginMaskLabel: Laya.GTextField | null = null;
@@ -93,6 +96,9 @@ export class LoginView extends LoginViewBase {
 
     private async onConfirmClick(): Promise<void> {
         if (this._isSubmitting) return;
+
+        // 保持在用户 CLICK 手势内触发；移动端与微信小游戏可能拒绝脱离手势的首次音频播放。
+        MusicMgr.instance.playSound(LoginView.LOGIN_CLICK_SOUND);
 
         if (this.isAccountLogin) {
             const accountName = this.getInputText();

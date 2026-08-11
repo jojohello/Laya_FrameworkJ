@@ -1,10 +1,10 @@
-Title,ID,SkillID,Level,Name,MaxLevel,SkillType,TargetType,CastRange,CD,CostType,CostValue,Action,Desc
-Type,int,int,int,str,int,str,str,int,int,str,int,str,str
-Description,Composite row ID server needed,Skill ID server needed,Skill level server needed,Client display name,Max skill level server needed,Skill type server needed,Target type server needed,Cast range in pixels,Cooldown ms server needed,Cost type server needed,Cost value server needed,Action script server needed,Client description
-UsedSize,cs,cs,cs,c,cs,cs,cs,cs,cs,cs,cs,cs,c
-,100101,1001,1,TestFireball,2,Active,Position,260,1000,None,0,0;Bullet;1001,Step4 projectile skill test
-,100102,1001,2,TestFireball,2,Active,Position,280,800,None,0,0;Bullet;1002,Step4 projectile skill test
-,110101,1101,1,WarriorBasicAttack,1,Active,Target,40,900,None,0,0;Animation;attack|300;Damage;1003;1001,Warrior normal attack skill
-,120101,1201,1,MageBasicAttack,1,Active,Target,260,1100,None,0,0;Animation;attack|300;Bullet;1003,Mage normal attack skill
-,130101,1301,1,PriestBasicAttack,1,Active,Target,220,1200,None,0,0;Animation;attack|300;Bullet;1004,Priest normal attack skill
-,130201,1302,1,PriestRenew,1,Active,Ally,300,6000,None,0,0;Animation;attack|300;Buff;3002,Heal nearest injured ally over time
+Title,ID,SkillID,Level,Name,MaxLevel,SkillType,TargetType,CastRange,CD,CostType,CostValue,Action,ClientAction,Desc
+Type,int,int,int,str,int,str,str,int,int,str,int,str,str,str
+Description,Composite row ID server needed,Skill ID server needed,Skill level server needed,Client display name,Max skill level server needed,Skill type server needed,Target type server needed,Cast range in pixels,Cooldown ms server needed,Cost type server needed,Cost value server needed,Action script server needed,Client-only presentation action script,Client description
+UsedSize,cs,cs,cs,c,cs,cs,cs,cs,cs,cs,cs,cs,c,c
+,100101,1001,1,TestFireball,2,Active,Position,260,1000,None,0,0;Bullet;1001,0;Sound;sound/swing.mp3,Step4 projectile skill test
+,100102,1001,2,TestFireball,2,Active,Position,280,800,None,0,0;Bullet;1002,0;Sound;sound/swing.mp3,Step4 projectile skill test
+,110101,1101,1,WarriorBasicAttack,1,Active,Target,40,900,None,0,0;Animation;attack|300;Damage;1003;1001,0;Sound;sound/swing.mp3|300;Sound;sound/knife_impact.mp3,Warrior normal attack skill
+,120101,1201,1,MageBasicAttack,1,Active,Target,260,1100,None,0,0;Animation;attack|300;Bullet;1003,0;Sound;sound/swing.mp3,Mage normal attack skill
+,130101,1301,1,PriestBasicAttack,1,Active,Target,220,1200,None,0,0;Animation;attack|300;Bullet;1004,0;Sound;sound/swing.mp3,Priest normal attack skill
+,130201,1302,1,PriestRenew,1,Active,Ally,300,6000,None,0,0;Animation;attack|300;Buff;3002,0;Sound;sound/swing.mp3,Heal nearest injured ally over time

@@ -40,6 +40,11 @@ MusicMgr.instance.stopAllSounds();
 MusicMgr.instance.setSoundVolume(0.9);
 ```
 
+登录按钮使用 `MusicMgr.instance.playSound("sound/click.mp3")`。`sound` 是远程资源包，
+`StartMain` 会在打开登录场景前先通过 `loadPackage` 注册其 fileconfig/URL 映射；这使
+微信小游戏能够把逻辑路径解析为带版本哈希的远程文件，同时让首次播放仍发生在
+按钮的用户 `CLICK` 手势内。注册失败只降级为无点击音效，不阻断登录流程。
+
 音量与静音设置自动从本地缓存读取并在变更时保存。
 
 Logic 侧经桥接访问（避免静态导入 Start 实现）：

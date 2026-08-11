@@ -91,8 +91,22 @@ export class SDKUtils {
                 
                 isCompleted = true;
                 Laya.timer.clear(null, timeoutHandler); // 清除超时定时器
-                console.error("SDKUtils: HTTP请求失败", error);
-                reject(new Error("网络请求失败"));
+                const nativeHttp = http.http;
+                const statusCode = Number(nativeHttp?.status) || 0;
+                const errorData = SDKUtils.parseHttpErrorData<T>(nativeHttp, config.dataType);
+                // LayaAir routes every non-200 response through ERROR on mini-game
+                // adapters. Preserve a contract-shaped JSON body so callers can surface
+                // the server's safe business error instead of misreporting a network fault.
+                if (statusCode >= 400 && errorData !== null) {
+                    resolve({
+                        success: false,
+                        data: errorData,
+                        statusCode,
+                    });
+                    return;
+                }
+                console.error(`SDKUtils: HTTP请求失败 [${statusCode || "unknown"}]`, error);
+                reject(new Error(statusCode > 0 ? `网络请求失败（HTTP ${statusCode}）` : "网络请求失败"));
             });
             
             // 发送请求
@@ -256,6 +270,25 @@ export class SDKUtils {
         }
         
         return params.toString();
+    }
+
+    private static parseHttpErrorData<T>(nativeHttp: any, dataType?: HttpRequestConfig["dataType"]): T | null {
+        const response = nativeHttp?.response;
+        // Some mini-game adapters expose an empty `response` while retaining the
+        // actual non-2xx payload in `responseText`.
+        const raw = response !== undefined && response !== null && response !== ""
+            ? response
+            : nativeHttp?.responseText;
+        if (raw === undefined || raw === null || raw === "") return null;
+        try {
+            if (dataType === "json" || !dataType) {
+                return (typeof raw === "string" ? JSON.parse(raw) : raw) as T;
+            }
+            return raw as T;
+        } catch {
+            // Do not log the raw response: login errors may share a transport with secrets.
+            return null;
+        }
     }
     
     /**

@@ -77,6 +77,11 @@ Config\exportAll.bat
 
 `Character.csv` 保存所有生物实体的兵种、基础属性、显示缩放、逻辑圆半径 `range` 和技能 ID 列表；防御塔、玩家和正式怪物使用各自的 Character ID。角色图集及动作范围由 `CharacterAnimation.csv` 配置。`range` 使用世界单位并以角色逻辑脚底点为圆心，前后端共同用于空间占位、碰撞/距离语义和局部避让；`skillIds` 使用分号分隔。
 
+`Skill.Action` 保存前后端共享的技能行为，`Skill.ClientAction` 只导出客户端并用于 `Sound`
+等表现 Action。`Bullet.OnHitAction` 保存前后端共享的命中结果；`Bullet.ClientOnHitAction`
+只导出客户端，用于命中音效等表现，不得承载伤害、Buff 或其他权威结果。音频路径相对
+客户端 `assets/` 根。
+
 服务器 `ConfigManager` 扫描 JSON 目录和 `configStruct` 类；已有字段数值可以通过 reload 重载，新增表或字段结构变化需要重新导出、编译并重启。
 
 稳定设计与热更边界见 [DESIGN.md](DESIGN.md)，当前未完成工作见 [PlanAndStatus.md](PlanAndStatus.md)。

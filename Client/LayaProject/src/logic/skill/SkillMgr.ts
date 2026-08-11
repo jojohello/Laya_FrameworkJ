@@ -65,7 +65,10 @@ export class SkillMgr implements IManager {
         const data = this.getSkillData(skillId, level);
         if (!data) return null;
 
-        const info = new SkillInfo(data, ActionFactory.parseActions(data.Action, true));
+        // Shared gameplay actions stay first; ActionFactory's stable delay sort preserves
+        // that order at equal timestamps, so presentation never precedes the paired result.
+        const actionScript = [data.Action, data.ClientAction].filter(Boolean).join("|");
+        const info = new SkillInfo(data, ActionFactory.parseActions(actionScript, true));
         this._skillInfoCache.set(key, info);
         return info;
     }
@@ -81,7 +84,12 @@ export class SkillMgr implements IManager {
         const data = ConfigMgr.instance.getConfig<BulletData>(SkillMgr.TABLE_BULLET, bulletId);
         if (!data) return null;
 
-        const info = new BulletInfo(data, ActionFactory.parseActions(data.OnHitAction, false));
+        // Keep authoritative/shared hit results separate from client-only presentation actions.
+        // Both queues are immutable config objects and execute in this deterministic order.
+        const info = new BulletInfo(data, [
+            ...ActionFactory.parseActions(data.OnHitAction, false),
+            ...ActionFactory.parseActions(data.ClientOnHitAction, false),
+        ]);
         this._bulletInfoCache.set(bulletId, info);
         return info;
     }

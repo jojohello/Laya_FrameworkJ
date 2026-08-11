@@ -12,6 +12,7 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Bullet;1001",
+    "ClientAction": "0;Sound;sound/swing.mp3",
     "Desc": "Step4 projectile skill test"
   },
   {
@@ -27,6 +28,7 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Bullet;1002",
+    "ClientAction": "0;Sound;sound/swing.mp3",
     "Desc": "Step4 projectile skill test"
   },
   {
@@ -42,6 +44,7 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Animation;attack|300;Damage;1003;1001",
+    "ClientAction": "0;Sound;sound/swing.mp3|300;Sound;sound/knife_impact.mp3",
     "Desc": "Warrior normal attack skill"
   },
   {
@@ -57,6 +60,7 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Animation;attack|300;Bullet;1003",
+    "ClientAction": "0;Sound;sound/swing.mp3",
     "Desc": "Mage normal attack skill"
   },
   {
@@ -72,6 +76,7 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Animation;attack|300;Bullet;1004",
+    "ClientAction": "0;Sound;sound/swing.mp3",
     "Desc": "Priest normal attack skill"
   },
   {
@@ -87,6 +92,7 @@
     "CostType": "None",
     "CostValue": 0,
     "Action": "0;Animation;attack|300;Buff;3002",
+    "ClientAction": "0;Sound;sound/swing.mp3",
     "Desc": "Heal nearest injured ally over time"
   }
 ]

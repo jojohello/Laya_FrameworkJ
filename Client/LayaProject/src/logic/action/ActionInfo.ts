@@ -6,6 +6,7 @@ export enum ActionType {
     Damage = "Damage",
     TrueDamage = "TrueDamage",
     Effect = "Effect",
+    Sound = "Sound",
 }
 
 export class ActionInfo {

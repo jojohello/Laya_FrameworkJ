@@ -20,7 +20,7 @@ export interface ISDK {
     
     /**
      * 登录接口
-     * @param accountName 账号名称（微信平台下此参数无效）
+     * @param accountName Local/Test 强制账号模式下的开发测试账号
      * @returns 登录响应
      */
     login(accountName?: string): Promise<LoginResponse>;

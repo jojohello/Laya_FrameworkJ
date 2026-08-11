@@ -31,10 +31,13 @@ public class GuestAuthServiceImpl implements ThirdPartyAuthService {
             if (isDeveloperMode) {
                 // 开发模式：验证时间戳，但用户标识不包含时间戳
                 String fullDeveloperName = request.getAuthCode().substring(4); // 去掉"dev_"前缀
-                String[] parts = fullDeveloperName.split("_");
-                if (parts.length >= 2) {
-                    String developerName = parts[0];
-                    String timestamp = parts[1];
+                int timestampSeparator = fullDeveloperName.lastIndexOf('_');
+                if (timestampSeparator > 0 && timestampSeparator < fullDeveloperName.length() - 1) {
+                    String developerName = fullDeveloperName.substring(0, timestampSeparator);
+                    String timestamp = fullDeveloperName.substring(timestampSeparator + 1);
+                    if (!developerName.matches("^[a-zA-Z0-9_!@#$%^&*]{1,24}$")) {
+                        return ThirdPartyAuthResult.failure("INVALID_FORMAT", "开发账号格式无效");
+                    }
                     // 验证时间戳（可以添加时间有效性检查）
                     try {
                         long timestampValue = Long.parseLong(timestamp);

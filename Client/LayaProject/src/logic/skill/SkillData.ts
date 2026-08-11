@@ -18,6 +18,8 @@ export interface SkillData {
     CostType: string;
     CostValue: number;
     Action: string;
+    /** Optional for compatibility with older client config snapshots and test fixtures. */
+    ClientAction?: string;
     Desc: string;
 }
 
@@ -31,6 +33,8 @@ export interface BulletData {
     CheckCollision: boolean;
     Resource: string;
     OnHitAction: string;
+    /** Optional for compatibility with older client config snapshots and test fixtures. */
+    ClientOnHitAction?: string;
 }
 
 export interface DamageData {

@@ -69,6 +69,14 @@ Current action examples:
   `3000` ms.
 - `0;Heal;16`: restore 16 HP to the current target. It is normally used by a
   Buff tick, while duration and cadence remain in `Buff.csv`.
+- `0;Sound;sound/swing.mp3`: play a short client sound through `App.musicMgr`.
+  The path is relative to `assets/`; sound volume, mute, URL mapping and
+  mini-game concurrency limits remain owned by the Start sound service.
+
+Shared gameplay actions stay in `Skill.Action`. Client-only presentation such
+as `Sound` belongs in `Skill.ClientAction`; the runtime merges both strings and
+performs one stable delay sort, so same-time presentation runs after the shared
+action authored at that time.
 
 ### Bullet
 
@@ -88,9 +96,11 @@ loops them at its default visual size. This single fixed loop does not use a
 separate action-range/duration table. `Resource` affects only rendering, never
 collision `Range` or hit results.
 
-`OnHitAction` is the only configured hit-result entry. Damage, healing, buffs
-and debuffs should be actions with numeric config ids, not hardcoded fields on
-the bullet table.
+`OnHitAction` contains shared hit-result actions. Damage, healing, buffs and
+debuffs should be actions with numeric config ids, not hardcoded fields on the
+bullet table. `ClientOnHitAction` is a client-only presentation queue executed
+after `OnHitAction`; hit sounds belong there so a `Sound` action never enters
+server config or affects authoritative results.
 
 `Damage` accepts an optional second parameter, `CombatEffect.ID`, so each skill,
 bullet or Buff action can choose its own hit visual. `CombatEffect.csv` defines
@@ -156,6 +166,8 @@ skill range.
   returns its duration to the owning skill execution.
 - `../action/BulletAction.ts`: creates a `BulletSceneObj` from `Bullet` config.
 - `../action/BuffAction.ts`: applies a `Buff` to the current target.
+- `../action/SoundAction.ts`: plays a config-selected short sound through the
+  Start-owned audio bridge.
 - `../action/ActionFactory.ts`: parses Action strings once and creates shared
   stateless action instances by action name.
 
@@ -248,6 +260,7 @@ targets.
 - Skill is one caller of the generic action system.
 - `DamageAction` is the main damage entry: `delay;Damage;damageId`.
 - `AnimationAction` is the animation entry: `delay;Animation;actionName`.
+- `SoundAction` is the short-audio entry: `delay;Sound;assets-relative-url`.
 - `Effect` and `TrueDamage` remain compatibility aliases.
 - Bullet hit and Buff lifecycle effects use the same Action parser and executor.
 - Runtime combat time is measured in seconds from `SceneTime`. Config-authored

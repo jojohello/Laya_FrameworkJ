@@ -9,6 +9,7 @@ import "./BulletAction";
 import "./BuffAction";
 import "./DamageAction";
 import "./HealAction";
+import "./SoundAction";
 
 export class ActionFactory {
     static parseActions(actionScript: string, withDelay: boolean = true): BaseAction[] {

@@ -31,12 +31,14 @@ export class WechatMiniGameSDK implements ISDK {
             const developerAccount = accountName?.trim();
             if (!developerAccount) throw new Error("请输入开发测试账号");
             requestData = {
-                type: "WECHAT",
-                authCode: "test_wechat_code",
+                // Forced account mode tests the common login/UI path, not WeChat identity.
+                // Use the always-available development guest credential so the WeChat
+                // runtime does not accidentally send a fixed code to code2Session.
+                type: "GUEST",
+                authCode: `dev_${developerAccount}_${Date.now()}`,
                 platform: this.getPlatform(),
                 deviceInfo: this.getDeviceInfo(),
                 version: "1.0.0",
-                developerAccount,
             };
         } else {
             // Account authentication depends only on the short-lived wx.login code.

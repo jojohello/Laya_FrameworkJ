@@ -1,8 +1,8 @@
-Title,ID,MoveType,Speed,Range,PenetrateCount,FlyTime,CheckCollision,Resource,OnHitAction
-Type,int,str,int,int,int,int,bool,str,str
-Description,Bullet ID,Movement type,Move speed,Collision radius,Extra hit count,Fly time ms,Whether checks collision,Visual resource,Action script when hit
-UsedSize,cs,cs,cs,cs,cs,cs,cs,c,cs
-,1001,Line,600,12,0,-1,true,,Damage;1001;1001
-,1002,Line,600,12,0,-1,true,,Damage;1002;1001
-,1003,Line,480,12,0,-1,true,effects/projectile/fireball.atlas,Damage;1001;1001
-,1004,Line,480,12,0,-1,true,effects/projectile/light-orb.atlas,Damage;1001;1001
+Title,ID,MoveType,Speed,Range,PenetrateCount,FlyTime,CheckCollision,Resource,OnHitAction,ClientOnHitAction
+Type,int,str,int,int,int,int,bool,str,str,str
+Description,Bullet ID,Movement type,Move speed,Collision radius,Extra hit count,Fly time ms,Whether checks collision,Visual resource,Action script when hit,Client-only presentation action script when hit
+UsedSize,cs,cs,cs,cs,cs,cs,cs,c,cs,c
+,1001,Line,600,12,0,-1,true,,Damage;1001;1001,Sound;sound/Fireball_explosion.mp3
+,1002,Line,600,12,0,-1,true,,Damage;1002;1001,Sound;sound/Fireball_explosion.mp3
+,1003,Line,480,12,0,-1,true,effects/projectile/fireball.atlas,Damage;1001;1001,Sound;sound/Fireball_explosion.mp3
+,1004,Line,480,12,0,-1,true,effects/projectile/light-orb.atlas,Damage;1001;1001,Sound;sound/Fireball_explosion.mp3

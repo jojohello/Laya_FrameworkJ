@@ -26,10 +26,10 @@
 - 真实微信请求只要求 `wx.login` code。`profileEncryptedData` 和 `profileIv` 均为可选，但只允许成对提供；提供时 Login Server 使用本次 `code2Session` 返回的 `session_key` 解密资料，并校验资料中的 `watermark.appid` 与当前服务端 AppID 一致。
 - 解密资料若包含 `openId`，它必须与 `code2Session` 返回的 `openid` 一致；不一致时整个登录失败，不创建或更新账号。
 - 微信 `code` 是一次性凭据。客户端同一时刻只允许一个登录请求；失败后重新调用 `wx.login`，不得重放旧 code。
-- 非微信小游戏平台使用账号输入；微信小游戏仅在 `forceAccountLogin=true` 时使用开发账号，否则进入登录页后自动提交新鲜 code。该开关不改变真实微信身份解析和资料授权边界。
+- 非微信小游戏平台使用账号输入；微信小游戏在 `forceAccountLogin=true` 且为 Local/Test 时，通过既有 `GUEST` 开发凭据提交测试账号，否则进入登录页后自动提交新鲜微信 code。强制账号模式只验证公共登录/UI 链路，不代表微信身份，也不改变真实微信身份解析和资料授权边界。
 - 已有 `scope.userInfo` 授权时，客户端可以在登录请求中附带 `wx.getUserInfo` 的加密资料；权限不存在、已失效或资料 API 失败时省略资料并继续登录。
 - 昵称头像授权属于登录后的资料完善能力。授权入口、拒绝和重试不得改变登录状态，也不得把昵称头像升级为认证或授权依据。
-- 开发凭据只允许 Local/Test 联调显式开启服务端 `WECHAT_DEVELOPER_CODE_ENABLED` 时使用；Production 部署必须关闭该变量，客户端 Production 配置也必须拒绝 `forceAccountLogin=true`。
+- 微信固定开发 code 只允许 Local/Test 的微信认证适配器专项联调，并要求服务端显式开启 `WECHAT_DEVELOPER_CODE_ENABLED`；正常的强制账号客户端路径使用 `GUEST` 开发凭据，不依赖该变量。Production 部署必须关闭该变量，客户端 Production 配置也必须拒绝 `forceAccountLogin=true`。
 - 微信适配器缺少 AppID/AppSecret 时只拒绝真实微信请求并返回 `WECHAT_CONFIG_MISSING`，不得阻止 Login Server 启动或影响其他登录类型；Test/Production 部署验收仍必须在对外开放前确认真实微信配置完整。
 - `(thirdPartyType, openid)` 必须唯一；并发创建同一微信身份最终只能得到同一个 `userId`。
 - 并发插入命中第三方身份唯一约束时，创建事务先回滚，再在新事务读取胜出账号；不得把唯一冲突直接作为登录失败返回。
@@ -38,6 +38,8 @@
 ## HTTP 消息
 
 `schema.json` 是 `LoginRequest`、`LoginResponse` 的字段、长度、条件规则和 `POST /api/login` 绑定唯一来源。
+
+Login Server 可以用 HTTP 4xx 返回结构合法的失败 `LoginResponse`。小游戏适配层必须解析非 2xx 响应体并把契约错误交给登录调用方；只有无法取得合法契约响应体时才归类为网络/传输失败。原始响应体不得写入日志。
 
 成功响应必须包含账号、登录时间、昵称、头像和 Gateway 地址。失败响应只包含稳定错误码和用户可展示信息；失败不表示账号状态已经改变。客户端必须先通过生成的结构守卫，再保存令牌或进入 Logic 包。
 

@@ -5,7 +5,7 @@
 ## 入口与职责
 
 - `LoginMgr`：串行化平台登录，同一时刻只允许一个请求；保存当前会话结果与上次开发账号。
-- `LoginView`：根据平台与强制账号开关显示账号输入或微信自动登录状态；自动登录使用底部进度条，账号提交期间使用 `loginProgressMask` 阻断输入和重复点击。
+- `LoginView`：根据平台与强制账号开关显示账号输入或微信自动登录状态；自动登录使用底部进度条，账号提交期间使用 `loginProgressMask` 阻断输入和重复点击；手动登录/重试按钮在 `CLICK` 手势内通过 `MusicMgr` 播放 `sound/click.mp3`。
 - `SDKMgr`：按运行平台选择 `WebSDK` 或 `WechatMiniGameSDK`。
 - `WechatMiniGameSDK`：调用微信客户端 API，只提交一次性 code 与 `encryptedData/iv`；不提交客户端声明的 `openid`、`unionid` 或 `userId`。
 - `LoginPayloads.generated.ts`：由登录 Schema 生成的请求、响应类型与结构守卫。
@@ -18,17 +18,13 @@
 | --- | --- |
 | 非微信小游戏平台 | 显示账号输入并走对应平台的账号登录 |
 | 微信小游戏，`forceAccountLogin=false` | 隐藏账号输入，显示底部“正在登录”进度并自动使用真实微信身份 |
-| 微信小游戏，`forceAccountLogin=true` | 显示账号输入，使用开发 code；仅限 Local/Test 联调 |
+| 微信小游戏，`forceAccountLogin=true` | 显示账号输入，使用 `GUEST` 开发凭据；仅限 Local/Test 联调，不代表微信身份 |
 
 Production 必须保持 `forceAccountLogin=false`。真实微信模式没有手动触发开关，进入登录页后始终自动提交；失败时显示重试入口。
 
-Local/Test 微信开发账号要求 Login Server 当前进程显式设置：
+当前 `Test` 环境将 `forceAccountLogin` 设为 `true`，微信开发者工具中会显示账号输入与登录按钮，便于测试按钮交互和点击音效；切换 Production 前必须恢复为 `false`。
 
-```powershell
-$env:WECHAT_DEVELOPER_CODE_ENABLED="true"
-```
-
-Production 禁止开启该变量。
+Local/Test 强制账号路径使用 Login Server 始终可用的 `GUEST` 开发凭据，不要求设置 `WECHAT_DEVELOPER_CODE_ENABLED`。该环境变量只用于直接测试微信认证适配器的固定 code，Production 禁止开启。
 
 ## 真实微信流程
 
@@ -39,7 +35,7 @@ Production 禁止开启该变量。
 5. 没有可验证资料时服务端生成默认昵称和头像；历史账号资料为空时登录边界自动补齐；有资料时验证后更新，三者都返回符合生成契约的登录成功响应。
 6. 客户端先用 `isLoginResponse` 校验完整响应，再保存 `userId + token + loginTimestamp + gatewayWsUrl`，加载 Logic 分包。
 
-昵称头像授权是独立的资料完善能力，拒绝或失败不得影响账号登录。登录失败会撤销阻断遮罩并允许重试。原始 code、`session_key`、AppSecret、Token 和未解析的响应体不得写入日志。
+昵称头像授权是独立的资料完善能力，拒绝或失败不得影响账号登录。登录失败会撤销阻断遮罩并允许重试。Login Server 通过 HTTP 4xx 返回结构化业务错误时，小游戏适配层仍解析 `LoginResponse` 并显示安全错误信息；没有合法契约响应体时才报告网络失败。原始 code、`session_key`、AppSecret、Token 和未解析的响应体不得写入日志。
 
 当前本机已在 LayaAir IDE 完成账号登录，并在微信开发者工具完成真实微信自动登录、进度与失败恢复界面验收；两条路径均可完成 Gateway 认证并进入游戏。多次微信登录返回同一 `userId`，重新进入后玩家名称和背包数据一致，账号身份映射与服务器权威数据恢复已经通过实际链路验证。真实昵称头像授权/拒绝和 Test HTTPS 部署仍按当前 Plan 验收。
 
