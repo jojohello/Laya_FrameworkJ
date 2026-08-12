@@ -3,6 +3,7 @@ import { BattleMainViewController } from "../battleScene/BattleMainViewControlle
 import { BattleVictoryViewController } from "../battleScene/BattleVictoryViewController";
 import { BattleDefeatViewController } from "../battleScene/BattleDefeatViewController";
 import { BagViewController } from "../item/BagViewController";
+import { SettingsViewController } from "../settings/SettingsViewController";
 
 /**
  * UI 配置表。
@@ -66,6 +67,16 @@ export const UIConfigTable: { [name: string]: any } = {
         autoDestroy: false,
         mutex: ["ShopUI", "SkillUI"],
         controllerClass: BagViewController,
+    },
+
+    "SettingsUI": {
+        path: "ui/settings/SettingsUI.ls",
+        layerName: "MainContent",
+        zOrder: UILayer.MainContent,
+        singleton: true,
+        autoDestroy: false,
+        mutex: ["BagUI", "ShopUI", "SkillUI"],
+        controllerClass: SettingsViewController,
     },
 
     "ShopUI": {

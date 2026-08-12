@@ -41,6 +41,7 @@
 | `ui/common/imgs/exp-fill.png` | PNG | Compact green experience fill | The maximum experience source still needs a formal level configuration |
 | `ui/mainscene/MainSceneView.ls` | `.ls` scene | Main scene container | Loads `playerProfile.lh`, passes player data to `TopPrefab`, and owns main-scene system-entry behavior |
 | `ui/bag/bagUI.ls` | `.ls` scene | Main-scene bag content page | Root-Relation gray-blue backdrop sits below a warm-gold window panel; the `ItemView.lh` list uses a wrapping FlowX grid and computes visible rows/columns from the live viewport, while equal-sized embedded-page tabs remain on one baseline and switch art without movement. The page stays below the persistent MainUI HUD and navigation |
+| `ui/settings/SettingsUI.ls` | `.ls` scene | Main-scene audio settings page | Reuses the Bag page's high-opacity gray-blue backdrop and common warm-gold window assets; exposes master mute, music/sound switches and two drag sliders while remaining below the persistent MainUI HUD and navigation |
 
 ## Selection rule
 

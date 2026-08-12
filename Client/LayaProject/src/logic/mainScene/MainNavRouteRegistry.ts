@@ -21,7 +21,8 @@ export class MainNavRouteRegistry {
                 this.closeMainContent();
                 return;
             case "main.settings":
-                console.warn("[MainNavRouteRegistry] route 尚未实现: main.settings");
+                this.closeMainContent("SettingsUI");
+                await UIManager.instance.open("SettingsUI", { args: routeArgs });
                 return;
             default:
                 console.warn(`[MainNavRouteRegistry] 未注册 route: ${routeKey}`);

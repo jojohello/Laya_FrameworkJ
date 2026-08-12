@@ -15,6 +15,7 @@
 | `scene` | `SceneMgr`、`BaseScene`；异步场景切换串行执行，Realtime/30Hz FixedTick 在 Scene 边界形成统一逻辑时间，逻辑与渲染分离 |
 | `sceneObj` | `BaseSceneObj` 及对象类型 |
 | `ui` | `UIManager` |
+| `settings` | `SettingsViewController`；主界面音频设置内页，通过 `App.musicMgr` 即时修改并持久化音量/静音状态 |
 | `mainScene` | `MainSceneView` loads the compact `ui/mainscene/playerProfile.lh` HUD and binds player, authoritative Wallet currencies (`1001` Gold and `1004` Crystal), and function-open state |
 | `skill` | `SkillMgr`、`SkillAgent` |
 | `item` | `ItemMgr`、`BagMgr` |

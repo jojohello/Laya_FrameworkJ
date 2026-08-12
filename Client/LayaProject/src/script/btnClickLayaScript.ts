@@ -1,3 +1,5 @@
+import { MusicMgr } from "../start/sound/MusicMgr";
+
 /**
  * 按钮点击反馈脚本
  * 1. 点击时缩放动画
@@ -38,7 +40,7 @@ export class btnClickLayaScript extends Laya.Script {
         this._canClick = false;
         // 播放音效（如果有设置）
         if (this.sound) {
-            Laya.SoundManager.playSound(this.sound);
+            MusicMgr.instance.playSound(this.sound);
         }
         // 缩放动画（缩小再恢复）
         const owner = this.owner as Laya.Sprite;

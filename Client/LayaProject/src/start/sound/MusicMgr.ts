@@ -8,16 +8,21 @@ import { WechatStreamingMusicChannel } from "./WechatStreamingMusicChannel";
  * 所有音量/静音状态在本地持久化。
  *
  * 微信小游戏后端每次 SoundManager.playSound 都会新建并最终销毁一个
- * InnerAudioContext，iOS 密集音效会因此卡顿。本封装层通过"全局同时播放
- * 上限 + 每 URL 限频 + 单音效音量钳制"限制 InnerAudioContext 并发实例数，
- * 作为当前主缓解手段；真正的实例复用池需要侵入微信音频后端，留待 iOS 真机
- * 验证阶段决定，代码以配置常量预留扩展点。
+ * InnerAudioContext，密集音效会放大原生实例创建与叠加开销。本公共版本通过
+ * "全局同时播放上限 + 每 URL 限频 + 单音效音量钳制"约束平台通道压力；
+ * 实例复用池不属于当前版本方案。
  */
 export interface SoundPlayOptions {
     /** 循环次数，0 表示无限循环；默认 1。 */
     loops?: number;
-    /** 单音效音量 0..1；默认 1，会叠加 soundVolume 并钳制到 0..1。 */
+    /** 单音效音量 0..1；默认 1，全局 soundVolume 由 SoundManager 另行应用。 */
     volume?: number;
+}
+
+interface ActiveSound {
+    readonly url: string;
+    channel: Laya.SoundChannel | null;
+    released: boolean;
 }
 
 export type BgmMode = "direct" | "gameplay" | "battle";
@@ -30,8 +35,10 @@ export class MusicMgr {
         return this._instance;
     }
 
-    /** 全局同时播放的特效通道上限，直接限制 InnerAudioContext 并发实例数。 */
-    private static readonly MAX_CONCURRENT_SOUNDS = 12;
+    /** 微信短音效预算；加上 1 路 BGM 后仍为平台保留 1 路安全余量。 */
+    private static readonly MAX_WECHAT_CONCURRENT_SOUNDS = 8;
+    /** 非微信平台保持公共版原有并发行为，不受微信预算降级。 */
+    private static readonly MAX_OTHER_CONCURRENT_SOUNDS = 12;
     /** 同一音效 URL 每秒最大触发次数，防止单条高频循环反复创建实例。 */
     private static readonly MAX_SOUNDS_PER_URL_PER_SECOND = 8;
 
@@ -56,6 +63,7 @@ export class MusicMgr {
     private _musicChannel: Laya.SoundChannel | null = null;
     private _musicUrl = "";
     private _musicPosition = 0;
+    private _musicLoops = 0;
     private _musicVolume = 1;
     private _soundVolume = 1;
     private _musicMuted = false;
@@ -74,6 +82,8 @@ export class MusicMgr {
     private _activeSoundCount = 0;
     /** 每 URL 活跃通道计数，用于每 URL 限频与结束清理。 */
     private readonly _activeByUrl = new Map<string, number>();
+    /** 项目持有活动通道，显式停止时主动做幂等计数清理。 */
+    private readonly _activeSounds = new Set<ActiveSound>();
     /** 每 URL 每秒触发窗口，用于限频。 */
     private readonly _urlCallWindows = new Map<string, number[]>();
 
@@ -111,20 +121,16 @@ export class MusicMgr {
 
     /** 播放背景音乐，同时只允许一个；loops=0 表示无限循环。 */
     playMusic(url: string, loops = 0, startTime = 0, onDurationElapsed?: () => void): void {
-        if (!url || this._musicMuted || this._masterMuted) return;
+        if (!url) return;
 
         this.stopMusic();
         this._musicUrl = url;
         this._musicPosition = startTime;
-        this._musicChannel = this.createMusicChannel(url, loops, startTime);
-        if (this._musicChannel) {
-            // SoundChannel 已标记为 music，实际音量由 SoundManager.musicVolume 统一叠加。
-            this._musicChannel.volume = 1;
-            if (loops === 1 && onDurationElapsed) {
-                this._musicDurationCallback = onDurationElapsed;
-                this.scheduleMusicDurationCheck(this._musicDurationSession, url);
-            }
-        }
+        this._musicLoops = loops;
+        this._musicDurationCallback = loops === 1 ? onDurationElapsed ?? null : null;
+        // 静音时仍保留“当前场景应该播放什么”的意图；否则启动阶段因缓存静音
+        // 跳过创建通道后，用户解除静音也没有可恢复的音乐。
+        this.startPendingMusic();
     }
 
     stopMusic(): void {
@@ -136,6 +142,7 @@ export class MusicMgr {
         this._musicChannel = null;
         this._musicUrl = "";
         this._musicPosition = 0;
+        this._musicLoops = 0;
         channel?.stop();
     }
 
@@ -172,35 +179,54 @@ export class MusicMgr {
     /** 播放特效音效；受限频与并发上限约束，超出时丢弃并返回 null。 */
     playSound(url: string, options: SoundPlayOptions = {}): Laya.SoundChannel | null {
         if (!url || this._soundMuted || this._masterMuted) return null;
-        if (this.isUrlRateLimited(url)) return null;
 
-        // 超出全局并发上限时丢弃新请求，避免 iOS 上 InnerAudioContext 实例过多。
-        if (this._activeSoundCount >= MusicMgr.MAX_CONCURRENT_SOUNDS) return null;
+        const concurrentLimit = Laya.Browser.onMiniGame
+            ? MusicMgr.MAX_WECHAT_CONCURRENT_SOUNDS
+            : MusicMgr.MAX_OTHER_CONCURRENT_SOUNDS;
+        // 每 URL 活动数与总活动数都必须参与准入；当前公共版使用同一物理上限，
+        // 私有版再按音效类别细分配额、优先级与抢占策略。
+        if (this._activeSoundCount >= concurrentLimit) return null;
+        if ((this._activeByUrl.get(url) ?? 0) >= concurrentLimit) return null;
+        if (this.isUrlRateLimited(url)) return null;
 
         const loops = options.loops ?? 1;
         const volume = Math.max(0, Math.min(1, options.volume ?? 1));
+        const activeSound: ActiveSound = { url, channel: null, released: false };
         const channel = Laya.SoundManager.playSound(
             url,
             loops,
-            () => this.onSoundEnded(url),
+            () => this.releaseActiveSound(activeSound),
             0,
         );
-        if (channel) {
-            channel.volume = volume * this._soundVolume;
-            this._activeSoundCount++;
-            this._activeByUrl.set(url, (this._activeByUrl.get(url) ?? 0) + 1);
-        }
+        if (!channel) return null;
+
+        activeSound.channel = channel;
+        // 某些后端可能在 playSound 返回前同步报告失败；此时不能把已结束的播放
+        // 重新登记为活动，否则并发预算会永久泄漏。
+        if (activeSound.released) return channel;
+
+        // SoundChannel 内部会再乘 SoundManager.soundVolume；这里只写单音效音量。
+        channel.volume = volume;
+        this._activeSounds.add(activeSound);
+        this._activeSoundCount++;
+        this._activeByUrl.set(url, (this._activeByUrl.get(url) ?? 0) + 1);
         return channel;
     }
 
     stopSound(url: string): void {
+        const sounds = Array.from(this._activeSounds).filter((sound) => sound.url === url);
         Laya.SoundManager.stopSound(url);
+        // 不依赖各平台 stop 是否触发 complete；回调与这里均通过幂等释放汇合。
+        for (const sound of sounds) this.releaseActiveSound(sound);
     }
 
     stopAllSounds(): void {
+        const sounds = Array.from(this._activeSounds);
         Laya.SoundManager.stopAllSound();
+        for (const sound of sounds) this.releaseActiveSound(sound);
         this._activeSoundCount = 0;
         this._activeByUrl.clear();
+        this._activeSounds.clear();
     }
 
     // ============ 音量与静音 ============
@@ -230,9 +256,11 @@ export class MusicMgr {
     }
 
     setMusicMuted(muted: boolean): void {
+        const wasEffectivelyMuted = this.isMusicEffectivelyMuted();
         this._musicMuted = muted;
         this.persist(MusicMgr.KEY_MUSIC_MUTED, String(this._musicMuted));
         this.applyVolumes();
+        if (wasEffectivelyMuted && !this.isMusicEffectivelyMuted()) this.startPendingMusic();
     }
 
     getSoundMuted(): boolean {
@@ -240,9 +268,12 @@ export class MusicMgr {
     }
 
     setSoundMuted(muted: boolean): void {
+        const shouldStopSounds = muted && !this._soundMuted;
         this._soundMuted = muted;
         this.persist(MusicMgr.KEY_SOUND_MUTED, String(this._soundMuted));
         this.applyVolumes();
+        // 短音效没有解除静音后继续播放的业务价值；立即停止还能释放微信物理预算。
+        if (shouldStopSounds) this.stopAllSounds();
     }
 
     getMasterMuted(): boolean {
@@ -250,9 +281,13 @@ export class MusicMgr {
     }
 
     setMasterMuted(muted: boolean): void {
+        const wasMusicEffectivelyMuted = this.isMusicEffectivelyMuted();
+        const shouldStopSounds = muted && !this._masterMuted;
         this._masterMuted = muted;
         this.persist(MusicMgr.KEY_MASTER_MUTED, String(this._masterMuted));
         this.applyVolumes();
+        if (shouldStopSounds) this.stopAllSounds();
+        if (wasMusicEffectivelyMuted && !this.isMusicEffectivelyMuted()) this.startPendingMusic();
     }
 
     // ============ 私有 ============
@@ -266,12 +301,43 @@ export class MusicMgr {
     }
 
     private applyVolumes(): void {
-        // 直接同步到 SoundManager，使后续新播放的音效也继承当前音量/静音。
-        Laya.SoundManager.musicVolume = this._musicMuted || this._masterMuted ? 0 : this._musicVolume;
-        Laya.SoundManager.soundVolume = this._soundMuted || this._masterMuted ? 0 : this._soundVolume;
+        // 滑杆值表示用户感知音量；直接作为振幅会让高音量区变化过于集中。
+        // 平方曲线保留 0/1 端点，并给常用的低中音量区更细腻的调节空间。
+        Laya.SoundManager.musicVolume = this._musicMuted || this._masterMuted
+            ? 0
+            : this.toPerceptualGain(this._musicVolume);
+        Laya.SoundManager.soundVolume = this._soundMuted || this._masterMuted
+            ? 0
+            : this.toPerceptualGain(this._soundVolume);
         Laya.SoundManager.musicMuted = this._musicMuted || this._masterMuted;
         Laya.SoundManager.soundMuted = this._soundMuted || this._masterMuted;
         if (this._musicChannel) this._musicChannel.volume = 1;
+    }
+
+    private toPerceptualGain(value: number): number {
+        const normalized = Math.max(0, Math.min(1, value));
+        return normalized * normalized;
+    }
+
+    private isMusicEffectivelyMuted(): boolean {
+        return this._musicMuted || this._masterMuted;
+    }
+
+    /** Start the latest requested BGM after a cached/runtime mute is released. */
+    private startPendingMusic(): void {
+        if (!this._musicUrl || this._musicChannel || this.isMusicEffectivelyMuted()) return;
+        this._musicChannel = this.createMusicChannel(
+            this._musicUrl,
+            this._musicLoops,
+            this._musicPosition,
+        );
+        if (!this._musicChannel) return;
+
+        // SoundChannel 已标记为 music，实际音量由 SoundManager.musicVolume 统一叠加。
+        this._musicChannel.volume = 1;
+        if (this._musicLoops === 1 && this._musicDurationCallback) {
+            this.scheduleMusicDurationCheck(this._musicDurationSession, this._musicUrl);
+        }
     }
 
     /** 微信小游戏绕过 Laya 3.3 的 filePath 整包下载；其他平台保留引擎实现。 */
@@ -330,6 +396,7 @@ export class MusicMgr {
         this._musicChannel = null;
         this._musicUrl = "";
         this._musicPosition = 0;
+        this._musicLoops = 0;
         callback?.();
     }
 
@@ -374,11 +441,15 @@ export class MusicMgr {
         }
     }
 
-    private onSoundEnded(url: string): void {
+    private releaseActiveSound(sound: ActiveSound): void {
+        if (sound.released) return;
+        sound.released = true;
+        if (!sound.channel || !this._activeSounds.delete(sound)) return;
+
         this._activeSoundCount = Math.max(0, this._activeSoundCount - 1);
-        const count = this._activeByUrl.get(url) ?? 0;
-        if (count <= 1) this._activeByUrl.delete(url);
-        else this._activeByUrl.set(url, count - 1);
+        const count = this._activeByUrl.get(sound.url) ?? 0;
+        if (count <= 1) this._activeByUrl.delete(sound.url);
+        else this._activeByUrl.set(sound.url, count - 1);
     }
 
     /** 判断某 URL 是否超过每秒限频；通过则记录本次调用。 */
