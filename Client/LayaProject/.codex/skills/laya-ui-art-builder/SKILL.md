@@ -50,6 +50,7 @@ For screen adaptation, safe areas, top/bottom anchoring, notch or mini-game caps
    - missing references / stale temporary files
    - project docs updated
    - `tools/ui/validate-safe-area-relations.ps1` when the project provides it and adaptive UI was touched
+10. Before handoff, apply root `AGENTS.md` documentation closure: update the nearest README for changed screen/component capability, asset meaning, or usage; update the nearest DESIGN for stable layout, art, reuse, or serialization constraints; keep only unfinished IDE import or visual acceptance in PlanAndStatus and remove completed items.
 
 For redundant-resource cleanup, migrate every filename, runtime path, and UUID reference to one canonical resource before deleting the duplicate PNG and `.meta`. Keep the canonical reusable asset under `assets/ui/common/` when its meaning is not module-specific.
 

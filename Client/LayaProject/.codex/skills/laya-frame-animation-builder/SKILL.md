@@ -26,6 +26,7 @@ Build frame animation as one large PNG plus a `.atlas`; never ship an undescribe
 9. Synchronize base and mask textures on every frame when team-color Shader rendering is enabled.
 10. Clear timers, events, materials, parents, and resource references during recycle and disposal.
 11. Run automated checks and require LayaAir IDE runtime validation.
+12. Before handoff, apply root `AGENTS.md` documentation closure: update the nearest README when supported actions, assets, configuration, or usage changed; update the nearest DESIGN only when a stable animation constraint changed; keep only unverified IDE/runtime acceptance in PlanAndStatus and remove completed items.
 
 ## Guardrails
 

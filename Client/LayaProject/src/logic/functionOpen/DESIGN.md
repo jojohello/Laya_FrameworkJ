@@ -2,6 +2,8 @@
 
 本文件作用于 `src/logic/functionOpen/`，继承 `src/DESIGN.md` 和根目录 `DESIGN.md`。
 
+> 例外声明（用户已确认）：FunctionOpen 早于当前 `Protocol/contracts/<feature>/` 契约胶囊制度，本文暂时保留了客户端、Game Server 与持久化的联合语义。原因是现有 4001/4002 和 `GAME_INIT_RESPONSE.sections.functionOpen` 仍使用手写负载，尚未迁移到 Schema 生成链。影响是字段存在人工漂移风险；迁移任务已记录在 `Protocol/PlanAndStatus.md`。迁移完成前，消息 ID 只允许修改 `Protocol/message-ids.yaml`，不得继续在本文扩展新的 wire 字段；新字段必须先进入正式 Schema。
+
 ## 目标与边界
 
 FunctionOpen 负责判断玩法是否已经被服务器开启，并为客户端 UI 提供统一的入口状态和未开启反馈。
@@ -203,7 +205,7 @@ applyOpened(state: FunctionOpenState): void;
 - `ConfigManager` 预加载 `configStruct` 下的 JSON 表结构，因此服务端需要新增 `FuncOpenConfig` 结构并让配置输出包含该表。
 - 消息通过 `GameMessage`、数字 `MessageIds` 和 `MessageHandler` 分发；新增协议需要同时增加 ID、数据结构、Handler 或登录响应字段，以及客户端对应解析。
 - `Gateway` 只负责连接和路由，FunctionOpen 业务不应放进 Gateway。
-- 第一版正式使用 `userId` 作为功能状态键。SDK 登录时由 SDK/账号体系提供；无 SDK 时在账号创建阶段生成一次并持久化，后续登录不得重新生成。
+- FunctionOpen 持久化以已认证会话选择并校验过的 `playerId` 作为状态键；`userId` 只用于账号身份与 Gateway 路由，不作为玩法状态所有者。
 - 现有服务器同时存在 Central 的内部数值账号 ID 和协议层字符串 `userId`，两者必须明确映射；FunctionOpen 不应把一次性登录凭证或临时 guest 字符串当作永久身份。
 - `game-server` 启动类排除了 JDBC 自动配置，但 `pom.xml` 和 `application.yml` 已存在 MySQL 配置；Redis 已具备热状态能力。
 - `database-server` 当前不是父 Maven reactor 的活动模块，不能直接假设它已经提供角色数据写接口。
@@ -245,7 +247,7 @@ FunctionOpen 属于跨客户端、游戏服务器、配置和数据服务的联�
 - 心跳链路已核对：客户端 `HeartbeatManager` 使用 `msgId=2001`，Gateway 在 WebSocket 层处理并返回 `2002`；心跳只负责连接保活，不承载 FunctionOpen 状态。
 - FunctionOpen 业务消息继续复用同一 JSON WebSocket envelope，由 Gateway 按业务 `msgId` 转发到 Game Server，并使用已认证 session 注入的正式 `userId`。
 - 服务端已按当前 JSON envelope 增加 4001 全量状态和 4002 开启推送；Gateway 仅负责放行和转发，心跳 2001/2002 仍属于连接层。
-- 当前 Repository 以 MySQL 唯一主键 `(user_id, function_id)` 保证首次开启幂等，MySQL 成功后尝试写 Redis；Redis 异常不覆盖 MySQL 结果，后续需补齐显式重试/对账任务。
+- 当前 Repository 以 MySQL 唯一主键 `(player_id, function_id)` 保证首次开启幂等；现有实现直接以 MySQL 为权威存储，若后续接入 Redis，只能作为写库成功后的可重建缓存。
 - 登录初始化采用“单一聚合入口、模块独立提供数据”的方案：服务端由初始化聚合器调用各系统 init provider，客户端收到一个带模块名的 JSON 初始化对象，各系统只解析自己的 section。
 - 这不是把 FunctionOpen 变成全游戏数据接口。FunctionOpen 只提供自己的 `functionOpenStates`，背包、任务、角色等系统分别注册自己的初始化 section，避免模块互相依赖。
 - 第一版可以发送一个 JSON 初始化消息，但必须设置消息大小预算和日志监控；超过预算的模块不得继续无限追加到同一消息，应改为多个有序的逻辑初始化消息。当前客户端/服务端没有应用层分包和组包协议，不能假设 WebSocket 底层分片能解决业务消息大小问题。

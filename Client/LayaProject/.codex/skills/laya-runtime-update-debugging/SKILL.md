@@ -31,6 +31,7 @@ Trace one entity through the authoritative update chain and locate the first inc
 5. Preserve numeric truth. Log the boolean result and enough precision to distinguish adjacent floating-point values. A formatted `65.000001` can hide `65.00000100000001 > 65.000001`. Flatten values at the log site instead of logging mutable objects that the console may expand after they change.
 6. Find the first line where observed state diverges from the contract. Form one hypothesis and make one minimal test change.
 7. After runtime confirmation, remove log calls, trace-only fields, maps, role tags, throttling state, and result summaries. Search stable debug prefixes before handoff.
+8. Before handoff, apply root `AGENTS.md` documentation closure. Update README only when public runtime behavior or usage changed; update DESIGN when the confirmed cause establishes a stable update-order, ownership, tolerance, or lifecycle constraint; leave only unverified reproduction or acceptance in PlanAndStatus. Do not preserve the debugging diary.
 
 ## Decision Guide
 

@@ -44,6 +44,6 @@ Start 创建的跨分包服务通过 `window` 暴露，由 Logic 的 `App` 统�
 
 远程 `music`/`sound` 与其他动态目录一样，必须同时出现在 `BuildSettings.alwaysIncluded`、远程 `subpackages` 和 `MyGameConfig.remoteResourcePackages`。`alwaysIncluded` 只防止导出裁剪，不会把远程包复制进微信首包。登录阶段只提前注册 `music/fileconfig.json`；微信端 `MusicMgr` 使用 `Laya.URL.formatURL`/`postFormatURL` 取得包含远程基址和版本哈希的最终 URL，直接交给 `wx.createInnerAudioContext()` 流式缓冲。其他平台保持 `SoundManager.useAudioMusic=true` 并使用 Laya 长音频通道。
 
-登录入口先按运行平台分流：非微信小游戏平台始终显示账号输入；微信小游戏在 `MyGameConfig.forceAccountLogin=false` 时隐藏输入并自动执行 `wx.login`，界面显示登录状态与进度条；Local/Test 联调可把该开关设为 `true`，改用账号输入，但 Login Server 当前进程还必须显式设置 `WECHAT_DEVELOPER_CODE_ENABLED=true`。Production 禁止强制账号登录。昵称头像授权是可选资料能力；未授权、拒绝或资料 API 失败时仍只凭 code 登录。Login Server 通过 `code2Session` 验证身份，AppID/AppSecret 只从服务端进程环境变量取得。
+登录入口先按运行平台分流：非微信小游戏平台始终显示账号输入；微信小游戏在 `MyGameConfig.forceAccountLogin=false` 时隐藏输入并自动执行 `wx.login`，界面显示登录状态与进度条；Local/Test 联调可把该开关设为 `true`，改用始终可用的 `GUEST` 开发凭据，不要求 Login Server 开启 `WECHAT_DEVELOPER_CODE_ENABLED`。该环境变量只用于直接测试微信认证适配器的固定 code。Production 禁止强制账号登录，也禁止开启开发 code。昵称头像授权是可选资料能力；未授权、拒绝或资料 API 失败时仍只凭 code 登录。Login Server 通过 `code2Session` 验证真实微信身份，AppID/AppSecret 只从服务端进程环境变量取得。
 
 运行时场景路径相对 `assets/` 根。修改启动流程后必须验证登录场景关闭、Loading 生命周期、Logic 重复初始化和失败恢复。

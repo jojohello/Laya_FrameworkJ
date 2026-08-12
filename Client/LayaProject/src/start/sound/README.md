@@ -13,7 +13,7 @@
 背景音乐：
 
 ```ts
-MusicMgr.instance.playMusic("audio/bgm/main.mp3", 0); // 0 表示无限循环
+MusicMgr.instance.playMusic("music/bg_1.mp3", 0); // 0 表示无限循环
 MusicMgr.instance.stopMusic();
 MusicMgr.instance.setMusicVolume(0.8);
 ```
@@ -35,7 +35,7 @@ MusicMgr.instance.playBattle(battleUrl); // 战斗 BGM 无限循环
 特效音效：
 
 ```ts
-MusicMgr.instance.playSound("audio/sfx/explode.mp3");
+MusicMgr.instance.playSound("sound/Fireball_explosion.mp3");
 MusicMgr.instance.stopAllSounds();
 MusicMgr.instance.setSoundVolume(0.9);
 ```
@@ -55,8 +55,8 @@ MusicMgr.instance.setSoundVolume(0.9);
 Logic 侧经桥接访问（避免静态导入 Start 实现）：
 
 ```ts
-App.musicMgr.playMusic("audio/bgm/main.mp3", 0);
-App.musicMgr.playSound("audio/sfx/explode.mp3");
+App.musicMgr.playMusic("music/bg_1.mp3", 0);
+App.musicMgr.playSound("sound/Fireball_explosion.mp3");
 ```
 
 `MusicMgr.playMusic(url, loops, startTime, onDurationElapsed?)` 的单次播放计时不使用

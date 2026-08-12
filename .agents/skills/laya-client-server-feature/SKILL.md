@@ -78,3 +78,5 @@ Update closest client/server docs for local internals. Do not duplicate the full
 
 Report authority decisions, server tests, protocol generation, client checks, integration checks, and IDE/device-only acceptance separately. If integration cannot run, keep the feature incomplete in the nearest Plan without a progress diary.
 
+Before handoff, apply the root `AGENTS.md` documentation closure: update the nearest README for changed public behavior, the nearest effective DESIGN for changed stable contracts or constraints, and PlanAndStatus only for genuinely unfinished gates or blockers. Remove completed Plan items and delete an empty Plan. Do not duplicate the cross-end contract into client and server docs.
+

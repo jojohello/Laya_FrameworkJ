@@ -79,7 +79,7 @@ BAG_SNAPSHOT_RESPONSE: { id: 5002, scope: game }
 
 ## 校验
 
-生成器检查消息 ID、Schema 支持范围、字段引用、消息绑定、canonical fixtures 和所有生成物漂移。提交前运行：
+生成器测试检查消息 ID 的格式、作用域和重复值，以及 Schema 支持范围、字段引用、消息绑定和 canonical fixtures；契约生成物通过 `--check` 检查漂移。消息 ID 消费端的全量漂移检查仍按当前 Plan 补齐。提交前运行：
 
 ```powershell
 cd Client/LayaProject

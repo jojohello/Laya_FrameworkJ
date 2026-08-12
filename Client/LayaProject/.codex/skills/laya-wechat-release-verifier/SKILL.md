@@ -69,3 +69,5 @@ powershell -ExecutionPolicy Bypass -File tools/docs/validate-doc-system.ps1
 ```
 
 Then require the user-controlled gates: rebuild in LayaAir IDE, run in WeChat Developer Tools, and test ASTC on target devices. Report deterministic checks separately from IDE, server, and device-only acceptance. Keep only remaining work in `PlanAndStatus.md`.
+
+Before handoff, apply root `AGENTS.md` documentation closure. Promote verified public release behavior and commands to the nearest README, promote stable packaging or platform constraints to the nearest DESIGN, and keep only genuinely unfinished IDE, server, Developer Tools, or device gates in PlanAndStatus. Remove completed Plan items instead of retaining a release diary.
