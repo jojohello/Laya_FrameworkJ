@@ -11,7 +11,7 @@ $extensions = @(
 $fileNames = @(".editorconfig", ".gitattributes", ".gitignore")
 
 $files = Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object {
-    $_.FullName -notmatch "[\\/](\.git|library|temp|bin|release|node_modules)[\\/]" -and
+    $_.FullName -notmatch "[\\/](\.git|library|temp|tmp|bin|release|node_modules)[\\/]" -and
     (($extensions -contains $_.Extension.ToLowerInvariant()) -or ($fileNames -contains $_.Name))
 }
 
