@@ -1,0 +1,4 @@
+interface:
+  display_name: "Laya 游戏项目启动"
+  short_description: "验证开发环境，并将游戏想法收敛为可验证的最小项目基线"
+  default_prompt: "Use $bootstrap-laya-game to verify this Framework-J workspace and guide my game idea toward one confirmed playable experiment."

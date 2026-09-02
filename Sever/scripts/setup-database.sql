@@ -6,6 +6,10 @@ CREATE DATABASE IF NOT EXISTS laya_login
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
+CREATE DATABASE IF NOT EXISTS laya_central_dev
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
 CREATE DATABASE IF NOT EXISTS laya_game_1
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;

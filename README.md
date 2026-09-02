@@ -2,6 +2,22 @@
 
 Framework-J 是一个面向 2D 游戏的客户端、服务器、配置表和通信协议一体化框架。
 
+## 第一次使用
+
+刚下载仓库时，先验证框架本身能够运行，再开始修改玩法：
+
+1. 运行只读环境预检：
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File tools/bootstrap/check-development-environment.ps1
+   ```
+
+2. 按 [服务器开发环境首次启动](Sever/README.md#开发环境首次启动) 启动并检查四个服务。
+3. 用 LayaAir IDE 3.3 打开 `Client/LayaProject`，运行启动场景，完成开发账号登录并进入主场景。
+4. 双端链路成功后，再确认游戏方向或建立一个短周期探索原型。
+
+在 Codex 中可以直接说“我想开发一款游戏”或调用 `$bootstrap-laya-game`。AI 会先检查环境，再把游戏想法整理成经过用户确认的最小立项基线；“做一个塔防”等类型级描述只会进入可撤销的探索原型，不会直接扩展为正式生产。完整流程见 [.agents/skills/bootstrap-laya-game/SKILL.md](.agents/skills/bootstrap-laya-game/SKILL.md)。
+
 ## 项目特色：纯 AI 工程化开发
 
 Framework-J 的特点之一，是项目代码、资源接入、文档与日常维护均以 AI 为主要执行者完成。它不是只让 AI 临时补几段代码，而是把工程约束、稳定设计和当前任务一起纳入仓库，让 AI 能够跨会话持续理解并维护整个项目。

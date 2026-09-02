@@ -12,7 +12,7 @@ Establish a testable identity and connection lifecycle before adding more server
 - [ ] Implement Gateway reconnect retention and duplicate-login conflict handling, including an explicit kick path and load accounting.
 - [ ] Replace remaining development authentication shortcuts and insecure production defaults, including real token validation and externally supplied service/JWT secrets.
 - [ ] Replace placeholder Game Server connection/player metrics with live values and cover registry notifications and reconnection behavior.
-- [ ] Add dedicated coverage for heartbeat-timeout expiry and graceful Gateway unregister, which the current smoke test does not yet exercise.
+- [ ] Add process-level smoke coverage for login, three-factor Gateway authentication, heartbeat, Gateway-to-Game routing, connection confirmation and disconnect, then add dedicated cases for heartbeat-timeout expiry and graceful Gateway unregister.
 
 ## Acceptance
 
