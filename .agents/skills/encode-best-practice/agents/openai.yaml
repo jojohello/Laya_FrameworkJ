@@ -1,0 +1,6 @@
+interface:
+  display_name: "Encode Best Practice"
+  short_description: "Route proven methods into the right project container"
+  default_prompt: "Use $encode-best-practice to encode a proven method into the right project container."
+policy:
+  allow_implicit_invocation: true

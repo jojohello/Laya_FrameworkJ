@@ -1,0 +1,6 @@
+interface:
+  display_name: "Laya Art Style Establishment"
+  short_description: "Lock art style before UI production for LayaAir games"
+  default_prompt: "Use $laya-art-style-establishment to lock the art style before generating UI resources."
+policy:
+  allow_implicit_invocation: true
